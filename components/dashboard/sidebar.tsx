@@ -30,6 +30,11 @@ const menuItems = [
     icon: Package
   },
   {
+    title: "Nova Doação",
+    href: "/dashboard/nova-doacao",
+    icon: Plus
+  },
+  {
     title: "Minhas Solicitações",
     href: "/dashboard/solicitacoes",
     icon: ClipboardList

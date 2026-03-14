@@ -188,7 +188,7 @@ export default function CadastroPage() {
                   </RadioGroup>
                 </div>
 
-                <Button type="submit" className="w-full" disabled={isLoading}>
+                <Button type="submit" className="w-full bg-accent text-accent-foreground hover:bg-accent/90" disabled={isLoading}>
                   {isLoading ? "Cadastrando..." : "Criar conta"}
                 </Button>
               </form>

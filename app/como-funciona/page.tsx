@@ -9,9 +9,10 @@ import {
   HandHeart, 
   CheckCircle, 
   ClipboardList,
-  ArrowRight,
   Building2,
-  Heart
+  Heart,
+  Truck,
+  ArrowDown
 } from "lucide-react"
 
 const steps = [
@@ -20,6 +21,7 @@ const steps = [
     title: "Empresa cadastra alimentos disponíveis",
     description: "A empresa acessa o sistema e registra os alimentos que estão disponíveis para doação. Ela informa o nome do alimento, categoria nutricional, quantidade em kg, data de validade, condições de armazenamento e uma breve descrição.",
     icon: Package,
+    color: "bg-primary",
     details: [
       "Cadastro rápido e intuitivo",
       "Informações nutricionais detalhadas",
@@ -32,6 +34,7 @@ const steps = [
     title: "Instituições visualizam as doações",
     description: "As instituições cadastradas podem acessar o painel e ver todas as doações disponíveis na região. O sistema mostra informações completas sobre cada alimento, incluindo empresa doadora, quantidade e prazo de validade.",
     icon: Search,
+    color: "bg-secondary",
     details: [
       "Filtros por categoria e região",
       "Visualização em tempo real",
@@ -44,6 +47,7 @@ const steps = [
     title: "Instituição solicita a doação",
     description: "Quando encontra uma doação de interesse, a instituição pode solicitar diretamente pela plataforma. A solicitação inclui a quantidade desejada e informações de contato para coordenar a retirada.",
     icon: HandHeart,
+    color: "bg-accent",
     details: [
       "Solicitação com um clique",
       "Comunicação direta com empresa",
@@ -53,9 +57,10 @@ const steps = [
   },
   {
     step: 4,
-    title: "Empresa confirma e organiza retirada",
+    title: "Empresa confirma a doação",
     description: "A empresa recebe a solicitação e pode aprovar ou recusar. Após aprovação, as partes combinam a logística de retirada dos alimentos, seja por coleta ou entrega.",
     icon: CheckCircle,
+    color: "bg-primary",
     details: [
       "Aprovação simplificada",
       "Agendamento flexível",
@@ -65,9 +70,23 @@ const steps = [
   },
   {
     step: 5,
-    title: "Sistema registra a entrega",
+    title: "Entrega é realizada",
+    description: "A instituição realiza a retirada dos alimentos no local e horário combinados, ou a empresa organiza a entrega. O processo é acompanhado pela plataforma.",
+    icon: Truck,
+    color: "bg-secondary",
+    details: [
+      "Logística coordenada",
+      "Confirmação de entrega",
+      "Rastreamento do processo",
+      "Comunicação em tempo real"
+    ]
+  },
+  {
+    step: 6,
+    title: "Sistema registra a doação",
     description: "Após a conclusão da doação, o sistema registra automaticamente a entrega, gerando métricas de impacto social, relatórios de diversidade alimentar e histórico completo das operações.",
     icon: ClipboardList,
+    color: "bg-accent",
     details: [
       "Registro automático",
       "Métricas de impacto",
@@ -84,7 +103,7 @@ export default function ComoFuncionaPage() {
       
       <main className="flex-1">
         {/* Hero Section */}
-        <section className="bg-gradient-to-b from-muted/50 to-background py-16 md:py-24">
+        <section className="bg-card py-16 md:py-24">
           <div className="container mx-auto px-4 md:px-6">
             <div className="mx-auto max-w-3xl text-center">
               <h1 className="mb-6 text-4xl font-bold tracking-tight text-foreground md:text-5xl">
@@ -92,7 +111,7 @@ export default function ComoFuncionaPage() {
               </h1>
               <p className="text-lg text-muted-foreground md:text-xl leading-relaxed">
                 Conheça o processo completo de redistribuição de alimentos através da nossa plataforma. 
-                Um sistema simples, eficiente e transparente.
+                Um sistema simples, eficiente e transparente em 6 etapas.
               </p>
             </div>
           </div>
@@ -101,46 +120,48 @@ export default function ComoFuncionaPage() {
         {/* Steps Section */}
         <section className="py-16 md:py-24">
           <div className="container mx-auto px-4 md:px-6">
-            <div className="mx-auto max-w-4xl">
-              <div className="flex flex-col gap-12">
+            <div className="mx-auto max-w-5xl">
+              <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
                 {steps.map((item, index) => (
                   <div key={item.step} className="relative">
-                    {/* Connector line */}
-                    {index < steps.length - 1 && (
-                      <div className="absolute left-8 top-20 hidden h-full w-0.5 bg-border lg:block" />
-                    )}
-                    
-                    <div className="flex flex-col gap-6 lg:flex-row lg:gap-8">
-                      {/* Step number and icon */}
-                      <div className="flex shrink-0 items-start gap-4 lg:w-48 lg:flex-col lg:items-center">
-                        <div className="relative z-10 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary text-primary-foreground">
-                          <item.icon className="h-8 w-8" />
-                        </div>
-                        <div className="lg:text-center">
-                          <span className="text-sm font-medium text-primary">Etapa {item.step}</span>
-                        </div>
-                      </div>
-                      
-                      {/* Content */}
-                      <Card className="flex-1 border-border bg-card">
-                        <CardContent className="p-6 md:p-8">
-                          <h2 className="mb-4 text-xl font-semibold text-foreground md:text-2xl">
-                            {item.title}
-                          </h2>
-                          <p className="mb-6 text-muted-foreground leading-relaxed">
-                            {item.description}
-                          </p>
-                          <div className="grid gap-3 sm:grid-cols-2">
-                            {item.details.map((detail, i) => (
-                              <div key={i} className="flex items-center gap-2">
-                                <CheckCircle className="h-4 w-4 shrink-0 text-primary" />
-                                <span className="text-sm text-muted-foreground">{detail}</span>
-                              </div>
-                            ))}
+                    <Card className="h-full border-border bg-card transition-all hover:border-primary/50 hover:shadow-lg">
+                      <CardContent className="p-6">
+                        {/* Step header */}
+                        <div className="mb-4 flex items-center gap-4">
+                          <div className={`flex h-14 w-14 items-center justify-center rounded-xl ${item.color} text-primary-foreground`}>
+                            <item.icon className="h-7 w-7" />
                           </div>
-                        </CardContent>
-                      </Card>
-                    </div>
+                          <span className="text-4xl font-bold text-muted-foreground/30">
+                            {item.step.toString().padStart(2, '0')}
+                          </span>
+                        </div>
+                        
+                        {/* Content */}
+                        <h2 className="mb-3 text-lg font-semibold text-foreground">
+                          {item.title}
+                        </h2>
+                        <p className="mb-4 text-sm text-muted-foreground leading-relaxed">
+                          {item.description}
+                        </p>
+                        
+                        {/* Details */}
+                        <div className="space-y-2">
+                          {item.details.map((detail, i) => (
+                            <div key={i} className="flex items-center gap-2">
+                              <CheckCircle className="h-4 w-4 shrink-0 text-primary" />
+                              <span className="text-xs text-muted-foreground">{detail}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </CardContent>
+                    </Card>
+                    
+                    {/* Arrow connector for mobile */}
+                    {index < steps.length - 1 && (
+                      <div className="flex justify-center py-4 md:hidden">
+                        <ArrowDown className="h-6 w-6 text-border" />
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
@@ -148,24 +169,72 @@ export default function ComoFuncionaPage() {
           </div>
         </section>
 
+        {/* Visual Flow */}
+        <section className="bg-card py-16 md:py-24">
+          <div className="container mx-auto px-4 md:px-6">
+            <div className="mx-auto max-w-4xl">
+              <h2 className="mb-12 text-center text-2xl font-bold text-foreground md:text-3xl">
+                Fluxo Simplificado
+              </h2>
+              
+              <div className="flex flex-col items-center gap-4 md:flex-row md:justify-between">
+                {/* Empresa */}
+                <div className="flex flex-col items-center text-center">
+                  <div className="mb-3 flex h-20 w-20 items-center justify-center rounded-2xl bg-primary text-primary-foreground">
+                    <Building2 className="h-10 w-10" />
+                  </div>
+                  <span className="font-semibold text-foreground">Empresa</span>
+                  <span className="text-sm text-muted-foreground">Cadastra alimentos</span>
+                </div>
+                
+                {/* Arrow */}
+                <div className="hidden h-1 flex-1 bg-gradient-to-r from-primary to-secondary md:block" />
+                <ArrowDown className="h-8 w-8 text-primary md:hidden" />
+                
+                {/* Plataforma */}
+                <div className="flex flex-col items-center text-center">
+                  <div className="mb-3 flex h-20 w-20 items-center justify-center rounded-2xl bg-accent text-accent-foreground">
+                    <Package className="h-10 w-10" />
+                  </div>
+                  <span className="font-semibold text-foreground">Plataforma</span>
+                  <span className="text-sm text-muted-foreground">Conecta e organiza</span>
+                </div>
+                
+                {/* Arrow */}
+                <div className="hidden h-1 flex-1 bg-gradient-to-r from-secondary to-primary md:block" />
+                <ArrowDown className="h-8 w-8 text-secondary md:hidden" />
+                
+                {/* Instituição */}
+                <div className="flex flex-col items-center text-center">
+                  <div className="mb-3 flex h-20 w-20 items-center justify-center rounded-2xl bg-secondary text-secondary-foreground">
+                    <Heart className="h-10 w-10" />
+                  </div>
+                  <span className="font-semibold text-foreground">Instituição</span>
+                  <span className="text-sm text-muted-foreground">Recebe alimentos</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* CTA Section */}
-        <section className="bg-muted/30 py-16 md:py-24">
+        <section className="bg-primary py-16 md:py-24">
           <div className="container mx-auto px-4 md:px-6">
             <div className="mx-auto max-w-3xl text-center">
-              <h2 className="mb-6 text-3xl font-bold text-foreground md:text-4xl">
+              <h2 className="mb-6 text-3xl font-bold text-primary-foreground md:text-4xl">
                 Pronto para começar?
               </h2>
-              <p className="mb-8 text-lg text-muted-foreground leading-relaxed">
+              <p className="mb-8 text-lg text-primary-foreground/80 leading-relaxed">
                 Cadastre-se agora e faça parte dessa rede solidária de redistribuição de alimentos.
               </p>
               <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
-                <Button size="lg" asChild className="gap-2">
+                <Button size="lg" variant="secondary" asChild className="gap-2">
                   <Link href="/cadastro?tipo=empresa">
                     <Building2 className="h-5 w-5" />
                     Cadastrar Empresa
                   </Link>
                 </Button>
-                <Button size="lg" variant="outline" asChild className="gap-2">
+                <Button size="lg" variant="outline" asChild className="gap-2 border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10">
                   <Link href="/cadastro?tipo=instituicao">
                     <Heart className="h-5 w-5" />
                     Cadastrar Instituição

@@ -2,6 +2,8 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import Link from "next/link"
 import { 
   Package, 
   TrendingUp, 
@@ -10,7 +12,16 @@ import {
   Apple,
   Carrot,
   Wheat,
-  Beef
+  Beef,
+  Milk,
+  Cookie,
+  CheckCircle2,
+  AlertCircle,
+  Info,
+  Award,
+  Medal,
+  Star,
+  ArrowRight
 } from "lucide-react"
 import { 
   BarChart, 
@@ -23,7 +34,11 @@ import {
   PieChart,
   Pie,
   Cell,
-  Legend
+  RadarChart,
+  PolarGrid,
+  PolarAngleAxis,
+  PolarRadiusAxis,
+  Radar
 } from "recharts"
 
 const statsCards = [
@@ -32,31 +47,42 @@ const statsCards = [
     value: "1.250 kg",
     description: "Este mês",
     icon: Package,
-    trend: "+12%"
+    trend: "+12%",
+    color: "bg-primary"
   },
   {
     title: "Doações Ativas",
     value: "24",
     description: "Disponíveis agora",
     icon: TrendingUp,
-    trend: "+5"
+    trend: "+5",
+    color: "bg-secondary"
   },
   {
     title: "Beneficiários",
     value: "450",
     description: "Pessoas atendidas",
     icon: Users,
-    trend: "+8%"
+    trend: "+8%",
+    color: "bg-accent"
   }
 ]
 
 const categoryData = [
-  { name: "Frutas", value: 320, color: "hsl(var(--chart-1))" },
-  { name: "Legumes", value: 280, color: "hsl(var(--chart-2))" },
-  { name: "Grãos", value: 240, color: "hsl(var(--chart-3))" },
-  { name: "Proteínas", value: 180, color: "hsl(var(--chart-4))" },
-  { name: "Laticínios", value: 150, color: "hsl(var(--chart-5))" },
-  { name: "Outros", value: 80, color: "hsl(var(--muted-foreground))" }
+  { name: "Proteínas", value: 275, percentage: 22, color: "hsl(var(--chart-1))", icon: Beef, status: "Bom" },
+  { name: "Grãos e Cereais", value: 350, percentage: 28, color: "hsl(var(--chart-2))", icon: Wheat, status: "Excelente" },
+  { name: "Frutas", value: 188, percentage: 15, color: "hsl(var(--chart-3))", icon: Apple, status: "Adequado" },
+  { name: "Hortaliças", value: 225, percentage: 18, color: "hsl(var(--chart-4))", icon: Carrot, status: "Bom" },
+  { name: "Laticínios", value: 125, percentage: 10, color: "hsl(var(--chart-5))", icon: Milk, status: "Baixo" },
+  { name: "Ultraprocessados", value: 87, percentage: 7, color: "hsl(var(--accent))", icon: Cookie, status: "Adequado" }
+]
+
+const radarData = [
+  { category: "Proteínas", value: 75, fullMark: 100 },
+  { category: "Grãos", value: 90, fullMark: 100 },
+  { category: "Frutas", value: 65, fullMark: 100 },
+  { category: "Hortaliças", value: 80, fullMark: 100 },
+  { category: "Laticínios", value: 45, fullMark: 100 },
 ]
 
 const monthlyData = [
@@ -70,14 +96,46 @@ const monthlyData = [
 
 const alerts = [
   {
+    type: "success",
+    title: "Boa distribuição nutricional",
+    description: "As doações recebidas apresentam boa diversidade de categorias alimentares.",
+    icon: CheckCircle2
+  },
+  {
     type: "warning",
-    title: "Excesso de ultraprocessados",
-    description: "35% das doações recentes são ultraprocessados. Considere diversificar."
+    title: "Baixa em laticínios",
+    description: "Apenas 10% das doações são laticínios. Busque novas fontes de cálcio.",
+    icon: AlertCircle
   },
   {
     type: "info",
-    title: "Baixa em proteínas",
-    description: "Apenas 14% das doações são fontes de proteína. Busque novas fontes."
+    title: "Ultraprocessados controlados",
+    description: "O percentual de ultraprocessados está abaixo de 10%, dentro do ideal.",
+    icon: Info
+  }
+]
+
+const companyBadges = [
+  {
+    name: "Selo Diversidade Ouro",
+    description: "Empresa doa em 5+ categorias nutricionais",
+    icon: Award,
+    color: "bg-yellow-500",
+    companies: ["Supermercado Vida", "Hortifruti Verde"]
+  },
+  {
+    name: "Selo Diversidade Prata",
+    description: "Empresa doa em 3-4 categorias nutricionais",
+    icon: Medal,
+    color: "bg-gray-400",
+    companies: ["Restaurante Sabor & Cia", "Padaria Pão Quente"]
+  },
+  {
+    name: "Selo Participação",
+    description: "Empresa participa ativamente das doações",
+    icon: Star,
+    color: "bg-primary",
+    companies: ["Laticínios Sul", "Distribuidora Alimentos"]
   }
 ]
 
@@ -89,12 +147,24 @@ const recentDonations = [
 ]
 
 export default function DashboardPage() {
+  // Calculate diversity index
+  const diversityIndex = 7.8
+  const diversityStatus = diversityIndex >= 7 ? "Boa" : diversityIndex >= 5 ? "Moderada" : "Baixa"
+  
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
-        <p className="text-muted-foreground">Visão geral das doações e métricas nutricionais</p>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
+          <p className="text-muted-foreground">Visão geral das doações e métricas nutricionais</p>
+        </div>
+        <Button asChild className="gap-2 bg-accent text-accent-foreground hover:bg-accent/90">
+          <Link href="/dashboard/doacoes">
+            Ver doações disponíveis
+            <ArrowRight className="h-4 w-4" />
+          </Link>
+        </Button>
       </div>
 
       {/* Stats Cards */}
@@ -109,8 +179,8 @@ export default function DashboardPage() {
                   <p className="mt-1 text-sm text-muted-foreground">{stat.description}</p>
                 </div>
                 <div className="flex flex-col items-end gap-2">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
-                    <stat.icon className="h-5 w-5 text-primary" />
+                  <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${stat.color} text-primary-foreground`}>
+                    <stat.icon className="h-5 w-5" />
                   </div>
                   <Badge variant="secondary" className="bg-primary/10 text-primary">
                     {stat.trend}
@@ -122,28 +192,118 @@ export default function DashboardPage() {
         ))}
       </div>
 
-      {/* Charts Row */}
+      {/* Diversity Index & Category Distribution */}
       <div className="grid gap-6 lg:grid-cols-2">
-        {/* Category Distribution */}
+        {/* Diversity Index with Radar */}
+        <Card className="border-border bg-card">
+          <CardHeader>
+            <CardTitle className="text-foreground">Índice de Diversidade Alimentar</CardTitle>
+            <CardDescription>Análise da variedade nutricional das doações recebidas</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-6 md:grid-cols-2">
+              {/* Score Circle */}
+              <div className="flex flex-col items-center justify-center">
+                <div className="relative flex h-36 w-36 items-center justify-center">
+                  <svg className="h-36 w-36 -rotate-90 transform">
+                    <circle
+                      cx="72"
+                      cy="72"
+                      r="60"
+                      stroke="hsl(var(--muted))"
+                      strokeWidth="12"
+                      fill="none"
+                    />
+                    <circle
+                      cx="72"
+                      cy="72"
+                      r="60"
+                      stroke="hsl(var(--primary))"
+                      strokeWidth="12"
+                      fill="none"
+                      strokeDasharray={`${(diversityIndex / 10) * 377} 377`}
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                  <div className="absolute text-center">
+                    <span className="text-4xl font-bold text-primary">{diversityIndex}</span>
+                    <span className="block text-sm text-muted-foreground">/10</span>
+                  </div>
+                </div>
+                <Badge className={`mt-4 ${diversityIndex >= 7 ? 'bg-primary' : diversityIndex >= 5 ? 'bg-accent' : 'bg-destructive'}`}>
+                  Diversidade {diversityStatus}
+                </Badge>
+              </div>
+              
+              {/* Category Status */}
+              <div className="space-y-3">
+                {categoryData.slice(0, 5).map((category) => (
+                  <div key={category.name} className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <category.icon className="h-4 w-4" style={{ color: category.color }} />
+                      <span className="text-sm text-foreground">{category.name}</span>
+                    </div>
+                    <Badge 
+                      variant="outline" 
+                      className={
+                        category.status === "Excelente" ? "border-primary text-primary" :
+                        category.status === "Bom" ? "border-secondary text-secondary" :
+                        category.status === "Adequado" ? "border-muted-foreground text-muted-foreground" :
+                        "border-accent text-accent"
+                      }
+                    >
+                      {category.status}
+                    </Badge>
+                  </div>
+                ))}
+              </div>
+            </div>
+            
+            {/* Radar Chart */}
+            <div className="mt-6 h-[200px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <RadarChart cx="50%" cy="50%" outerRadius="70%" data={radarData}>
+                  <PolarGrid stroke="hsl(var(--border))" />
+                  <PolarAngleAxis 
+                    dataKey="category" 
+                    tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 11 }}
+                  />
+                  <PolarRadiusAxis 
+                    angle={30} 
+                    domain={[0, 100]} 
+                    tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 10 }}
+                  />
+                  <Radar
+                    name="Distribuição"
+                    dataKey="value"
+                    stroke="hsl(var(--primary))"
+                    fill="hsl(var(--primary))"
+                    fillOpacity={0.3}
+                  />
+                </RadarChart>
+              </ResponsiveContainer>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Category Distribution Pie */}
         <Card className="border-border bg-card">
           <CardHeader>
             <CardTitle className="text-foreground">Distribuição por Categoria</CardTitle>
-            <CardDescription>Categorias nutricionais das doações recebidas</CardDescription>
+            <CardDescription>Percentual de cada categoria nutricional</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="h-[300px]">
+            <div className="h-[250px]">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
                     data={categoryData}
                     cx="50%"
                     cy="50%"
-                    innerRadius={60}
-                    outerRadius={100}
+                    innerRadius={50}
+                    outerRadius={90}
                     paddingAngle={2}
                     dataKey="value"
-                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                    labelLine={false}
                   >
                     {categoryData.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={entry.color} />
@@ -155,14 +315,59 @@ export default function DashboardPage() {
                       border: '1px solid hsl(var(--border))',
                       borderRadius: '8px'
                     }}
-                    formatter={(value: number) => [`${value} kg`, 'Quantidade']}
+                    formatter={(value: number, name: string) => [`${value} kg (${categoryData.find(c => c.name === name)?.percentage}%)`, name]}
                   />
                 </PieChart>
               </ResponsiveContainer>
             </div>
+            
+            {/* Legend */}
+            <div className="mt-4 grid grid-cols-2 gap-2">
+              {categoryData.map((category) => (
+                <div key={category.name} className="flex items-center gap-2">
+                  <div className="h-3 w-3 rounded-full" style={{ backgroundColor: category.color }} />
+                  <span className="text-xs text-muted-foreground">{category.name} ({category.percentage}%)</span>
+                </div>
+              ))}
+            </div>
           </CardContent>
         </Card>
+      </div>
 
+      {/* Alerts */}
+      <Card className="border-border bg-card">
+        <CardHeader>
+          <CardTitle className="text-foreground">Alertas Nutricionais</CardTitle>
+          <CardDescription>Monitoramento da qualidade alimentar das doações</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-4 md:grid-cols-3">
+            {alerts.map((alert, index) => (
+              <div 
+                key={index}
+                className={`flex items-start gap-3 rounded-lg p-4 ${
+                  alert.type === 'success' ? 'bg-primary/10' :
+                  alert.type === 'warning' ? 'bg-accent/10' :
+                  'bg-muted'
+                }`}
+              >
+                <alert.icon className={`h-5 w-5 shrink-0 ${
+                  alert.type === 'success' ? 'text-primary' :
+                  alert.type === 'warning' ? 'text-accent' :
+                  'text-muted-foreground'
+                }`} />
+                <div>
+                  <p className="font-medium text-foreground">{alert.title}</p>
+                  <p className="text-sm text-muted-foreground">{alert.description}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Monthly Trend & Company Badges */}
+      <div className="grid gap-6 lg:grid-cols-2">
         {/* Monthly Trend */}
         <Card className="border-border bg-card">
           <CardHeader>
@@ -170,7 +375,7 @@ export default function DashboardPage() {
             <CardDescription>Quantidade de alimentos recebidos por mês (kg)</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="h-[300px]">
+            <div className="h-[250px]">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={monthlyData}>
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
@@ -201,82 +406,50 @@ export default function DashboardPage() {
             </div>
           </CardContent>
         </Card>
-      </div>
 
-      {/* Diversity Index & Alerts */}
-      <div className="grid gap-6 lg:grid-cols-2">
-        {/* Diversity Index */}
+        {/* Company Badges / Incentive System */}
         <Card className="border-border bg-card">
           <CardHeader>
-            <CardTitle className="text-foreground">Índice de Diversidade Alimentar</CardTitle>
-            <CardDescription>Baseado nas categorias nutricionais recebidas</CardDescription>
+            <CardTitle className="text-foreground">Sistema de Incentivo</CardTitle>
+            <CardDescription>Selos concedidos às empresas parceiras pela diversidade de doações</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="flex items-center gap-6">
-              <div className="flex h-32 w-32 items-center justify-center rounded-full border-8 border-primary bg-primary/10">
-                <div className="text-center">
-                  <span className="text-4xl font-bold text-primary">7.2</span>
-                  <span className="block text-sm text-muted-foreground">/10</span>
+            <div className="space-y-4">
+              {companyBadges.map((badge, index) => (
+                <div key={index} className="rounded-lg border border-border bg-background p-4">
+                  <div className="flex items-center gap-3">
+                    <div className={`flex h-12 w-12 items-center justify-center rounded-full ${badge.color}`}>
+                      <badge.icon className="h-6 w-6 text-white" />
+                    </div>
+                    <div className="flex-1">
+                      <h4 className="font-semibold text-foreground">{badge.name}</h4>
+                      <p className="text-sm text-muted-foreground">{badge.description}</p>
+                    </div>
+                  </div>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {badge.companies.map((company, i) => (
+                      <Badge key={i} variant="secondary" className="text-xs">
+                        {company}
+                      </Badge>
+                    ))}
+                  </div>
                 </div>
-              </div>
-              <div className="flex-1 space-y-3">
-                <div className="flex items-center gap-2">
-                  <Apple className="h-5 w-5 text-chart-1" />
-                  <span className="text-sm text-foreground">Frutas: Bom</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Carrot className="h-5 w-5 text-chart-2" />
-                  <span className="text-sm text-foreground">Legumes: Bom</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Wheat className="h-5 w-5 text-chart-3" />
-                  <span className="text-sm text-foreground">Grãos: Adequado</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Beef className="h-5 w-5 text-chart-4" />
-                  <span className="text-sm text-foreground">Proteínas: Baixo</span>
-                </div>
-              </div>
+              ))}
             </div>
-          </CardContent>
-        </Card>
-
-        {/* Alerts */}
-        <Card className="border-border bg-card">
-          <CardHeader>
-            <CardTitle className="text-foreground">Alertas Nutricionais</CardTitle>
-            <CardDescription>Atenção para equilíbrio alimentar</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {alerts.map((alert, index) => (
-              <div 
-                key={index}
-                className={`flex items-start gap-3 rounded-lg p-4 ${
-                  alert.type === 'warning' 
-                    ? 'bg-destructive/10' 
-                    : 'bg-primary/10'
-                }`}
-              >
-                <AlertTriangle className={`h-5 w-5 shrink-0 ${
-                  alert.type === 'warning' 
-                    ? 'text-destructive' 
-                    : 'text-primary'
-                }`} />
-                <div>
-                  <p className="font-medium text-foreground">{alert.title}</p>
-                  <p className="text-sm text-muted-foreground">{alert.description}</p>
-                </div>
-              </div>
-            ))}
           </CardContent>
         </Card>
       </div>
 
       {/* Recent Donations */}
       <Card className="border-border bg-card">
-        <CardHeader>
-          <CardTitle className="text-foreground">Doações Recentes</CardTitle>
-          <CardDescription>Últimas doações disponíveis na plataforma</CardDescription>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <CardTitle className="text-foreground">Doações Recentes</CardTitle>
+            <CardDescription>Últimas doações disponíveis na plataforma</CardDescription>
+          </div>
+          <Button variant="outline" size="sm" asChild>
+            <Link href="/dashboard/doacoes">Ver todas</Link>
+          </Button>
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">

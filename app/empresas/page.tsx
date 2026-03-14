@@ -81,7 +81,7 @@ export default function EmpresasPage() {
                 Sua empresa pode fazer a diferença. Cadastre seus excedentes de alimentos e 
                 contribua diretamente para o combate à fome na sua cidade.
               </p>
-              <Button size="lg" asChild className="gap-2">
+              <Button size="lg" asChild className="gap-2 bg-accent text-accent-foreground hover:bg-accent/90">
                 <Link href="/cadastro?tipo=empresa">
                   Cadastrar minha empresa
                   <ArrowRight className="h-4 w-4" />

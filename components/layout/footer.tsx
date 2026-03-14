@@ -27,6 +27,9 @@ export function Footer() {
               <Link href="/como-funciona" className="text-sm text-muted-foreground hover:text-primary">
                 Como Funciona
               </Link>
+              <Link href="/ods2" className="text-sm text-muted-foreground hover:text-primary">
+                ODS 2 - Fome Zero
+              </Link>
               <Link href="/empresas" className="text-sm text-muted-foreground hover:text-primary">
                 Para Empresas
               </Link>
@@ -37,16 +40,19 @@ export function Footer() {
           </div>
 
           <div className="flex flex-col gap-4">
-            <h3 className="text-sm font-semibold text-foreground">Acesso</h3>
+            <h3 className="text-sm font-semibold text-foreground">Dados e Impacto</h3>
             <nav className="flex flex-col gap-2">
+              <Link href="/impacto" className="text-sm text-muted-foreground hover:text-primary">
+                Impacto Social
+              </Link>
+              <Link href="/transparencia" className="text-sm text-muted-foreground hover:text-primary">
+                Transparência
+              </Link>
+              <Link href="/mapa" className="text-sm text-muted-foreground hover:text-primary">
+                Mapa de Doações
+              </Link>
               <Link href="/login" className="text-sm text-muted-foreground hover:text-primary">
-                Entrar
-              </Link>
-              <Link href="/cadastro" className="text-sm text-muted-foreground hover:text-primary">
-                Cadastrar
-              </Link>
-              <Link href="/dashboard" className="text-sm text-muted-foreground hover:text-primary">
-                Dashboard
+                Entrar / Cadastrar
               </Link>
             </nav>
           </div>
