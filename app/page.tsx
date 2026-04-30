@@ -33,14 +33,15 @@ export default function HomePage() {
               <div>
                 <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-2 text-sm font-medium text-primary">
                   <Leaf className="h-4 w-4" />
-                  ODS 2 - Fome Zero e Agricultura Sustentável
+                  Alinhado à PNCPDA - Lei nº 15.224/2025
                 </div>
                 <h1 className="mb-6 text-4xl font-bold tracking-tight text-foreground md:text-5xl lg:text-6xl text-balance">
-                  Transformando excedentes em <span className="text-primary">esperança</span>
+                  Combate à perda e ao <span className="text-primary">desperdício</span> de alimentos
                 </h1>
                 <p className="mb-10 text-lg text-muted-foreground md:text-xl leading-relaxed text-pretty">
-                  Conectamos empresas com excedentes de alimentos a instituições que precisam. 
-                  Juntos, reduzimos o desperdício e combatemos a fome na nossa cidade.
+                  Plataforma alinhada à Política Nacional de Combate à Perda e ao Desperdício de
+                  Alimentos. Atuamos em toda a cadeia — da produção ao descarte — conectando empresas,
+                  instituições e poder público com rastreabilidade e transparência.
                 </p>
                 <div className="flex flex-col gap-4 sm:flex-row">
                   <Button size="lg" className="gap-2 bg-accent text-accent-foreground hover:bg-accent/90" asChild>
@@ -154,12 +155,12 @@ export default function HomePage() {
         <section className="bg-card py-20 md:py-28">
           <div className="container mx-auto px-4 md:px-6">
             <div className="mx-auto max-w-3xl text-center">
-              <h2 className="mb-6 text-3xl font-bold text-foreground md:text-4xl">
-                Nossa solução
-              </h2>
+              <h2 className="mb-6 text-3xl font-bold text-foreground md:text-4xl">Nossa solução</h2>
               <p className="mb-12 text-lg text-muted-foreground leading-relaxed">
-                O Fome Zero é uma plataforma que conecta empresas que possuem excedentes de alimentos 
-                com instituições carentes que precisam desses alimentos, de forma organizada e eficiente.
+                Mais que um app de doação, o Fome Zero é uma solução tecnológica alinhada a uma política
+                pública nacional. Atuamos em toda a cadeia alimentar — produção, distribuição, consumo e
+                descarte — promovendo redistribuição segura, monitoramento de dados e responsabilidade
+                compartilhada.
               </p>
             </div>
             

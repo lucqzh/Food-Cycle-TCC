@@ -21,7 +21,12 @@ import {
   Award,
   Medal,
   Star,
-  ArrowRight
+  ArrowRight,
+  Scale,
+  Heart,
+  Sprout,
+  Recycle,
+  ShieldCheck,
 } from "lucide-react"
 import { 
   BarChart, 
@@ -117,26 +122,53 @@ const alerts = [
 
 const companyBadges = [
   {
-    name: "Selo Diversidade Ouro",
-    description: "Empresa doa em 5+ categorias nutricionais",
+    name: "Selo Doador de Alimentos - Ouro",
+    description: "Empresa de alto desempenho na PNCPDA: regularidade, diversidade e rastreabilidade completa das doações.",
     icon: Award,
     color: "bg-yellow-500",
     companies: ["Supermercado Vida", "Hortifruti Verde"]
   },
   {
-    name: "Selo Diversidade Prata",
-    description: "Empresa doa em 3-4 categorias nutricionais",
+    name: "Selo Doador de Alimentos - Prata",
+    description: "Empresa em conformidade com a PNCPDA, com doações regulares e boa diversidade nutricional.",
     icon: Medal,
     color: "bg-gray-400",
     companies: ["Restaurante Sabor & Cia", "Padaria Pão Quente"]
   },
   {
-    name: "Selo Participação",
-    description: "Empresa participa ativamente das doações",
-    icon: Star,
+    name: "Selo Aderente PNCPDA",
+    description: "Empresa cadastrada e participando ativamente da Política Nacional de Combate à Perda e ao Desperdício.",
+    icon: ShieldCheck,
     color: "bg-primary",
     companies: ["Laticínios Sul", "Distribuidora Alimentos"]
   }
+]
+
+const destinacaoData = [
+  {
+    titulo: "Consumo humano",
+    valor: "1.080 kg",
+    percentual: 86,
+    icon: Heart,
+    color: "bg-primary text-primary-foreground",
+    badge: "Prioridade",
+  },
+  {
+    titulo: "Consumo animal",
+    valor: "120 kg",
+    percentual: 10,
+    icon: Sprout,
+    color: "bg-secondary text-secondary-foreground",
+    badge: "Segunda opção",
+  },
+  {
+    titulo: "Compostagem / Biomassa",
+    valor: "50 kg",
+    percentual: 4,
+    icon: Recycle,
+    color: "bg-accent text-accent-foreground",
+    badge: "Última opção",
+  },
 ]
 
 const recentDonations = [
@@ -156,8 +188,14 @@ export default function DashboardPage() {
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
+          <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
+            <Scale className="h-3.5 w-3.5" />
+            Monitoramento PNCPDA - Lei nº 15.224/2025
+          </div>
           <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
-          <p className="text-muted-foreground">Visão geral das doações e métricas nutricionais</p>
+          <p className="text-muted-foreground">
+            Visão geral das doações, métricas nutricionais e indicadores da política pública
+          </p>
         </div>
         <Button asChild className="gap-2 bg-accent text-accent-foreground hover:bg-accent/90">
           <Link href="/dashboard/doacoes">
@@ -191,6 +229,61 @@ export default function DashboardPage() {
           </Card>
         ))}
       </div>
+
+      {/* Hierarquia de destinação - PNCPDA */}
+      <Card className="border-border bg-card">
+        <CardHeader>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <CardTitle className="flex items-center gap-2 text-foreground">
+                <Scale className="h-5 w-5 text-primary" />
+                Hierarquia de destinação
+              </CardTitle>
+              <CardDescription>
+                Distribuição das doações conforme a ordem de prioridade da PNCPDA
+              </CardDescription>
+            </div>
+            <Button variant="outline" size="sm" asChild>
+              <Link href="/aspectos-legais">Ver legislação</Link>
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-4 md:grid-cols-3">
+            {destinacaoData.map((item) => (
+              <div
+                key={item.titulo}
+                className="rounded-xl border border-border bg-background p-5"
+              >
+                <div className="mb-4 flex items-start justify-between">
+                  <div
+                    className={`flex h-11 w-11 items-center justify-center rounded-xl ${item.color}`}
+                  >
+                    <item.icon className="h-5 w-5" />
+                  </div>
+                  <Badge variant="secondary" className="text-xs">
+                    {item.badge}
+                  </Badge>
+                </div>
+                <p className="text-sm font-medium text-muted-foreground">{item.titulo}</p>
+                <p className="mt-1 text-2xl font-bold text-foreground">{item.valor}</p>
+                <div className="mt-3">
+                  <div className="mb-1 flex items-center justify-between text-xs text-muted-foreground">
+                    <span>Participação</span>
+                    <span className="font-medium text-foreground">{item.percentual}%</span>
+                  </div>
+                  <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
+                    <div
+                      className="h-full rounded-full bg-primary transition-all"
+                      style={{ width: `${item.percentual}%` }}
+                    />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Diversity Index & Category Distribution */}
       <div className="grid gap-6 lg:grid-cols-2">
@@ -410,8 +503,11 @@ export default function DashboardPage() {
         {/* Company Badges / Incentive System */}
         <Card className="border-border bg-card">
           <CardHeader>
-            <CardTitle className="text-foreground">Sistema de Incentivo</CardTitle>
-            <CardDescription>Selos concedidos às empresas parceiras pela diversidade de doações</CardDescription>
+            <CardTitle className="text-foreground">Selos Doador de Alimentos</CardTitle>
+            <CardDescription>
+              Reconhecimento concedido a empresas que aderem à PNCPDA com regularidade, diversidade e
+              rastreabilidade
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">

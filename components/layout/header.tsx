@@ -9,7 +9,7 @@ const navLinks = [
   { href: "/", label: "Início" },
   { href: "/sobre", label: "Sobre" },
   { href: "/como-funciona", label: "Como Funciona" },
-  { href: "/ods2", label: "ODS 2" },
+  { href: "/aspectos-legais", label: "PNCPDA" },
   { href: "/empresas", label: "Empresas" },
   { href: "/instituicoes", label: "Instituições" },
 ]
