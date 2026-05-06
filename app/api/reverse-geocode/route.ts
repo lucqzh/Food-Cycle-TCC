@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import { reverseGeocode, MapboxServiceError } from "@/lib/mapbox"
+import { reverseGeocode, NominatimServiceError } from "@/lib/nominatim"
 import {
   checkRateLimit,
   getClientIdentifier,
@@ -10,7 +10,7 @@ export const runtime = "nodejs"
 
 /**
  * GET /api/reverse-geocode
- * Converte coordenadas geográficas em endereço
+ * Converte coordenadas geográficas em endereço usando OpenStreetMap/Nominatim
  *
  * Query params:
  *   - lat: number (obrigatório) - Latitude (-90 a 90)
@@ -19,11 +19,16 @@ export const runtime = "nodejs"
  * Resposta de sucesso (200):
  *   {
  *     "coordinates": { "lat": -23.5614, "lng": -46.6558 },
- *     "place_name": "Avenida Paulista, 1000, São Paulo, SP, Brasil",
- *     "context": {
- *       "neighborhood": "Bela Vista",
- *       "place": "São Paulo",
- *       "region": "São Paulo",
+ *     "place_name": "Avenida Paulista, 1000, Bela Vista, São Paulo, SP, 01310-100, Brasil",
+ *     "place_id": 12345,
+ *     "osm_id": 67890,
+ *     "address": {
+ *       "road": "Avenida Paulista",
+ *       "house_number": "1000",
+ *       "suburb": "Bela Vista",
+ *       "city": "São Paulo",
+ *       "state": "São Paulo",
+ *       "postcode": "01310-100",
  *       "country": "Brasil"
  *     }
  *   }
@@ -38,7 +43,7 @@ export async function GET(request: Request) {
   const responseHeaders = new Headers()
 
   try {
-    // Rate limiting
+    // Rate limiting - Nominatim requer max 1 req/segundo
     const clientId = getClientIdentifier(request)
     const rateLimitResult = checkRateLimit(clientId, {
       windowMs: 60 * 1000, // 1 minuto
@@ -110,8 +115,8 @@ export async function GET(request: Request) {
       headers: responseHeaders,
     })
   } catch (error) {
-    // Tratamento de erros do serviço Mapbox
-    if (error instanceof MapboxServiceError) {
+    // Tratamento de erros do serviço Nominatim
+    if (error instanceof NominatimServiceError) {
       return NextResponse.json(
         {
           error: error.name,
