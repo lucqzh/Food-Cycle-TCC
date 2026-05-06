@@ -1,8 +1,10 @@
 import Link from "next/link"
+import dynamic from "next/dynamic"
 import { Header } from "@/components/layout/header"
 import { Footer } from "@/components/layout/footer"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
+import { NearbyInstitutions } from "@/components/map/donation-map"
 import { 
   Package, 
   Search, 
@@ -12,8 +14,25 @@ import {
   Building2,
   Heart,
   Truck,
-  ArrowDown
+  ArrowDown,
+  MapPin
 } from "lucide-react"
+
+// Importar o mapa dinamicamente (client-side only)
+const DonationMap = dynamic(
+  () => import("@/components/map/donation-map").then((mod) => mod.DonationMap),
+  { 
+    ssr: false,
+    loading: () => (
+      <div className="flex items-center justify-center bg-muted rounded-xl" style={{ minHeight: "400px" }}>
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Carregando mapa...</p>
+        </div>
+      </div>
+    )
+  }
+)
 
 const steps = [
   {
@@ -212,6 +231,60 @@ export default function ComoFuncionaPage() {
                   <span className="font-semibold text-foreground">Instituição</span>
                   <span className="text-sm text-muted-foreground">Recebe alimentos</span>
                 </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Mapa de Doações */}
+        <section className="py-16 md:py-24">
+          <div className="container mx-auto px-4 md:px-6">
+            <div className="mx-auto max-w-6xl">
+              <div className="mb-12 text-center">
+                <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-2 text-sm font-medium text-primary">
+                  <MapPin className="h-4 w-4" />
+                  Mapa Interativo
+                </div>
+                <h2 className="mb-4 text-2xl font-bold text-foreground md:text-3xl">
+                  Encontre doações perto de você
+                </h2>
+                <p className="mx-auto max-w-2xl text-muted-foreground">
+                  Visualize empresas doadoras e instituições beneficiárias na sua região. 
+                  O mapa é atualizado em tempo real conforme novas doações são cadastradas.
+                </p>
+              </div>
+              
+              <DonationMap className="mb-8" />
+            </div>
+          </div>
+        </section>
+
+        {/* Instituições Próximas */}
+        <section className="bg-card py-16 md:py-24">
+          <div className="container mx-auto px-4 md:px-6">
+            <div className="mx-auto max-w-4xl">
+              <div className="mb-12 text-center">
+                <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-accent/10 px-4 py-2 text-sm font-medium text-accent">
+                  <Heart className="h-4 w-4" />
+                  Rede Solidária
+                </div>
+                <h2 className="mb-4 text-2xl font-bold text-foreground md:text-3xl">
+                  Instituições próximas de você
+                </h2>
+                <p className="mx-auto max-w-2xl text-muted-foreground">
+                  Conheça as instituições cadastradas na plataforma que estão recebendo doações 
+                  e fazendo a diferença na comunidade.
+                </p>
+              </div>
+              
+              <NearbyInstitutions />
+              
+              <div className="mt-8 text-center">
+                <Button variant="outline" size="lg" asChild>
+                  <Link href="/mapa">
+                    Ver todas as instituições
+                  </Link>
+                </Button>
               </div>
             </div>
           </div>
