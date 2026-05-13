@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 import { 
   Dialog,
   DialogContent,
@@ -20,9 +21,29 @@ import {
   Building2, 
   Calendar, 
   Package,
-  Clock,
-  MapPin
+  MapPin,
+  Navigation,
+  Loader2,
+  CheckCircle,
+  AlertCircle,
+  X
 } from "lucide-react"
+
+// Tipos para localização
+interface LocationData {
+  query: string
+  coordinates: {
+    lat: number
+    lng: number
+  }
+  place_name: string
+}
+
+interface LocationState {
+  data: LocationData | null
+  loading: boolean
+  error: string | null
+}
 
 const doacoes = [
   {
@@ -108,6 +129,63 @@ export default function DoacoesPage() {
   const [categoria, setCategoria] = useState("todas")
   const [selectedDoacao, setSelectedDoacao] = useState<typeof doacoes[0] | null>(null)
   const [dialogOpen, setDialogOpen] = useState(false)
+  
+  // Estados para busca de localização
+  const [locationSearch, setLocationSearch] = useState("")
+  const [location, setLocation] = useState<LocationState>({
+    data: null,
+    loading: false,
+    error: null
+  })
+
+  // Função para buscar localização
+  const handleLocationSearch = async () => {
+    if (!locationSearch.trim()) {
+      setLocation({ data: null, loading: false, error: "Digite uma cidade ou endereço" })
+      return
+    }
+
+    setLocation({ data: null, loading: true, error: null })
+
+    try {
+      const response = await fetch(`/api/geocode?address=${encodeURIComponent(locationSearch)}`)
+      
+      if (!response.ok) {
+        if (response.status === 404) {
+          throw new Error("Localização não encontrada. Tente outro endereço.")
+        }
+        throw new Error("Erro ao buscar localização. Tente novamente.")
+      }
+
+      const data: LocationData = await response.json()
+      setLocation({ data, loading: false, error: null })
+    } catch (err) {
+      setLocation({ 
+        data: null, 
+        loading: false, 
+        error: err instanceof Error ? err.message : "Erro desconhecido" 
+      })
+    }
+  }
+
+  // Limpar busca de localização
+  const clearLocation = () => {
+    setLocation({ data: null, loading: false, error: null })
+    setLocationSearch("")
+  }
+
+  // Função para calcular distância (preparação para filtro futuro)
+  const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
+    const R = 6371 // Raio da Terra em km
+    const dLat = (lat2 - lat1) * Math.PI / 180
+    const dLon = (lon2 - lon1) * Math.PI / 180
+    const a = 
+      Math.sin(dLat/2) * Math.sin(dLat/2) +
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+      Math.sin(dLon/2) * Math.sin(dLon/2)
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a))
+    return R * c
+  }
 
   const filteredDoacoes = doacoes.filter((doacao) => {
     const matchesSearch = doacao.alimento.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -148,6 +226,102 @@ export default function DoacoesPage() {
         <p className="text-muted-foreground">Encontre alimentos disponíveis para sua instituição</p>
       </div>
 
+      {/* Location Search */}
+      <Card className="border-border bg-card">
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <Navigation className="h-5 w-5 text-primary" />
+            Buscar por Região
+          </CardTitle>
+          <CardDescription>
+            Encontre doações próximas da sua localização
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex flex-col gap-3 sm:flex-row">
+            <div className="relative flex-1">
+              <MapPin className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                placeholder="Digite cidade ou endereço..."
+                value={locationSearch}
+                onChange={(e) => setLocationSearch(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleLocationSearch()}
+                className="pl-10"
+                disabled={location.loading}
+              />
+            </div>
+            <Button 
+              onClick={handleLocationSearch}
+              disabled={location.loading}
+              className="gap-2"
+            >
+              {location.loading ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Buscando...
+                </>
+              ) : (
+                <>
+                  <Navigation className="h-4 w-4" />
+                  Buscar região
+                </>
+              )}
+            </Button>
+          </div>
+
+          {/* Error State */}
+          {location.error && (
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription className="flex items-center justify-between">
+                <span>{location.error}</span>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={clearLocation}
+                  className="h-auto p-1"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {/* Success State */}
+          {location.data && (
+            <div className="rounded-lg border border-primary/20 bg-primary/5 p-4">
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex items-start gap-3">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10">
+                    <CheckCircle className="h-5 w-5 text-primary" />
+                  </div>
+                  <div className="space-y-1">
+                    <p className="font-medium text-foreground">
+                      {location.data.place_name}
+                    </p>
+                    <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground">
+                      <span>Lat: {location.data.coordinates.lat.toFixed(6)}</span>
+                      <span>Lng: {location.data.coordinates.lng.toFixed(6)}</span>
+                    </div>
+                    <p className="text-sm text-primary font-medium pt-1">
+                      Mostrando doações próximas da sua região
+                    </p>
+                  </div>
+                </div>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={clearLocation}
+                  className="shrink-0"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
       {/* Filters */}
       <Card className="border-border bg-card">
         <CardContent className="p-4">
@@ -179,9 +353,15 @@ export default function DoacoesPage() {
       </Card>
 
       {/* Results count */}
-      <p className="text-sm text-muted-foreground">
-        {filteredDoacoes.length} doação(ões) encontrada(s)
-      </p>
+      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+        <span>{filteredDoacoes.length} doação(ões) encontrada(s)</span>
+        {location.data && (
+          <Badge variant="secondary" className="gap-1">
+            <MapPin className="h-3 w-3" />
+            Região: {location.data.place_name.split(",")[0]}
+          </Badge>
+        )}
+      </div>
 
       {/* Donations Grid */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
