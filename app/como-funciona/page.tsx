@@ -1,9 +1,9 @@
 import Link from "next/link"
-import { DonationMapDynamic } from "@/components/map/donation-map-dynamic"
+import { Header } from "@/components/layout/header"
 import { Footer } from "@/components/layout/footer"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { NearbyInstitutions } from "@/components/map/donation-map"
+import { DonationMap, NearbyInstitutions } from "@/components/map/donation-map"
 import {
   Package,
   Search,
@@ -14,7 +14,7 @@ import {
   Heart,
   Truck,
   ArrowDown,
-  MapPin
+  MapPin,
 } from "lucide-react"
 
 const steps = [
