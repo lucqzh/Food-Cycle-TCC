@@ -1,15 +1,14 @@
 import Link from "next/link"
-import dynamic from "next/dynamic"
-import { Header } from "@/components/layout/header"
+import { DonationMapDynamic } from "@/components/map/donation-map-dynamic"
 import { Footer } from "@/components/layout/footer"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { NearbyInstitutions } from "@/components/map/donation-map"
-import { 
-  Package, 
-  Search, 
-  HandHeart, 
-  CheckCircle, 
+import {
+  Package,
+  Search,
+  HandHeart,
+  CheckCircle,
   ClipboardList,
   Building2,
   Heart,
@@ -17,22 +16,6 @@ import {
   ArrowDown,
   MapPin
 } from "lucide-react"
-
-// Importar o mapa dinamicamente (client-side only)
-const DonationMap = dynamic(
-  () => import("@/components/map/donation-map").then((mod) => mod.DonationMap),
-  { 
-    ssr: false,
-    loading: () => (
-      <div className="flex items-center justify-center bg-muted rounded-xl" style={{ minHeight: "400px" }}>
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Carregando mapa...</p>
-        </div>
-      </div>
-    )
-  }
-)
 
 const steps = [
   {
@@ -119,7 +102,7 @@ export default function ComoFuncionaPage() {
   return (
     <div className="flex min-h-screen flex-col">
       <Header />
-      
+
       <main className="flex-1">
         {/* Hero Section */}
         <section className="bg-card py-16 md:py-24">
@@ -129,7 +112,7 @@ export default function ComoFuncionaPage() {
                 Como Funciona
               </h1>
               <p className="text-lg text-muted-foreground md:text-xl leading-relaxed">
-                Conheça o processo completo de redistribuição de alimentos através da nossa plataforma. 
+                Conheça o processo completo de redistribuição de alimentos através da nossa plataforma.
                 Um sistema simples, eficiente e transparente em 6 etapas.
               </p>
             </div>
@@ -154,7 +137,7 @@ export default function ComoFuncionaPage() {
                             {item.step.toString().padStart(2, '0')}
                           </span>
                         </div>
-                        
+
                         {/* Content */}
                         <h2 className="mb-3 text-lg font-semibold text-foreground">
                           {item.title}
@@ -162,7 +145,7 @@ export default function ComoFuncionaPage() {
                         <p className="mb-4 text-sm text-muted-foreground leading-relaxed">
                           {item.description}
                         </p>
-                        
+
                         {/* Details */}
                         <div className="space-y-2">
                           {item.details.map((detail, i) => (
@@ -174,7 +157,7 @@ export default function ComoFuncionaPage() {
                         </div>
                       </CardContent>
                     </Card>
-                    
+
                     {/* Arrow connector for mobile */}
                     {index < steps.length - 1 && (
                       <div className="flex justify-center py-4 md:hidden">
@@ -195,7 +178,7 @@ export default function ComoFuncionaPage() {
               <h2 className="mb-12 text-center text-2xl font-bold text-foreground md:text-3xl">
                 Fluxo Simplificado
               </h2>
-              
+
               <div className="flex flex-col items-center gap-4 md:flex-row md:justify-between">
                 {/* Empresa */}
                 <div className="flex flex-col items-center text-center">
@@ -205,11 +188,11 @@ export default function ComoFuncionaPage() {
                   <span className="font-semibold text-foreground">Empresa</span>
                   <span className="text-sm text-muted-foreground">Cadastra alimentos</span>
                 </div>
-                
+
                 {/* Arrow */}
                 <div className="hidden h-1 flex-1 bg-gradient-to-r from-primary to-secondary md:block" />
                 <ArrowDown className="h-8 w-8 text-primary md:hidden" />
-                
+
                 {/* Plataforma */}
                 <div className="flex flex-col items-center text-center">
                   <div className="mb-3 flex h-20 w-20 items-center justify-center rounded-2xl bg-accent text-accent-foreground">
@@ -218,11 +201,11 @@ export default function ComoFuncionaPage() {
                   <span className="font-semibold text-foreground">Plataforma</span>
                   <span className="text-sm text-muted-foreground">Conecta e organiza</span>
                 </div>
-                
+
                 {/* Arrow */}
                 <div className="hidden h-1 flex-1 bg-gradient-to-r from-secondary to-primary md:block" />
                 <ArrowDown className="h-8 w-8 text-secondary md:hidden" />
-                
+
                 {/* Instituição */}
                 <div className="flex flex-col items-center text-center">
                   <div className="mb-3 flex h-20 w-20 items-center justify-center rounded-2xl bg-secondary text-secondary-foreground">
@@ -249,11 +232,11 @@ export default function ComoFuncionaPage() {
                   Encontre doações perto de você
                 </h2>
                 <p className="mx-auto max-w-2xl text-muted-foreground">
-                  Visualize empresas doadoras e instituições beneficiárias na sua região. 
+                  Visualize empresas doadoras e instituições beneficiárias na sua região.
                   O mapa é atualizado em tempo real conforme novas doações são cadastradas.
                 </p>
               </div>
-              
+
               <DonationMap className="mb-8" />
             </div>
           </div>
@@ -272,13 +255,13 @@ export default function ComoFuncionaPage() {
                   Instituições próximas de você
                 </h2>
                 <p className="mx-auto max-w-2xl text-muted-foreground">
-                  Conheça as instituições cadastradas na plataforma que estão recebendo doações 
+                  Conheça as instituições cadastradas na plataforma que estão recebendo doações
                   e fazendo a diferença na comunidade.
                 </p>
               </div>
-              
+
               <NearbyInstitutions />
-              
+
               <div className="mt-8 text-center">
                 <Button variant="outline" size="lg" asChild>
                   <Link href="/mapa">
@@ -318,7 +301,7 @@ export default function ComoFuncionaPage() {
           </div>
         </section>
       </main>
-      
+
       <Footer />
     </div>
   )
