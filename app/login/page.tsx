@@ -8,11 +8,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Leaf, Eye, EyeOff } from "lucide-react"
+import { createClient } from "@/lib/supabase/client"
 
 export default function LoginPage() {
   const router = useRouter()
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const [formData, setFormData] = useState({
     email: "",
     password: ""
@@ -21,12 +23,26 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
-    
-    // Simula login - em produção, fazer chamada API
-    setTimeout(() => {
+    setError(null)
+
+    const supabase = createClient()
+    const { error } = await supabase.auth.signInWithPassword({
+      email: formData.email,
+      password: formData.password,
+    })
+
+    if (error) {
       setIsLoading(false)
-      router.push("/dashboard")
-    }, 1000)
+      setError(
+        error.message === "Invalid login credentials"
+          ? "Email ou senha incorretos."
+          : error.message,
+      )
+      return
+    }
+
+    router.push("/dashboard")
+    router.refresh()
   }
 
   return (
@@ -96,6 +112,12 @@ export default function LoginPage() {
                     </button>
                   </div>
                 </div>
+
+                {error && (
+                  <p className="text-sm text-destructive" role="alert">
+                    {error}
+                  </p>
+                )}
 
                 <Button type="submit" className="w-full bg-accent text-accent-foreground hover:bg-accent/90" disabled={isLoading}>
                   {isLoading ? "Entrando..." : "Entrar"}

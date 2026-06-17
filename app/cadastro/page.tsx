@@ -9,12 +9,15 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Leaf, Eye, EyeOff, Building2, Heart } from "lucide-react"
+import { createClient } from "@/lib/supabase/client"
 
 export default function CadastroPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState(false)
   const [formData, setFormData] = useState({
     nome: "",
     email: "",
@@ -32,19 +35,46 @@ export default function CadastroPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+    setError(null)
+
     if (formData.password !== formData.confirmPassword) {
-      alert("As senhas não coincidem!")
+      setError("As senhas não coincidem!")
       return
     }
-    
+
     setIsLoading(true)
-    
-    // Simula cadastro - em produção, fazer chamada API
-    setTimeout(() => {
-      setIsLoading(false)
+
+    const supabase = createClient()
+    const { data, error } = await supabase.auth.signUp({
+      email: formData.email,
+      password: formData.password,
+      options: {
+        emailRedirectTo:
+          process.env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL ??
+          `${window.location.origin}/auth/callback`,
+        data: {
+          nome: formData.nome,
+          tipo: formData.tipo,
+        },
+      },
+    })
+
+    setIsLoading(false)
+
+    if (error) {
+      setError(error.message)
+      return
+    }
+
+    // Se a sessão já existe (confirmação de email desativada), vai direto ao dashboard.
+    if (data.session) {
       router.push("/dashboard")
-    }, 1000)
+      router.refresh()
+      return
+    }
+
+    // Caso contrário, é necessário confirmar o email.
+    setSuccess(true)
   }
 
   return (
@@ -86,6 +116,18 @@ export default function CadastroPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
+              {success ? (
+                <div className="space-y-4 text-center">
+                  <p className="text-sm text-muted-foreground">
+                    Enviamos um link de confirmação para{" "}
+                    <span className="font-medium text-foreground">{formData.email}</span>.
+                    Confirme seu email para acessar o sistema.
+                  </p>
+                  <Button asChild className="w-full bg-accent text-accent-foreground hover:bg-accent/90">
+                    <Link href="/login">Ir para o login</Link>
+                  </Button>
+                </div>
+              ) : (
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="nome">Nome completo</Label>
@@ -188,10 +230,17 @@ export default function CadastroPage() {
                   </RadioGroup>
                 </div>
 
+                {error && (
+                  <p className="text-sm text-destructive" role="alert">
+                    {error}
+                  </p>
+                )}
+
                 <Button type="submit" className="w-full bg-accent text-accent-foreground hover:bg-accent/90" disabled={isLoading}>
                   {isLoading ? "Cadastrando..." : "Criar conta"}
                 </Button>
               </form>
+              )}
 
               <div className="mt-6 text-center text-sm text-muted-foreground">
                 Já tem uma conta?{" "}
