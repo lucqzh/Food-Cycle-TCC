@@ -12,7 +12,7 @@ import { Leaf, Eye, EyeOff, Building2, Heart } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 
 export default function CadastroPage() {
-  const router = useRouter(
+  const router = useRouter()
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -26,17 +26,17 @@ export default function CadastroPage() {
   })
 
   useEffect(() => {
-  const params = new URLSearchParams(window.location.search)
+    const params = new URLSearchParams(window.location.search)
 
-  const tipo = params.get("tipo")
+    const tipo = params.get("tipo")
 
-  if (tipo === "empresa" || tipo === "instituicao") {
-    setFormData(prev => ({
-      ...prev,
-      tipo
-    }))
-  }
-}, [])
+    if (tipo === "empresa" || tipo === "instituicao") {
+      setFormData(prev => ({
+        ...prev,
+        tipo
+      }))
+    }
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
