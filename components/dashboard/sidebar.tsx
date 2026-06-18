@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { 
   LayoutDashboard, 
@@ -16,7 +16,8 @@ import {
   X
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { useState } from "react"
+import { useEffect, useState } from "react"
+import { createClient } from "@/lib/supabase/client"
 
 const menuItems = [
   {
@@ -53,7 +54,35 @@ const menuItems = [
 
 export function DashboardSidebar() {
   const pathname = usePathname()
+  const router = useRouter()
   const [mobileOpen, setMobileOpen] = useState(false)
+  const [profile, setProfile] = useState<{ nome: string; email: string }>({
+    nome: "Usuário",
+    email: "",
+  })
+
+  useEffect(() => {
+    const supabase = createClient()
+    supabase.auth.getUser().then(async ({ data: { user } }) => {
+      if (!user) return
+      const { data } = await supabase
+        .from("profiles")
+        .select("nome")
+        .eq("id", user.id)
+        .single()
+      setProfile({
+        nome: data?.nome || user.email?.split("@")[0] || "Usuário",
+        email: user.email || "",
+      })
+    })
+  }, [])
+
+  const handleLogout = async () => {
+    const supabase = createClient()
+    await supabase.auth.signOut()
+    router.push("/login")
+    router.refresh()
+  }
 
   return (
     <>
@@ -124,18 +153,16 @@ export function DashboardSidebar() {
         <div className="border-t border-sidebar-border p-4">
           <div className="mb-3 flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-sidebar-accent text-sidebar-accent-foreground">
-              <span className="text-sm font-medium">U</span>
+              <span className="text-sm font-medium">{profile.nome.charAt(0).toUpperCase()}</span>
             </div>
             <div className="flex-1 overflow-hidden">
-              <p className="truncate text-sm font-medium text-sidebar-foreground">Usuário</p>
-              <p className="truncate text-xs text-sidebar-foreground/60">usuario@email.com</p>
+              <p className="truncate text-sm font-medium text-sidebar-foreground">{profile.nome}</p>
+              <p className="truncate text-xs text-sidebar-foreground/60">{profile.email}</p>
             </div>
           </div>
-          <Button variant="outline" size="sm" className="w-full gap-2" asChild>
-            <Link href="/">
-              <LogOut className="h-4 w-4" />
-              Sair
-            </Link>
+          <Button variant="outline" size="sm" className="w-full gap-2" onClick={handleLogout}>
+            <LogOut className="h-4 w-4" />
+            Sair
           </Button>
         </div>
       </aside>
