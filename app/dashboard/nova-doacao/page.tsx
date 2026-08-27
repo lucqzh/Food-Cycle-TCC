@@ -2,6 +2,8 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
+import { createClient } from "@/lib/supabase/client"
+import { toast } from "sonner"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -72,17 +74,34 @@ export default function NovaDoacaoPage() {
     destinacao: "humano",
     microcoleta: false,
     termoConfirmacao: false,
+    instituicao: "",
   })
+  const [error, setError] = useState<string | null>(null)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!formData.termoConfirmacao) return
     setIsLoading(true)
-
-    setTimeout(() => {
+    setError(null)
+    const supabase = createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+      setError("Sua sessão expirou. Entre novamente para publicar.")
       setIsLoading(false)
-      router.push("/dashboard/doacoes")
-    }, 1000)
+      return
+    }
+    const { data: profile } = await supabase.from("profiles").select("nome").eq("id", user.id).maybeSingle()
+    const { error: insertError } = await supabase.from("doacoes").insert({
+      alimento: formData.nome.trim(), quantidade: Number(formData.quantidade), categoria: formData.categoria,
+      empresa: profile?.nome || user.email || "Doador", instituicao: formData.instituicao.trim() || null,
+    })
+    if (insertError) {
+      setError("Não foi possível publicar a doação. Verifique os dados e tente novamente.")
+      setIsLoading(false)
+      return
+    }
+    toast.success("Doação publicada com sucesso")
+    router.push("/dashboard/doacoes")
   }
 
   return (
@@ -232,6 +251,12 @@ export default function NovaDoacaoPage() {
                     </Select>
                   </div>
 
+                  {/* Instituição destinatária */}
+                  <div className="space-y-2 md:col-span-2">
+                    <Label htmlFor="instituicao">Instituição destinatária</Label>
+                    <Input id="instituicao" placeholder="Ex: Banco de Alimentos Municipal" value={formData.instituicao} onChange={(e) => setFormData({ ...formData, instituicao: e.target.value })} />
+                  </div>
+
                   {/* Descrição */}
                   <div className="space-y-2 md:col-span-2">
                     <Label htmlFor="descricao">Descrição adicional</Label>
@@ -340,6 +365,8 @@ export default function NovaDoacaoPage() {
                     </label>
                   </div>
                 </div>
+
+                {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
 
                 {/* Actions */}
                 <div className="flex flex-col gap-3 sm:flex-row sm:justify-end">

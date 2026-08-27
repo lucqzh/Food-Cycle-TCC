@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
+import { useDonationMetrics } from "@/lib/donation-metrics"
 import { 
   Package, 
   TrendingUp, 
@@ -179,6 +180,12 @@ const recentDonations = [
 ]
 
 export default function DashboardPage() {
+  const { metrics } = useDonationMetrics()
+  const liveStatsCards = [
+    { ...statsCards[0], value: `${metrics.totalKg.toLocaleString("pt-BR")} kg`, trend: `${metrics.donationCount} registros` },
+    { ...statsCards[1], value: String(metrics.donationCount), trend: "Realtime" },
+    { ...statsCards[2], value: String(new Set(metrics.donations.map((d) => d.instituicao).filter(Boolean)).size), trend: "Destinatários" },
+  ]
   // Calculate diversity index
   const diversityIndex = 7.8
   const diversityStatus = diversityIndex >= 7 ? "Boa" : diversityIndex >= 5 ? "Moderada" : "Baixa"
@@ -207,7 +214,7 @@ export default function DashboardPage() {
 
       {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-3">
-        {statsCards.map((stat) => (
+        {liveStatsCards.map((stat) => (
           <Card key={stat.title} className="border-border bg-card">
             <CardContent className="p-6">
               <div className="flex items-start justify-between">

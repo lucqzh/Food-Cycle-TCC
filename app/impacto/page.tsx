@@ -1,6 +1,9 @@
+"use client"
+
 import Link from "next/link"
 import { Header } from "@/components/layout/header"
 import { Footer } from "@/components/layout/footer"
+import { useDonationMetrics } from "@/lib/donation-metrics"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { 
@@ -70,7 +73,8 @@ const categoryData = [
 ]
 
 export default function ImpactoPage() {
-  const maxKg = Math.max(...monthlyData.map(d => d.kg))
+  const { metrics } = useDonationMetrics()
+  const maxKg = Math.max(...metrics.monthly.map((d) => d.value), 1)
   
   return (
     <div className="flex min-h-screen flex-col">
@@ -136,18 +140,18 @@ export default function ImpactoPage() {
                   </CardHeader>
                   <CardContent>
                     <div className="flex h-64 items-end gap-3">
-                      {monthlyData.map((data, index) => (
+                      {metrics.monthly.map((data, index) => (
                         <div key={index} className="flex flex-1 flex-col items-center gap-2">
                           <div 
                             className="w-full rounded-t-lg bg-primary transition-all hover:bg-primary/80"
-                            style={{ height: `${(data.kg / maxKg) * 200}px` }}
+                            style={{ height: `${(data.value / maxKg) * 200}px` }}
                           />
                           <span className="text-xs font-medium text-muted-foreground">{data.month}</span>
                         </div>
                       ))}
                     </div>
                     <div className="mt-4 flex items-center justify-between text-sm text-muted-foreground">
-                      <span>Total no período: 6.500 kg</span>
+                      <span>Total no período: {metrics.totalKg.toLocaleString("pt-BR")} kg</span>
                       <span className="flex items-center gap-1 text-primary">
                         <TrendingUp className="h-4 w-4" />
                         +12% vs período anterior
