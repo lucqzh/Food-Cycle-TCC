@@ -1,5 +1,7 @@
 "use client"
-
+import { useEffect } from "react"
+import { useRouter } from "next/navigation"
+import { createClient } from "@/lib/supabase/client"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -179,6 +181,30 @@ const recentDonations = [
 ]
 
 export default function DashboardPage() {
+   const router = useRouter()
+
+  useEffect(() => {
+    const supabase = createClient()
+    async function verificarCadastro() {
+      const { data } = await supabase.auth.getUser()
+      if (!data.user) return
+      const uid = data.user.id
+
+      const [e, i, m] = await Promise.all([
+        supabase.from("empresas").select("id").eq("perfil_id", uid).maybeSingle(),
+        supabase.from("instituicoes").select("id").eq("perfil_id", uid).maybeSingle(),
+        supabase.from("intermediarios").select("id").eq("perfil_id", uid).maybeSingle(),
+      ])
+
+      // Se deu erro na consulta, não redireciona (evita mandar o usuário pra lugar errado)
+      if (e.error || i.error || m.error) return
+
+      if (!e.data && !i.data && !m.data) {
+        router.replace("/completar-cadastro")
+      }
+    }
+    verificarCadastro()
+  }, [router])
   // Calculate diversity index
   const diversityIndex = 7.8
   const diversityStatus = diversityIndex >= 7 ? "Boa" : diversityIndex >= 5 ? "Moderada" : "Baixa"
