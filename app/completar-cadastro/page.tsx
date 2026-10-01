@@ -42,6 +42,15 @@ function Campo({ rotulo, children }: { rotulo: string; children: React.ReactNode
   )
 }
 
+function formatarCnpj(v: string) {
+  const n = v.replace(/\D/g, "").slice(0, 14)
+  return n
+    .replace(/^(\d{2})(\d)/, "$1.$2")
+    .replace(/^(\d{2})\.(\d{3})(\d)/, "$1.$2.$3")
+    .replace(/\.(\d{3})(\d)/, ".$1/$2")
+    .replace(/(\d{4})(\d)/, "$1-$2")
+}
+
 export default function CompletarCadastroPage() {
   const router = useRouter()
   const [carregando, setCarregando] = useState(true)
@@ -192,7 +201,14 @@ export default function CompletarCadastroPage() {
                   <input className={campo} value={f.razao_social || ""} onChange={set("razao_social")} />
                 </Campo>
                 <Campo rotulo={tipo === "instituicao" ? "CNPJ (opcional)" : "CNPJ *"}>
-                  <input className={campo} value={f.cnpj || ""} onChange={set("cnpj")} placeholder="00.000.000/0000-00" />
+                 <input
+  className={campo}
+  value={f.cnpj || ""}
+  onChange={(e) => setF((a) => ({ ...a, cnpj: formatarCnpj(e.target.value) }))}
+  placeholder="00.000.000/0000-00"
+  maxLength={18}
+  inputMode="numeric"
+/>
                 </Campo>
 
                 {tipo === "empresa" && (
