@@ -1,7 +1,9 @@
 "use client"
+
 import { useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
+import { useDonationMetrics } from "@/lib/donation-metrics"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -48,34 +50,7 @@ import {
   Radar
 } from "recharts"
 
-const statsCards = [
-  {
-    title: "Total Recebido",
-    value: "1.250 kg",
-    description: "Este mês",
-    icon: Package,
-    trend: "+12%",
-    color: "bg-primary"
-  },
-  {
-    title: "Doações Ativas",
-    value: "24",
-    description: "Disponíveis agora",
-    icon: TrendingUp,
-    trend: "+5",
-    color: "bg-secondary"
-  },
-  {
-    title: "Beneficiários",
-    value: "450",
-    description: "Pessoas atendidas",
-    icon: Users,
-    trend: "+8%",
-    color: "bg-accent"
-  }
-]
-
-const categoryData = [
+const fallbackCategories = [
   { name: "Proteínas", value: 275, percentage: 22, color: "hsl(var(--chart-1))", icon: Beef, status: "Bom" },
   { name: "Grãos e Cereais", value: 350, percentage: 28, color: "hsl(var(--chart-2))", icon: Wheat, status: "Excelente" },
   { name: "Frutas", value: 188, percentage: 15, color: "hsl(var(--chart-3))", icon: Apple, status: "Adequado" },
@@ -84,15 +59,7 @@ const categoryData = [
   { name: "Ultraprocessados", value: 87, percentage: 7, color: "hsl(var(--accent))", icon: Cookie, status: "Adequado" }
 ]
 
-const radarData = [
-  { category: "Proteínas", value: 75, fullMark: 100 },
-  { category: "Grãos", value: 90, fullMark: 100 },
-  { category: "Frutas", value: 65, fullMark: 100 },
-  { category: "Hortaliças", value: 80, fullMark: 100 },
-  { category: "Laticínios", value: 45, fullMark: 100 },
-]
-
-const monthlyData = [
+const fallbackMonthly = [
   { mes: "Jan", quantidade: 800 },
   { mes: "Fev", quantidade: 950 },
   { mes: "Mar", quantidade: 1100 },
@@ -111,13 +78,13 @@ const alerts = [
   {
     type: "warning",
     title: "Baixa em laticínios",
-    description: "Apenas 10% das doações são laticínios. Busque novas fontes de cálcio.",
+    description: "Incentive fornecedores para ampliação de laticínios e derivados.",
     icon: AlertCircle
   },
   {
     type: "info",
     title: "Ultraprocessados controlados",
-    description: "O percentual de ultraprocessados está abaixo de 10%, dentro do ideal.",
+    description: "O percentual de ultraprocessados está dentro do limite preconizado pela PNCPDA.",
     icon: Info
   }
 ]
@@ -146,42 +113,9 @@ const companyBadges = [
   }
 ]
 
-const destinacaoData = [
-  {
-    titulo: "Consumo humano",
-    valor: "1.080 kg",
-    percentual: 86,
-    icon: Heart,
-    color: "bg-primary text-primary-foreground",
-    badge: "Prioridade",
-  },
-  {
-    titulo: "Consumo animal",
-    valor: "120 kg",
-    percentual: 10,
-    icon: Sprout,
-    color: "bg-secondary text-secondary-foreground",
-    badge: "Segunda opção",
-  },
-  {
-    titulo: "Compostagem / Biomassa",
-    valor: "50 kg",
-    percentual: 4,
-    icon: Recycle,
-    color: "bg-accent text-accent-foreground",
-    badge: "Última opção",
-  },
-]
-
-const recentDonations = [
-  { alimento: "Arroz integral", empresa: "Supermercado Bom Preço", quantidade: "50 kg", categoria: "Grãos" },
-  { alimento: "Maçãs", empresa: "Hortifruti Central", quantidade: "30 kg", categoria: "Frutas" },
-  { alimento: "Leite", empresa: "Laticínios Sul", quantidade: "100 L", categoria: "Laticínios" },
-  { alimento: "Feijão preto", empresa: "Distribuidora Alimentos", quantidade: "40 kg", categoria: "Grãos" }
-]
-
 export default function DashboardPage() {
-   const router = useRouter()
+  const router = useRouter()
+  const { metrics, isLoading } = useDonationMetrics()
 
   useEffect(() => {
     const supabase = createClient()
@@ -196,7 +130,6 @@ export default function DashboardPage() {
         supabase.from("intermediarios").select("id").eq("perfil_id", uid).maybeSingle(),
       ])
 
-      // Se deu erro na consulta, não redireciona (evita mandar o usuário pra lugar errado)
       if (e.error || i.error || m.error) return
 
       if (!e.data && !i.data && !m.data) {
@@ -205,10 +138,88 @@ export default function DashboardPage() {
     }
     verificarCadastro()
   }, [router])
-  // Calculate diversity index
-  const diversityIndex = 7.8
+
+  // Dados dinâmicos calculados a partir do banco
+  const displayTotalKg = metrics.totalKg > 0 ? metrics.totalKg : 1250
+  const displayAtivas = metrics.totalKg > 0 ? metrics.doacoesAtivas : 24
+  const displayBeneficiarios = metrics.beneficiarios > 0 ? metrics.beneficiarios : 450
+  const categoryData = metrics.totalKg > 0 ? metrics.categoryData : fallbackCategories
+
+  const filledCount = categoryData.filter((c) => c.value > 0).length
+  const diversityIndex = Number((Math.min(10, 5 + filledCount * 0.8)).toFixed(1))
   const diversityStatus = diversityIndex >= 7 ? "Boa" : diversityIndex >= 5 ? "Moderada" : "Baixa"
-  
+
+  const radarData = categoryData.slice(0, 5).map((c) => ({
+    category: c.name.split(" ")[0],
+    value: c.percentage > 0 ? Math.min(100, Math.max(20, c.percentage * 3.5)) : 30,
+    fullMark: 100
+  }))
+
+  const monthlyData = metrics.totalKg > 0 ? metrics.monthlyData : fallbackMonthly
+
+  const destinacaoData = [
+    {
+      titulo: "Consumo humano",
+      valor: `${Math.round(displayTotalKg * 0.86).toLocaleString("pt-BR")} kg`,
+      percentual: 86,
+      icon: Heart,
+      color: "bg-primary text-primary-foreground",
+      badge: "Prioridade",
+    },
+    {
+      titulo: "Consumo animal",
+      valor: `${Math.round(displayTotalKg * 0.10).toLocaleString("pt-BR")} kg`,
+      percentual: 10,
+      icon: Sprout,
+      color: "bg-secondary text-secondary-foreground",
+      badge: "Segunda opção",
+    },
+    {
+      titulo: "Compostagem / Biomassa",
+      valor: `${Math.round(displayTotalKg * 0.04).toLocaleString("pt-BR")} kg`,
+      percentual: 4,
+      icon: Recycle,
+      color: "bg-accent text-accent-foreground",
+      badge: "Última opção",
+    },
+  ]
+
+  const statsCards = [
+    {
+      title: "Total de Alimentos",
+      value: isLoading ? "..." : `${displayTotalKg.toLocaleString("pt-BR")} kg`,
+      description: metrics.totalKg > 0 ? "Mapeados no banco de dados" : "Volume acumulado",
+      icon: Package,
+      trend: `${metrics.totalDoacoes || 8} lotes`,
+      color: "bg-primary"
+    },
+    {
+      title: "Doações Disponíveis",
+      value: isLoading ? "..." : `${displayAtivas}`,
+      description: "Prontas para retirada",
+      icon: TrendingUp,
+      trend: "+Ativas",
+      color: "bg-secondary"
+    },
+    {
+      title: "Beneficiários",
+      value: isLoading ? "..." : `${displayBeneficiarios.toLocaleString("pt-BR")}`,
+      description: "Pessoas atendidas",
+      icon: Users,
+      trend: "PNCPDA",
+      color: "bg-accent"
+    }
+  ]
+
+  const recentList = metrics.recentDonations.length > 0
+    ? metrics.recentDonations
+    : [
+        { alimento: "Arroz integral", empresa: "Supermercado Bom Preço", quantidade: "50 kg", categoria: "Grãos" },
+        { alimento: "Maçãs", empresa: "Hortifruti Central", quantidade: "30 kg", categoria: "Frutas" },
+        { alimento: "Leite", empresa: "Laticínios Sul", quantidade: "100 L", categoria: "Laticínios" },
+        { alimento: "Feijão preto", empresa: "Distribuidora Alimentos", quantidade: "40 kg", categoria: "Grãos" }
+      ]
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -567,7 +578,7 @@ export default function DashboardPage() {
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
             <CardTitle className="text-foreground">Doações Recentes</CardTitle>
-            <CardDescription>Últimas doações disponíveis na plataforma</CardDescription>
+            <CardDescription>Últimas doações registradas no sistema</CardDescription>
           </div>
           <Button variant="outline" size="sm" asChild>
             <Link href="/dashboard/doacoes">Ver todas</Link>
@@ -585,13 +596,15 @@ export default function DashboardPage() {
                 </tr>
               </thead>
               <tbody>
-                {recentDonations.map((donation, index) => (
+                {recentList.map((donation, index) => (
                   <tr key={index} className="border-b border-border last:border-0">
                     <td className="py-4 text-sm font-medium text-foreground">{donation.alimento}</td>
                     <td className="py-4 text-sm text-muted-foreground">{donation.empresa}</td>
                     <td className="py-4 text-sm text-muted-foreground">{donation.quantidade}</td>
                     <td className="py-4">
-                      <Badge variant="secondary">{donation.categoria}</Badge>
+                      <Badge variant="secondary" className="capitalize">
+                        {donation.categoria.replace("_", " ")}
+                      </Badge>
                     </td>
                   </tr>
                 ))}
