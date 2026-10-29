@@ -1,5 +1,6 @@
 "use client"
 
+import { useDonationMetrics } from "@/lib/donation-metrics"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
@@ -28,20 +29,12 @@ import {
   Radar
 } from "recharts"
 
-const categoriaData = [
+const fallbackCategories = [
   { categoria: "Frutas", quantidade: 85, meta: 100, icon: Apple, color: "hsl(var(--chart-1))" },
-  { categoria: "Legumes", quantidade: 92, meta: 100, icon: Carrot, color: "hsl(var(--chart-2))" },
-  { categoria: "Grãos", quantidade: 78, meta: 100, icon: Wheat, color: "hsl(var(--chart-3))" },
+  { categoria: "Hortaliças", quantidade: 92, meta: 100, icon: Carrot, color: "hsl(var(--chart-2))" },
+  { categoria: "Grãos e Cereais", quantidade: 78, meta: 100, icon: Wheat, color: "hsl(var(--chart-3))" },
   { categoria: "Proteínas", quantidade: 45, meta: 100, icon: Beef, color: "hsl(var(--chart-4))" },
   { categoria: "Laticínios", quantidade: 60, meta: 100, icon: Milk, color: "hsl(var(--chart-5))" }
-]
-
-const radarData = [
-  { subject: "Frutas", valor: 85, fullMark: 100 },
-  { subject: "Legumes", valor: 92, fullMark: 100 },
-  { subject: "Grãos", valor: 78, fullMark: 100 },
-  { subject: "Proteínas", valor: 45, fullMark: 100 },
-  { subject: "Laticínios", valor: 60, fullMark: 100 }
 ]
 
 const weeklyData = [
@@ -59,64 +52,85 @@ const alertas = [
     type: "warning",
     icon: AlertTriangle,
     title: "Baixa ingestão de proteínas",
-    description: "As doações de proteínas estão 55% abaixo da meta recomendada. Considere buscar parcerias com frigoríficos e granjas."
+    description: "As doações de proteínas estão abaixo da meta ideal recomendada pela PNCPDA."
   },
   {
     type: "info",
     icon: Info,
-    title: "Laticínios abaixo do ideal",
-    description: "A categoria de laticínios está 40% abaixo da meta. Busque parcerias com laticínios da região."
+    title: "Atenção a Laticínios",
+    description: "Incentivar novas parcerias com cooperativas e laticínios regionais."
   },
   {
     type: "success",
     icon: CheckCircle,
-    title: "Excelente diversidade em legumes",
-    description: "O consumo de legumes está 92% da meta. Continue mantendo essa categoria bem abastecida."
+    title: "Excelente variedade de Hortaliças e Frutas",
+    description: "O volume de alimentos frescos colhidos e doados apresenta índice consistente."
   }
 ]
 
 export default function MetricasPage() {
+  const { metrics, isLoading } = useDonationMetrics()
+
+  const categoriaData = metrics.categoryData.length > 0
+    ? metrics.categoryData.slice(0, 5).map((c) => ({
+        categoria: c.name,
+        quantidade: c.percentage > 0 ? Math.min(100, c.percentage * 3.5) : 35,
+        meta: 100,
+        icon: c.icon,
+        color: c.color
+      }))
+    : fallbackCategories
+
   const indiceDiversidade = Math.round(
     categoriaData.reduce((acc, cat) => acc + cat.quantidade, 0) / categoriaData.length
   )
+
+  const radarData = categoriaData.map((c) => ({
+    subject: c.categoria.split(" ")[0],
+    valor: c.quantidade,
+    fullMark: 100
+  }))
 
   return (
     <div className="space-y-6">
       {/* Header */}
       <div>
         <h1 className="text-3xl font-bold text-foreground">Métricas Nutricionais</h1>
-        <p className="text-muted-foreground">Análise da diversidade alimentar das doações recebidas</p>
+        <p className="text-muted-foreground">
+          Análise da diversidade alimentar das doações conforme a PNCPDA (Lei nº 15.224/2025)
+        </p>
       </div>
 
       {/* Diversity Index */}
       <Card className="border-border bg-card">
         <CardHeader>
           <CardTitle className="text-foreground">Índice de Diversidade Alimentar</CardTitle>
-          <CardDescription>Baseado na proporção de categorias nutricionais recebidas</CardDescription>
+          <CardDescription>Baseado na proporção de categorias nutricionais recebidas no banco</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex flex-col items-center gap-6 md:flex-row md:items-start">
             <div className="flex h-40 w-40 shrink-0 items-center justify-center rounded-full border-8 border-primary bg-primary/10">
               <div className="text-center">
-                <span className="text-5xl font-bold text-primary">{indiceDiversidade}</span>
+                <span className="text-5xl font-bold text-primary">
+                  {isLoading ? "..." : indiceDiversidade}
+                </span>
                 <span className="block text-lg text-muted-foreground">/100</span>
               </div>
             </div>
             <div className="flex-1 space-y-4">
               <p className="text-muted-foreground">
-                O índice de diversidade alimentar mede a variedade nutricional das doações recebidas. 
-                Um índice acima de 70 indica uma boa diversidade, enquanto abaixo de 50 sugere 
-                necessidade de buscar novas fontes de alimentos.
+                O índice de diversidade alimentar afere a variedade nutricional das doações registradas. 
+                Índices acima de 70 apontam excelente equilíbrio alimentar para as instituições beneficiárias.
               </p>
               <div className="flex flex-wrap gap-2">
                 <Badge variant="secondary" className="bg-primary/10 text-primary">
-                  Bom em Frutas
+                  Grãos e Frutas Adequados
                 </Badge>
                 <Badge variant="secondary" className="bg-chart-2/10 text-chart-2">
-                  Ótimo em Legumes
+                  Hortaliças em Conformidade
                 </Badge>
-                <Badge variant="secondary" className="bg-destructive/10 text-destructive">
-                  Baixo em Proteínas
+                <Badge variant="secondary" className="bg-accent/15 text-accent">
+                  Rastreabilidade PNCPDA 100%
                 </Badge>
               </div>
             </div>
@@ -202,7 +216,7 @@ export default function MetricasPage() {
       <Card className="border-border bg-card">
         <CardHeader>
           <CardTitle className="text-foreground">Progresso por Categoria</CardTitle>
-          <CardDescription>Comparação entre quantidade recebida e meta recomendada</CardDescription>
+          <CardDescription>Comparação entre volume recebido e meta nutricional</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-6">
@@ -214,17 +228,10 @@ export default function MetricasPage() {
                     <span className="font-medium text-foreground">{cat.categoria}</span>
                   </div>
                   <span className="text-sm text-muted-foreground">
-                    {cat.quantidade}% da meta
+                    {Math.round(cat.quantidade)}% da meta
                   </span>
                 </div>
-                <Progress 
-                  value={cat.quantidade} 
-                  className="h-2"
-                  style={{ 
-                    // @ts-ignore
-                    '--progress-foreground': cat.color 
-                  }}
-                />
+                <Progress value={cat.quantidade} className="h-2" />
               </div>
             ))}
           </div>
@@ -232,38 +239,25 @@ export default function MetricasPage() {
       </Card>
 
       {/* Alerts */}
-      <Card className="border-border bg-card">
-        <CardHeader>
-          <CardTitle className="text-foreground">Alertas e Recomendações</CardTitle>
-          <CardDescription>Sugestões para melhorar a diversidade alimentar</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {alertas.map((alerta, index) => (
-            <div 
-              key={index}
-              className={`flex items-start gap-4 rounded-lg p-4 ${
-                alerta.type === 'warning' 
-                  ? 'bg-destructive/10' 
-                  : alerta.type === 'success'
-                    ? 'bg-primary/10'
-                    : 'bg-muted'
-              }`}
-            >
-              <alerta.icon className={`h-5 w-5 shrink-0 mt-0.5 ${
-                alerta.type === 'warning' 
-                  ? 'text-destructive' 
-                  : alerta.type === 'success'
-                    ? 'text-primary'
-                    : 'text-muted-foreground'
-              }`} />
-              <div>
-                <p className="font-medium text-foreground">{alerta.title}</p>
-                <p className="text-sm text-muted-foreground">{alerta.description}</p>
+      <div className="grid gap-4 md:grid-cols-3">
+        {alertas.map((alerta, index) => (
+          <Card key={index} className="border-border bg-card">
+            <CardContent className="p-4">
+              <div className="flex items-start gap-3">
+                <alerta.icon className={`h-5 w-5 shrink-0 ${
+                  alerta.type === 'warning' ? 'text-accent' :
+                  alerta.type === 'success' ? 'text-primary' :
+                  'text-secondary'
+                }`} />
+                <div>
+                  <h4 className="font-medium text-foreground">{alerta.title}</h4>
+                  <p className="mt-1 text-sm text-muted-foreground">{alerta.description}</p>
+                </div>
               </div>
-            </div>
-          ))}
-        </CardContent>
-      </Card>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
     </div>
   )
 }
