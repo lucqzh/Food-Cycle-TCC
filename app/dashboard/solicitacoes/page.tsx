@@ -14,7 +14,8 @@ import {
   XCircle, 
   AlertCircle,
   CheckCircle2,
-  Inbox
+  Inbox,
+  Truck
 } from "lucide-react"
 
 interface SolicitacaoItem {
@@ -32,6 +33,7 @@ interface SolicitacaoItem {
     quantidade_kg: number
     codigo_rastreio: string
     categoria: string
+    status?: string
     empresa_id: number
     empresas?: {
       id: number
@@ -99,6 +101,7 @@ export default function SolicitacoesPage() {
             quantidade_kg,
             codigo_rastreio,
             categoria,
+            status,
             empresa_id,
             empresas (
               id,
@@ -140,6 +143,64 @@ export default function SolicitacoesPage() {
   useEffect(() => {
     carregarDados()
   }, [])
+
+  const confirmarEntrega = async (solicitacaoId: number, doacaoId: number) => {
+    setProcessandoId(solicitacaoId)
+    setAviso(null)
+
+    try {
+      const supabase = createClient()
+
+      // 1. Atualiza status da doação para 'entregue'
+      const { error: errDoacao } = await supabase
+        .from("doacoes")
+        .update({ status: "entregue" })
+        .eq("id", doacaoId)
+
+      if (errDoacao) throw errDoacao
+
+      // 2. Cria registro na tabela de entregas
+      const agora = new Date().toISOString()
+      const { error: errEntrega } = await supabase
+        .from("entregas")
+        .insert({
+          doacao_id: doacaoId,
+          solicitacao_id: solicitacaoId,
+          data_agendada: agora,
+          data_entrega: agora,
+          status: "entregue",
+          condicao_recebimento: "otima",
+          observacoes: "Entrega física confirmada via portal FoodCycle."
+        })
+
+      if (errEntrega) {
+        console.warn("Aviso ao registrar entrega:", errEntrega.message)
+      }
+
+      // 3. Registra no histórico de status
+      try {
+        await supabase.from("historico_status").insert({
+          entidade: "doacao",
+          entidade_id: doacaoId,
+          status_anterior: "reservado",
+          status_novo: "entregue",
+          observacao: "Alimento recebido pela instituição receptora."
+        })
+      } catch (errHist) {
+        console.warn("Aviso ao registrar histórico:", errHist)
+      }
+
+      setAviso({
+        tipo: "sucesso",
+        texto: "🎉 Entrega confirmada com sucesso! O ciclo de vida desta doação foi concluído."
+      })
+      await carregarDados()
+    } catch (e: any) {
+      setAviso({ tipo: "erro", texto: e.message || "Erro ao confirmar entrega." })
+    } finally {
+      setProcessandoId(null)
+    }
+  }
 
   const atualizarStatus = async (solicitacaoId: number, doacaoId: number, novoStatus: "aprovado" | "recusado" | "cancelado") => {
     setProcessandoId(solicitacaoId)
@@ -398,6 +459,28 @@ export default function SolicitacoesPage() {
                       >
                         Cancelar pedido
                       </Button>
+                    )}
+
+                    {/* Ciclo de Entrega quando aprovado */}
+                    {sol.status === "aprovado" && (
+                      <div className="flex items-center gap-2">
+                        {sol.doacoes?.status === "entregue" ? (
+                          <Badge className="bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 flex items-center gap-1.5 py-1 px-2.5">
+                            <CheckCircle2 className="h-3.5 w-3.5" />
+                            Ciclo Concluído (Entregue)
+                          </Badge>
+                        ) : (
+                          <Button
+                            size="sm"
+                            className="bg-emerald-600 hover:bg-emerald-700 text-white gap-1.5 shadow-sm"
+                            disabled={processandoId === sol.id}
+                            onClick={() => confirmarEntrega(sol.id, sol.doacao_id)}
+                          >
+                            <Truck className="h-4 w-4" />
+                            {tipoUsuario === "empresa" ? "Confirmar Retirada" : "Confirmar Recebimento"}
+                          </Button>
+                        )}
+                      </div>
                     )}
                   </div>
                 )
