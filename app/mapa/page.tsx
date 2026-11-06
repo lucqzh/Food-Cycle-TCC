@@ -1,6 +1,7 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { createClient } from "@/lib/supabase/client"
 import Link from "next/link"
 import { Header } from "@/components/layout/header"
 import { Footer } from "@/components/layout/footer"
@@ -103,16 +104,87 @@ const locations = [
 ]
 
 export default function MapaPage() {
+  const [pontos, setPontos] = useState(locations)
   const [filter, setFilter] = useState<"all" | "empresa" | "instituicao">("all")
   const [selectedLocation, setSelectedLocation] = useState<typeof locations[0] | null>(null)
   const [viewMode, setViewMode] = useState<"map" | "list">("map")
+
+  useEffect(() => {
+    async function carregarPontos() {
+      try {
+        const supabase = createClient()
+        const [empRes, instRes, doacoesRes] = await Promise.all([
+          supabase.from("empresas").select("id, razao_social, nome_fantasia, endereco, cidade, estado"),
+          supabase.from("instituicoes").select("id, razao_social, endereco, cidade, estado, pessoas_atendidas"),
+          supabase.from("doacoes").select("empresa_id").eq("status", "disponivel")
+        ])
+
+        const empresasDb = empRes.data || []
+        const instDb = instRes.data || []
+        const doacoesDb = doacoesRes.data || []
+
+        if (empresasDb.length > 0 || instDb.length > 0) {
+          const posicoes = [
+            { top: "30%", left: "40%" },
+            { top: "45%", left: "65%" },
+            { top: "60%", left: "30%" },
+            { top: "25%", left: "75%" },
+            { top: "70%", left: "55%" },
+            { top: "35%", left: "20%" },
+            { top: "50%", left: "80%" },
+            { top: "65%", left: "45%" },
+          ]
+
+          let idx = 0
+          const formatados = [
+            ...empresasDb.map(e => {
+              const pos = posicoes[idx % posicoes.length]
+              idx++
+              const ativas = doacoesDb.filter(d => d.empresa_id === e.id).length
+              return {
+                id: e.id,
+                name: e.nome_fantasia || e.razao_social,
+                type: "empresa" as const,
+                address: `${e.endereco || "Endereço cadastrado"}, ${e.cidade || "SP"} - ${e.estado || "SP"}`,
+                phone: "(11) 3345-6700",
+                email: "contato@foodcycle.org.br",
+                doacoesAtivas: ativas,
+                position: pos
+              }
+            }),
+            ...instDb.map(i => {
+              const pos = posicoes[idx % posicoes.length]
+              idx++
+              return {
+                id: i.id + 1000,
+                name: i.razao_social,
+                type: "instituicao" as const,
+                address: `${i.endereco || "Endereço cadastrado"}, ${i.cidade || "SP"} - ${i.estado || "SP"}`,
+                phone: "(11) 3345-8800",
+                email: "atendimento@foodcycle.org.br",
+                beneficiarios: i.pessoas_atendidas || 50,
+                position: pos
+              }
+            })
+          ]
+
+          if (formatados.length > 0) {
+            setPontos(formatados)
+          }
+        }
+      } catch (err) {
+        console.warn("Usando dados de demonstração no mapa:", err)
+      }
+    }
+    carregarPontos()
+  }, [])
   
-  const filteredLocations = locations.filter(
+  const filteredLocations = pontos.filter(
     loc => filter === "all" || loc.type === filter
   )
   
-  const empresas = locations.filter(l => l.type === "empresa")
-  const instituicoes = locations.filter(l => l.type === "instituicao")
+  const empresas = pontos.filter(l => l.type === "empresa")
+  const instituicoes = pontos.filter(l => l.type === "instituicao")
 
   return (
     <div className="flex min-h-screen flex-col">
