@@ -27,7 +27,9 @@ import {
   AlertCircle,
   Building2,
   Heart,
-  Edit
+  Edit,
+  Crown,
+  Lock
 } from "lucide-react"
 
 interface UserProfileItem {
@@ -51,6 +53,8 @@ export default function AdminUsuariosPage() {
   const [carregando, setCarregando] = useState(true)
   const [busca, setBusca] = useState("")
   const [filtroTipo, setFiltroTipo] = useState("todos")
+  const [isCurrentUserMaster, setIsCurrentUserMaster] = useState(false)
+  const [currentUserEmail, setCurrentUserEmail] = useState("")
 
   const [usuarioSelecionado, setUsuarioSelecionado] = useState<UserProfileItem | null>(null)
   const [modalRoleAberto, setModalRoleAberto] = useState(false)
@@ -62,6 +66,12 @@ export default function AdminUsuariosPage() {
     setCarregando(true)
     try {
       const supabase = createClient()
+      const { data: authData } = await supabase.auth.getUser()
+      const email = authData.user?.email || ""
+      setCurrentUserEmail(email)
+      const isMaster = email.toLowerCase() === ADMIN_MASTER_EMAIL.toLowerCase()
+      setIsCurrentUserMaster(isMaster)
+
       const [profilesRes, empresasRes, instRes] = await Promise.all([
         supabase.from("profiles").select("*").order("created_at", { ascending: false }),
         supabase.from("empresas").select("perfil_id, razao_social, nome_fantasia"),
@@ -112,6 +122,11 @@ export default function AdminUsuariosPage() {
   }, [usuarios, busca, filtroTipo])
 
   const abrirAlterarRole = (u: UserProfileItem) => {
+    const isTargetMaster = u.email?.toLowerCase() === ADMIN_MASTER_EMAIL.toLowerCase()
+    if (isTargetMaster && !isCurrentUserMaster) {
+      setAviso({ tipo: "erro", texto: "Você não tem autorização para alterar a conta do Administrador Mestre." })
+      return
+    }
     setUsuarioSelecionado(u)
     setNovoTipo(u.tipo)
     setModalRoleAberto(true)
@@ -126,7 +141,22 @@ export default function AdminUsuariosPage() {
       const supabase = createClient()
       const { data: auth } = await supabase.auth.getUser()
 
-      // Não permite que o admin remova o próprio cargo acidentalmente
+      // 1. Validação de Administrador Mestre: SOMENTE o email mestre pode atribuir papel de admin
+      if (novoTipo === "admin" && !isCurrentUserMaster) {
+        throw new Error("Apenas o Administrador Mestre (Dono do Sistema) pode conceder privilégios de Administrador.")
+      }
+
+      // 2. Apenas o Mestre pode alterar o cargo de quem já é admin
+      if (usuarioSelecionado.tipo === "admin" && !isCurrentUserMaster) {
+        throw new Error("Apenas o Administrador Mestre pode alterar ou revogar a função de um Administrador.")
+      }
+
+      // 3. Ninguém pode remover o status de admin da conta Mestre
+      if (usuarioSelecionado.email?.toLowerCase() === ADMIN_MASTER_EMAIL.toLowerCase() && novoTipo !== "admin") {
+        throw new Error("A conta do Administrador Mestre não pode ter seu cargo alterado.")
+      }
+
+      // 4. Não permite auto-remoção acidental
       if (usuarioSelecionado.id === auth.user?.id && novoTipo !== "admin") {
         throw new Error("Você não pode remover seus próprios privilégios de administrador.")
       }
@@ -148,7 +178,8 @@ export default function AdminUsuariosPage() {
         detalhes: {
           alvo_email: usuarioSelecionado.email,
           papel_anterior: usuarioSelecionado.tipo,
-          papel_novo: novoTipo
+          papel_novo: novoTipo,
+          executado_pelo_mestre: isCurrentUserMaster
         }
       })
 
@@ -185,9 +216,16 @@ export default function AdminUsuariosPage() {
       {/* Header */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-foreground">Usuários & Permissões</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-2">
+            <span>Usuários & Permissões</span>
+            {isCurrentUserMaster && (
+              <Badge className="bg-amber-500 text-white font-semibold text-xs flex items-center gap-1">
+                <Crown className="h-3 w-3" /> Dono do Sistema
+              </Badge>
+            )}
+          </h1>
           <p className="text-muted-foreground">
-            Controle de identidades, papéis de acesso e governança de contas do FoodCycle.
+            Controle de identidades, hierarquia de acesso e governança de contas do FoodCycle.
           </p>
         </div>
         <Button variant="outline" className="gap-2" onClick={exportarCSV} disabled={usuariosFiltrados.length === 0}>
@@ -204,6 +242,32 @@ export default function AdminUsuariosPage() {
           <span>{aviso.texto}</span>
         </div>
       )}
+
+      {/* Banner explicativo de hierarquia */}
+      <div className="p-4 rounded-xl border border-border bg-card/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+        <div className="flex items-center gap-2.5">
+          <div className="p-2 rounded-lg bg-amber-500/10 text-amber-500">
+            <Crown className="h-4 w-4" />
+          </div>
+          <div>
+            <span className="font-semibold text-foreground">Hierarquia Mestre:</span>{" "}
+            <span className="text-muted-foreground">
+              Somente a conta proprietária <strong className="text-foreground font-mono">{ADMIN_MASTER_EMAIL}</strong> possui permissão para nomear ou destituir administradores.
+            </span>
+          </div>
+        </div>
+        <div>
+          {isCurrentUserMaster ? (
+            <Badge variant="outline" className="border-emerald-500/30 text-emerald-600 bg-emerald-500/10">
+              Sua sessão: Autoridade Mestre Ativa
+            </Badge>
+          ) : (
+            <Badge variant="outline" className="border-muted text-muted-foreground">
+              Sua sessão: Administrador Regular (Somente Leitura de Cargos)
+            </Badge>
+          )}
+        </div>
+      </div>
 
       {/* Filtros */}
       <Card className="border-border bg-card">
@@ -264,14 +328,17 @@ export default function AdminUsuariosPage() {
                 <tbody className="divide-y divide-border">
                   {usuariosFiltrados.map((u) => {
                     const isMaster = u.email?.toLowerCase() === ADMIN_MASTER_EMAIL.toLowerCase()
+                    const isTargetAdmin = u.tipo === "admin"
+                    const canEditThisUser = isCurrentUserMaster || (!isTargetAdmin && !isMaster)
+
                     return (
                       <tr key={u.id} className="hover:bg-muted/30 transition-colors">
                         <td className="py-3">
                           <div className="font-semibold text-foreground flex items-center gap-1.5">
                             {u.nome || "Usuário"}
                             {isMaster && (
-                              <Badge variant="outline" className="text-[10px] border-amber-500 text-amber-500 bg-amber-500/10">
-                                Mestre
+                              <Badge className="text-[10px] bg-amber-500 hover:bg-amber-600 text-white font-semibold flex items-center gap-1">
+                                <Crown className="h-3 w-3" /> Dono
                               </Badge>
                             )}
                           </div>
@@ -289,9 +356,19 @@ export default function AdminUsuariosPage() {
                           {u.created_at ? new Date(u.created_at).toLocaleDateString("pt-BR") : "—"}
                         </td>
                         <td className="py-3 text-center">
-                          <Button size="sm" variant="ghost" onClick={() => abrirAlterarRole(u)} title="Alterar Papel">
-                            <Edit className="h-4 w-4" />
-                          </Button>
+                          {isMaster ? (
+                            <span className="text-xs text-muted-foreground flex items-center justify-center gap-1" title="Cargo fixo do Dono">
+                              <Lock className="h-3.5 w-3.5 text-amber-500" />
+                            </span>
+                          ) : canEditThisUser ? (
+                            <Button size="sm" variant="ghost" onClick={() => abrirAlterarRole(u)} title="Alterar Papel">
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                          ) : (
+                            <span className="text-xs text-muted-foreground flex items-center justify-center gap-1" title="Apenas o Dono pode editar Administradores">
+                              <Lock className="h-3.5 w-3.5 text-muted-foreground/60" />
+                            </span>
+                          )}
                         </td>
                       </tr>
                     )
@@ -307,9 +384,12 @@ export default function AdminUsuariosPage() {
       <Dialog open={modalRoleAberto} onOpenChange={setModalRoleAberto}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Gerenciar Papel de Acesso</DialogTitle>
+            <DialogTitle className="flex items-center gap-2">
+              <ShieldCheck className="h-5 w-5 text-primary" />
+              <span>Gerenciar Papel de Acesso</span>
+            </DialogTitle>
             <DialogDescription>
-              Ajuste de função e privilégios para {usuarioSelecionado?.email}.
+              Ajuste de função e privilégios para <strong className="text-foreground">{usuarioSelecionado?.email}</strong>.
             </DialogDescription>
           </DialogHeader>
 
@@ -326,13 +406,34 @@ export default function AdminUsuariosPage() {
                   <SelectItem value="empresa">Empresa Doadora</SelectItem>
                   <SelectItem value="instituicao">Instituição Receptora</SelectItem>
                   <SelectItem value="intermediario">Intermediário Logístico</SelectItem>
-                  <SelectItem value="admin">Administrador Geral</SelectItem>
+                  {isCurrentUserMaster ? (
+                    <SelectItem value="admin" className="font-semibold text-purple-600">
+                      👑 Administrador Geral
+                    </SelectItem>
+                  ) : (
+                    <SelectItem value="admin" disabled className="text-muted-foreground opacity-50">
+                      🔒 Administrador Geral (Exclusivo Dono)
+                    </SelectItem>
+                  )}
                 </SelectContent>
               </Select>
             </div>
-            <p className="text-xs text-muted-foreground">
-              ⚠️ A atribuição da função "Administrador" concede acesso total às tabelas e relatórios regulatórios do sistema.
-            </p>
+
+            {isCurrentUserMaster ? (
+              <div className="rounded-lg bg-purple-500/10 p-3 text-xs text-purple-600 border border-purple-500/20 flex items-start gap-2">
+                <Crown className="h-4 w-4 shrink-0 mt-0.5" />
+                <span>
+                  <strong>Autoridade Mestre:</strong> Como dono da plataforma, você tem permissão exclusiva para nomear novos administradores ou ajustar qualquer papel de acesso.
+                </span>
+              </div>
+            ) : (
+              <div className="rounded-lg bg-amber-500/10 p-3 text-xs text-amber-600 border border-amber-500/20 flex items-start gap-2">
+                <Lock className="h-4 w-4 shrink-0 mt-0.5" />
+                <span>
+                  <strong>Restrição de Hierarquia:</strong> Apenas o Administrador Mestre ({ADMIN_MASTER_EMAIL}) pode conceder ou revogar privilégios administrativos.
+                </span>
+              </div>
+            )}
           </div>
 
           <DialogFooter>
