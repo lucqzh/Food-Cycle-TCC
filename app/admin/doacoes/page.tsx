@@ -31,7 +31,9 @@ import {
   Edit,
   Trash2,
   ShieldCheck,
-  Zap
+  Zap,
+  FileText,
+  ExternalLink
 } from "lucide-react"
 
 interface DoacaoAdminItem {
@@ -495,7 +497,14 @@ export default function AdminDoacoesPage() {
             </div>
           )}
 
-          <DialogFooter>
+          <DialogFooter className="flex flex-col sm:flex-row items-center justify-between gap-2 w-full">
+            <Button asChild variant="outline" size="sm" className="gap-1.5 text-emerald-500 border-emerald-500/40 hover:bg-emerald-500/10">
+              <a href={`/comprovante/${doacaoSelecionada?.codigo_rastreio}`} target="_blank" rel="noopener noreferrer">
+                <FileText className="h-3.5 w-3.5" />
+                <span>Abrir Termo Sanitário (PDF)</span>
+                <ExternalLink className="h-3 w-3" />
+              </a>
+            </Button>
             <Button variant="outline" onClick={() => setModalDetalhesAberto(false)}>Fechar</Button>
           </DialogFooter>
         </DialogContent>

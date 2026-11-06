@@ -13,9 +13,12 @@ import {
   Inbox,
   Sparkles,
   RefreshCw,
-  FileSpreadsheet
+  FileSpreadsheet,
+  FileText,
+  Printer
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { TermoDoacaoModal, ComprovanteData } from "@/components/comprovante/termo-doacao-modal"
 
 interface HistoricoItem {
   id: number
@@ -35,6 +38,10 @@ interface HistoricoItem {
 export default function HistoricoPage() {
   const [itens, setItens] = useState<HistoricoItem[]>([])
   const [carregando, setCarregando] = useState(true)
+
+  // Modal do Termo Sanitário
+  const [modalTermoAberto, setModalTermoAberto] = useState(false)
+  const [comprovanteSelecionado, setComprovanteSelecionado] = useState<ComprovanteData | null>(null)
 
   const carregarHistorico = async () => {
     setCarregando(true)
@@ -74,6 +81,21 @@ export default function HistoricoPage() {
     carregarHistorico()
   }, [])
 
+  const abrirTermo = (item: HistoricoItem) => {
+    setComprovanteSelecionado({
+      id: item.id,
+      codigo_rastreio: item.codigo_rastreio,
+      tipo_alimento: item.tipo_alimento,
+      quantidade_kg: item.quantidade_kg,
+      categoria: item.categoria,
+      destino: item.destino,
+      status: item.status,
+      data_criacao: item.data_criacao,
+      empresa_nome: item.empresas?.nome_fantasia || item.empresas?.razao_social || "Empresa Doadora",
+    })
+    setModalTermoAberto(true)
+  }
+
   const totalKg = itens.reduce((acc, item) => acc + Number(item.quantidade_kg || 0), 0)
   const empresasUnicas = new Set(
     itens.map((i) => i.empresas?.nome_fantasia || i.empresas?.razao_social).filter(Boolean)
@@ -101,81 +123,109 @@ export default function HistoricoPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between pb-6 border-b border-emerald-950/60">
         <div>
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-950 border border-emerald-800/40 text-[10px] font-mono text-emerald-400 mb-1">
-            <Scale className="h-3 w-3 text-amber-400" />
-            Auditoria Contínua • Lei nº 15.224/2025
+          <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-emerald-950/80 border border-emerald-800/40 px-3 py-1 text-xs font-medium text-emerald-300">
+            <Scale className="h-3.5 w-3.5 text-amber-400" />
+            Rastreabilidade Digital Conforme Lei nº 15.224/2025
           </div>
-          <h1 className="text-3xl font-extrabold text-white font-serif">Histórico e Rastreabilidade</h1>
-          <p className="text-xs text-slate-400">
-            Registro imutável de movimentação de alimentos para fins sanitários e de responsabilidade legal
+          <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white font-serif">
+            Histórico de Entregas & Termos
+          </h1>
+          <p className="text-xs sm:text-sm text-slate-400 mt-1">
+            Registro imutável de excedentes doados, comprovantes sanitários para fins fiscais e relatórios ESG.
           </p>
         </div>
+
         <div className="flex items-center gap-2">
           <Button
             variant="outline"
             size="sm"
             onClick={carregarHistorico}
-            className="h-10 border-emerald-950 bg-[#071B17] text-slate-300 hover:text-white"
+            disabled={carregando}
+            className="h-10 border-emerald-900/60 bg-[#071B17] text-slate-300 hover:text-white hover:bg-emerald-950/40 text-xs cursor-pointer"
           >
             <RefreshCw className={`h-3.5 w-3.5 mr-1.5 ${carregando ? "animate-spin" : ""}`} />
-            Recarregar
+            Atualizar
           </Button>
+
           <Button
             onClick={exportarCSV}
             disabled={itens.length === 0}
             className="h-10 bg-emerald-500 hover:bg-emerald-400 text-[#071B17] font-bold text-xs tracking-wide shadow-lg shadow-emerald-950/60 cursor-pointer"
           >
-            <FileSpreadsheet className="h-4 w-4 mr-1.5" />
-            Exportar CSV Oficial
+            <Download className="mr-1.5 h-3.5 w-3.5 stroke-[2.5]" />
+            Exportar CSV
           </Button>
         </div>
       </div>
 
-      {/* Stats */}
+      {/* Métricas do Histórico */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <div className="rounded-2xl border border-emerald-950/80 bg-[#071B17]/90 p-5 backdrop-blur shadow-xl">
-          <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Volume Total Mapeado</p>
-          <p className="mt-2 text-2xl font-black text-white font-mono">{totalKg.toLocaleString("pt-BR")} kg</p>
+        <div className="rounded-2xl border border-emerald-950/80 bg-[#071B17]/90 p-5 backdrop-blur shadow-xl space-y-1">
+          <div className="flex items-center justify-between text-slate-400 text-xs">
+            <span>Volume Total Salvo</span>
+            <Package className="h-4 w-4 text-emerald-400" />
+          </div>
+          <p className="text-2xl font-black text-white font-mono">{totalKg.toLocaleString("pt-BR")} kg</p>
+          <p className="text-[10px] text-slate-400">Total histórico registrado</p>
         </div>
 
-        <div className="rounded-2xl border border-emerald-950/80 bg-[#071B17]/90 p-5 backdrop-blur shadow-xl">
-          <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Lotes Registrados</p>
-          <p className="mt-2 text-2xl font-black text-emerald-400 font-mono">{itens.length}</p>
+        <div className="rounded-2xl border border-emerald-950/80 bg-[#071B17]/90 p-5 backdrop-blur shadow-xl space-y-1">
+          <div className="flex items-center justify-between text-slate-400 text-xs">
+            <span>Lotes Intermediados</span>
+            <TrendingUp className="h-4 w-4 text-amber-400" />
+          </div>
+          <p className="text-2xl font-black text-white font-mono">{itens.length}</p>
+          <p className="text-[10px] text-slate-400">Operações na plataforma</p>
         </div>
 
-        <div className="rounded-2xl border border-emerald-950/80 bg-[#071B17]/90 p-5 backdrop-blur shadow-xl">
-          <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Empresas Participantes</p>
-          <p className="mt-2 text-2xl font-black text-amber-400 font-mono">{empresasUnicas || 1}</p>
+        <div className="rounded-2xl border border-emerald-950/80 bg-[#071B17]/90 p-5 backdrop-blur shadow-xl space-y-1">
+          <div className="flex items-center justify-between text-slate-400 text-xs">
+            <span>Empresas Envolvidas</span>
+            <Building2 className="h-4 w-4 text-blue-400" />
+          </div>
+          <p className="text-2xl font-black text-white font-mono">{empresasUnicas}</p>
+          <p className="text-[10px] text-slate-400">Doadoras ativas</p>
         </div>
 
-        <div className="rounded-2xl border border-emerald-950/80 bg-[#071B17]/90 p-5 backdrop-blur shadow-xl">
-          <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Diversidade Nutricional</p>
-          <p className="mt-2 text-2xl font-black text-blue-400 font-mono">{categoriasUnicas || 1} grupos</p>
+        <div className="rounded-2xl border border-emerald-950/80 bg-[#071B17]/90 p-5 backdrop-blur shadow-xl space-y-1">
+          <div className="flex items-center justify-between text-slate-400 text-xs">
+            <span>Diversidade Alimentar</span>
+            <CheckCircle2 className="h-4 w-4 text-teal-400" />
+          </div>
+          <p className="text-2xl font-black text-white font-mono">{categoriasUnicas} tipos</p>
+          <p className="text-[10px] text-slate-400">Categorias nutricionais</p>
         </div>
       </div>
 
-      {/* Tabela de Histórico */}
+      {/* Tabela do Histórico */}
       <div className="rounded-2xl border border-emerald-950/80 bg-[#071B17]/90 p-6 backdrop-blur shadow-xl space-y-4">
-        <div>
-          <h3 className="text-base font-bold text-white">Trilhas de Rastreabilidade Geradas</h3>
-          <p className="text-xs text-slate-400">Código único por lote para conformidade com o marco legal</p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-base font-bold text-white flex items-center gap-2">
+              <Sparkles className="h-4 w-4 text-emerald-400" />
+              Lotes e Trilha Sanitária
+            </h3>
+            <p className="text-xs text-slate-400">
+              Clique em &quot;Termo (PDF)&quot; para visualizar ou emitir o Comprovante Sanitário oficial para cada lote.
+            </p>
+          </div>
         </div>
 
         {carregando ? (
-          <div className="flex min-h-[250px] items-center justify-center font-mono text-xs text-emerald-400">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping mr-2" />
-            Carregando trilhas de auditoria...
+          <div className="py-16 text-center text-xs font-mono text-emerald-400">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping inline-block mr-2" />
+            Carregando histórico do banco de dados...
           </div>
         ) : itens.length === 0 ? (
-          <div className="py-12 text-center text-slate-400 space-y-2">
-            <Inbox className="h-10 w-10 text-emerald-500/40 mx-auto" />
-            <p className="font-bold text-white text-sm">Nenhum lote registrado no histórico</p>
-            <p className="text-xs max-w-sm mx-auto">
-              Conforme doações forem cadastradas e confirmadas, as trilhas de auditoria aparecerão aqui.
+          <div className="py-16 text-center space-y-3">
+            <Inbox className="h-10 w-10 text-slate-600 mx-auto" />
+            <p className="text-sm font-semibold text-slate-300">Nenhum lote registrado no histórico.</p>
+            <p className="text-xs text-slate-400 max-w-sm mx-auto">
+              Quando doações forem cadastradas ou entregues, os registros aparecerão aqui com comprovante sanitário para download.
             </p>
           </div>
         ) : (
@@ -187,10 +237,11 @@ export default function HistoricoPage() {
                   <th className="py-3 px-4">Alimento</th>
                   <th className="py-3 px-4">Doador</th>
                   <th className="py-3 px-4">Categoria</th>
-                  <th className="py-3 px-4">Volume</th>
+                  <th className="py-3 px-4 text-right">Volume</th>
                   <th className="py-3 px-4">Destinação</th>
                   <th className="py-3 px-4">Status</th>
-                  <th className="py-3 px-4">Data Registro</th>
+                  <th className="py-3 px-4">Data</th>
+                  <th className="py-3 px-4 text-center">Comprovante Legal</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-emerald-950/50">
@@ -204,11 +255,11 @@ export default function HistoricoPage() {
                       <td className="py-3.5 px-4 font-mono font-bold text-emerald-400">{item.codigo_rastreio}</td>
                       <td className="py-3.5 px-4 font-semibold text-white">{item.tipo_alimento}</td>
                       <td className="py-3.5 px-4 text-slate-300">{empresa}</td>
-                      <td className="py-3.5 px-4 text-slate-400 capitalize">{item.categoria}</td>
-                      <td className="py-3.5 px-4 font-mono font-bold text-white">{item.quantidade_kg} kg</td>
+                      <td className="py-3.5 px-4 text-slate-400 capitalize">{item.categoria ? item.categoria.replace("_", " ") : "Alimento"}</td>
+                      <td className="py-3.5 px-4 font-mono font-bold text-white text-right">{Number(item.quantidade_kg).toLocaleString("pt-BR")} kg</td>
                       <td className="py-3.5 px-4">
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-mono bg-emerald-950 text-emerald-300 border border-emerald-800/40">
-                          {item.destino}
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-mono bg-emerald-950 text-emerald-300 border border-emerald-800/40 capitalize">
+                          {item.destino || "humano"}
                         </span>
                       </td>
                       <td className="py-3.5 px-4">
@@ -225,6 +276,17 @@ export default function HistoricoPage() {
                       <td className="py-3.5 px-4 text-slate-400 font-mono">
                         {new Date(item.data_criacao).toLocaleDateString("pt-BR")}
                       </td>
+                      <td className="py-3.5 px-4 text-center">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => abrirTermo(item)}
+                          className="h-7 text-[11px] border-emerald-800/60 bg-emerald-950/40 text-emerald-300 hover:text-white hover:bg-emerald-900/60 cursor-pointer flex items-center gap-1.5 mx-auto shadow-sm"
+                        >
+                          <FileText className="h-3 w-3 text-emerald-400" />
+                          <span>Termo (PDF)</span>
+                        </Button>
+                      </td>
                     </tr>
                   )
                 })}
@@ -233,6 +295,13 @@ export default function HistoricoPage() {
           </div>
         )}
       </div>
+
+      {/* Modal do Termo Sanitário Imprimível */}
+      <TermoDoacaoModal
+        open={modalTermoAberto}
+        onOpenChange={setModalTermoAberto}
+        data={comprovanteSelecionado}
+      />
     </div>
   )
 }
