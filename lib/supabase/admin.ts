@@ -1,7 +1,9 @@
+import "server-only"
 import { createClient as createServerSupabase } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
+import { ADMIN_MASTER_EMAIL } from "@/lib/constants"
 
-export { ADMIN_MASTER_EMAIL } from "@/lib/constants"
+export { ADMIN_MASTER_EMAIL }
 
 export interface AdminAuthResult {
   isAdmin: boolean

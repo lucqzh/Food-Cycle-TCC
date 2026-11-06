@@ -121,10 +121,12 @@ export default function SolicitacoesPage() {
       } else if (data) {
         // Se for instituição, filtra as dela. Se for empresa, filtra as doações dela.
         let filtradas = data as unknown as SolicitacaoItem[]
-        if (role === "instituicao" && inst.data) {
-          filtradas = filtradas.filter((s) => s.instituicao_id === inst.data.id)
-        } else if (role === "empresa" && emp.data) {
-          filtradas = filtradas.filter((s) => s.doacoes?.empresa_id === emp.data.id)
+        const instId = inst.data?.id
+        const empId = emp.data?.id
+        if (role === "instituicao" && instId) {
+          filtradas = filtradas.filter((s) => s.instituicao_id === instId)
+        } else if (role === "empresa" && empId) {
+          filtradas = filtradas.filter((s) => s.doacoes?.empresa_id === empId)
         }
         setSolicitacoes(filtradas)
       }

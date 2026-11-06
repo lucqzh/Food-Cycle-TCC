@@ -283,7 +283,7 @@ export async function reverseGeocode(
 
     const data: NominatimSearchResult = await response.json()
 
-    if (!data || data.error) {
+    if (!data || (data as any).error) {
       throw new NominatimServiceError(
         `Nenhum resultado encontrado para as coordenadas: ${lat}, ${lng}`,
         404

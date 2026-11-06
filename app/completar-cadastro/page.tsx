@@ -160,6 +160,10 @@ export default function CompletarCadastroPage() {
 
     setEnviando(true)
     const supabase = createClient()
+    const { data: perfilAtual } = await supabase.from("profiles").select("tipo").eq("id", userId).maybeSingle()
+    if (perfilAtual && !perfilAtual.tipo) {
+      await supabase.from("profiles").update({ tipo }).eq("id", userId)
+    }
     const { error } = await supabase.from(tabela).insert(dados)
     setEnviando(false)
     if (error) return setErro("Não foi possível salvar: " + error.message)
