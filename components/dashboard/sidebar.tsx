@@ -15,7 +15,6 @@ import {
   Menu, 
   X,
   ShieldCheck,
-  Sparkles,
   ChevronRight
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -113,9 +112,9 @@ export function DashboardSidebar() {
         "fixed inset-y-0 left-0 z-40 flex w-72 flex-col border-r border-emerald-950/60 bg-[#071B17] text-[#F8FAFC] transition-transform duration-300 lg:translate-x-0 selection:bg-emerald-500 selection:text-white",
         mobileOpen ? "translate-x-0" : "-translate-x-full"
       )}>
-        {/* Logo */}
+        {/* Logo - leva para o início do Dashboard */}
         <div className="flex h-20 items-center gap-3 border-b border-emerald-950/60 px-6">
-          <Link href="/" className="flex items-center gap-2.5 group">
+          <Link href="/dashboard" className="flex items-center gap-2.5 group">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-400 to-emerald-600 shadow-md shadow-emerald-500/20 group-hover:scale-105 transition-transform">
               <Leaf className="h-5 w-5 text-[#071B17] stroke-[2.5]" />
             </div>

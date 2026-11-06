@@ -108,9 +108,9 @@ export function AdminSidebar({ userEmail, userName }: { userEmail: string; userN
         "fixed inset-y-0 left-0 z-40 flex w-72 flex-col border-r border-emerald-950/60 bg-[#040E0B] text-[#F8FAFC] transition-transform duration-300 lg:translate-x-0 selection:bg-purple-500 selection:text-white",
         mobileOpen ? "translate-x-0" : "-translate-x-full"
       )}>
-        {/* Header do Admin */}
+        {/* Header do Admin - Aponta para /admin */}
         <div className="flex h-20 items-center gap-3 border-b border-emerald-950/60 px-6">
-          <Link href="/" className="flex items-center gap-2.5 group">
+          <Link href="/admin" className="flex items-center gap-2.5 group">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-purple-500 to-emerald-500 shadow-md shadow-purple-950/60 group-hover:scale-105 transition-transform">
               <Leaf className="h-5 w-5 text-white stroke-[2.5]" />
             </div>

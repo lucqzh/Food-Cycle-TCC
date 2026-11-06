@@ -1,9 +1,23 @@
 "use client"
 
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { useState, useEffect } from "react"
-import { Menu, X, Leaf, ArrowRight, Volume2, VolumeX, ShieldCheck, Sparkles } from "lucide-react"
+import { 
+  Menu, 
+  X, 
+  Leaf, 
+  ArrowRight, 
+  Volume2, 
+  VolumeX, 
+  ShieldCheck, 
+  LayoutDashboard,
+  LogOut,
+  User
+} from "lucide-react"
 import { soundManager } from "@/lib/sound"
+import { createClient } from "@/lib/supabase/client"
+import { ADMIN_MASTER_EMAIL } from "@/lib/constants"
 
 const navLinks = [
   { href: "#problema", label: "O Problema" },
@@ -15,10 +29,17 @@ const navLinks = [
 ]
 
 export function Header() {
+  const router = useRouter()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
   const [soundEnabled, setSoundEnabled] = useState(false)
   const [scrollProgress, setScrollProgress] = useState(0)
+
+  // Estado de autenticação da sessão ativa
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [isAdmin, setIsAdmin] = useState(false)
+  const [userName, setUserName] = useState<string>("")
+  const [userEmail, setUserEmail] = useState<string>("")
 
   useEffect(() => {
     const handleScroll = () => {
@@ -33,10 +54,74 @@ export function Header() {
     return () => window.removeEventListener("scroll", handleScroll)
   }, [])
 
+  useEffect(() => {
+    const supabase = createClient()
+
+    const checkSession = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        setIsAuthenticated(true)
+        setUserEmail(user.email || "")
+
+        const isMaster = user.email?.toLowerCase() === ADMIN_MASTER_EMAIL.toLowerCase()
+
+        // Buscar nome e perfil
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("nome, tipo")
+          .eq("id", user.id)
+          .maybeSingle()
+
+        setIsAdmin(isMaster || profile?.tipo === "admin")
+        setUserName(profile?.nome || user.email?.split("@")[0] || "Usuário")
+      } else {
+        setIsAuthenticated(false)
+        setIsAdmin(false)
+        setUserName("")
+        setUserEmail("")
+      }
+    }
+
+    checkSession()
+
+    // Ouvinte em tempo real para mudanças no estado de autenticação
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) {
+        checkSession()
+      } else {
+        setIsAuthenticated(false)
+        setIsAdmin(false)
+        setUserName("")
+        setUserEmail("")
+      }
+    })
+
+    return () => {
+      subscription.unsubscribe()
+    }
+  }, [])
+
   const toggleSound = () => {
     const active = soundManager.toggle()
     setSoundEnabled(active)
   }
+
+  const handleLogout = async () => {
+    const supabase = createClient()
+    await supabase.auth.signOut()
+    setIsAuthenticated(false)
+    setIsAdmin(false)
+    router.push("/login")
+    router.refresh()
+  }
+
+  // Se estiver logado, o logo direciona para o painel apropriado sem "deslogar" nem perder contexto
+  const logoHref = isAuthenticated 
+    ? (isAdmin ? "/admin" : "/dashboard")
+    : "/"
+
+  const portalHref = isAdmin ? "/admin" : "/dashboard"
+  const portalLabel = isAdmin ? "Painel Admin" : "Meu Painel"
 
   return (
     <>
@@ -54,12 +139,17 @@ export function Header() {
         }`}>
           {/* Logo & Status Badge */}
           <Link 
-            href="/" 
+            href={logoHref} 
             className="flex items-center gap-2.5 group"
             onMouseEnter={() => soundManager.playHover()}
             onClick={() => soundManager.playClick()}
+            title={isAuthenticated ? `Ir para ${portalLabel}` : "Página Inicial FoodCycle"}
           >
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-600 text-white shadow-[0_0_15px_rgba(22,163,74,0.6)] transition-transform group-hover:scale-110">
+            <div className={`flex h-8 w-8 items-center justify-center rounded-full text-white transition-transform group-hover:scale-110 ${
+              isAdmin 
+                ? "bg-purple-600 shadow-[0_0_15px_rgba(168,85,247,0.6)]" 
+                : "bg-emerald-600 shadow-[0_0_15px_rgba(22,163,74,0.6)]"
+            }`}>
               <Leaf className="h-4 w-4 fill-current stroke-[2.5]" />
             </div>
             <div className="flex flex-col">
@@ -69,6 +159,15 @@ export function Header() {
                   <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
                   PNCPDA 2026
                 </span>
+                {isAuthenticated && (
+                  <span className={`inline-flex items-center gap-1 px-1.5 py-0.2 rounded text-[9px] font-mono font-semibold uppercase tracking-wider ${
+                    isAdmin 
+                      ? "bg-purple-950/80 text-purple-300 border border-purple-800/60" 
+                      : "bg-emerald-950/80 text-emerald-300 border border-emerald-800/60"
+                  }`}>
+                    {isAdmin ? "Admin" : "Ativo"}
+                  </span>
+                )}
               </span>
             </div>
           </Link>
@@ -108,24 +207,55 @@ export function Header() {
               )}
             </button>
 
-            <Link
-              href="/login"
-              onMouseEnter={() => soundManager.playHover()}
-              onClick={() => soundManager.playClick()}
-              className="hidden sm:inline-block text-xs font-medium text-slate-300 hover:text-white px-3 py-1.5 rounded-full hover:bg-white/10 transition-colors"
-            >
-              Entrar
-            </Link>
+            {isAuthenticated ? (
+              // Usuário Autenticado: Acesso Direto ao Painel + Opção de Sair
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <Link
+                  href={portalHref}
+                  onMouseEnter={() => soundManager.playHover()}
+                  onClick={() => soundManager.playClick()}
+                  className={`inline-flex items-center gap-1.5 text-xs font-semibold px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-full text-white transition-all hover:scale-105 active:scale-95 ${
+                    isAdmin
+                      ? "bg-purple-600 hover:bg-purple-500 shadow-[0_0_20px_rgba(168,85,247,0.4)]"
+                      : "bg-emerald-600 hover:bg-emerald-500 shadow-[0_0_20px_rgba(22,163,74,0.4)]"
+                  }`}
+                >
+                  <LayoutDashboard className="h-3.5 w-3.5 stroke-[2.5]" />
+                  <span>{portalLabel}</span>
+                </Link>
 
-            <Link
-              href="/cadastro"
-              onMouseEnter={() => soundManager.playHover()}
-              onClick={() => soundManager.playClick()}
-              className="inline-flex items-center gap-1.5 text-xs font-semibold px-4 py-2 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white shadow-[0_0_20px_rgba(22,163,74,0.4)] transition-all hover:scale-105 active:scale-95"
-            >
-              <span>Conectar</span>
-              <ArrowRight className="h-3 w-3 stroke-[2.5]" />
-            </Link>
+                <button
+                  onClick={handleLogout}
+                  title="Desconectar sessão"
+                  className="hidden sm:inline-flex items-center gap-1 text-xs font-medium text-slate-400 hover:text-red-400 px-2.5 py-1.5 rounded-full hover:bg-red-950/20 transition-colors"
+                >
+                  <LogOut className="h-3 w-3" />
+                  <span>Sair</span>
+                </button>
+              </div>
+            ) : (
+              // Usuário Não Autenticado: Botões de Login e Cadastro
+              <>
+                <Link
+                  href="/login"
+                  onMouseEnter={() => soundManager.playHover()}
+                  onClick={() => soundManager.playClick()}
+                  className="hidden sm:inline-block text-xs font-medium text-slate-300 hover:text-white px-3 py-1.5 rounded-full hover:bg-white/10 transition-colors"
+                >
+                  Entrar
+                </Link>
+
+                <Link
+                  href="/cadastro"
+                  onMouseEnter={() => soundManager.playHover()}
+                  onClick={() => soundManager.playClick()}
+                  className="inline-flex items-center gap-1.5 text-xs font-semibold px-4 py-2 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white shadow-[0_0_20px_rgba(22,163,74,0.4)] transition-all hover:scale-105 active:scale-95"
+                >
+                  <span>Conectar</span>
+                  <ArrowRight className="h-3 w-3 stroke-[2.5]" />
+                </Link>
+              </>
+            )}
 
             {/* Mobile menu trigger */}
             <button
@@ -163,20 +293,50 @@ export function Header() {
             </div>
 
             <div className="pt-3 border-t border-white/10 flex flex-col gap-2">
-              <Link
-                href="/login"
-                onClick={() => setMobileMenuOpen(false)}
-                className="w-full text-center py-2.5 text-sm font-medium text-white bg-white/10 hover:bg-white/15 rounded-xl transition-colors"
-              >
-                Acessar Portal
-              </Link>
-              <Link
-                href="/cadastro"
-                onClick={() => setMobileMenuOpen(false)}
-                className="w-full text-center py-2.5 text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-500 rounded-xl shadow-lg shadow-emerald-600/30 transition-all"
-              >
-                Cadastrar Organização
-              </Link>
+              {isAuthenticated ? (
+                <>
+                  <Link
+                    href={portalHref}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={`w-full text-center py-2.5 text-sm font-semibold text-white rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 ${
+                      isAdmin
+                        ? "bg-purple-600 hover:bg-purple-500 shadow-purple-600/30"
+                        : "bg-emerald-600 hover:bg-emerald-500 shadow-emerald-600/30"
+                    }`}
+                  >
+                    <LayoutDashboard className="h-4 w-4" />
+                    <span>Acessar {portalLabel} ({userName})</span>
+                  </Link>
+
+                  <button
+                    onClick={() => {
+                      setMobileMenuOpen(false)
+                      handleLogout()
+                    }}
+                    className="w-full text-center py-2 text-xs font-medium text-red-400 hover:text-red-300 bg-red-950/20 hover:bg-red-950/40 rounded-xl transition-colors flex items-center justify-center gap-1.5"
+                  >
+                    <LogOut className="h-3.5 w-3.5" />
+                    <span>Desconectar Sessão</span>
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Link
+                    href="/login"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="w-full text-center py-2.5 text-sm font-medium text-white bg-white/10 hover:bg-white/15 rounded-xl transition-colors"
+                  >
+                    Acessar Portal
+                  </Link>
+                  <Link
+                    href="/cadastro"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="w-full text-center py-2.5 text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-500 rounded-xl shadow-lg shadow-emerald-600/30 transition-all"
+                  >
+                    Cadastrar Organização
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         )}
