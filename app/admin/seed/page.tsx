@@ -20,26 +20,178 @@ import {
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
-// ─── Dados de demonstração ────────────────────────────────────────────────────
+// ─── Dados de demonstração estritamente alinhados ao schema.sql ────────────────
 
 const EMPRESAS_SEED = [
-  { razao_social: "Supermercado BomPreço Ltda", nome_fantasia: "BomPreço", cnpj: "11.222.333/0001-01", cidade: "São Paulo", estado: "SP", setor: "varejo_alimentar", selo_doador: true, nivel_selo: "ouro" },
-  { razao_social: "Distribuidora Alimentos do Norte S.A.", nome_fantasia: "NorteAlim", cnpj: "22.333.444/0001-02", cidade: "Manaus", estado: "AM", setor: "distribuicao", selo_doador: true, nivel_selo: "prata" },
-  { razao_social: "Frigorífico Central Pecuária Ltda", nome_fantasia: "FrigoCentral", cnpj: "33.444.555/0001-03", cidade: "Campo Grande", estado: "MS", setor: "frigorifico", selo_doador: false, nivel_selo: null },
-  { razao_social: "Padaria & Confeitaria Horizonte ME", nome_fantasia: "Padaria Horizonte", cnpj: "44.555.666/0001-04", cidade: "Belo Horizonte", estado: "MG", setor: "panificacao", selo_doador: true, nivel_selo: "bronze" },
-  { razao_social: "Cooperativa Agro Sul Ltda", nome_fantasia: "AgroSul", cnpj: "55.666.777/0001-05", cidade: "Porto Alegre", estado: "RS", setor: "cooperativa", selo_doador: true, nivel_selo: "ouro" },
-  { razao_social: "Restaurante Industrial Nexo S.A.", nome_fantasia: "Nexo Food", cnpj: "66.777.888/0001-06", cidade: "Curitiba", estado: "PR", setor: "restaurante_industrial", selo_doador: false, nivel_selo: null },
-  { razao_social: "Hortifrutti Premium Comércio Ltda", nome_fantasia: "HortiFresh", cnpj: "77.888.999/0001-07", cidade: "Campinas", estado: "SP", setor: "hortifruti", selo_doador: true, nivel_selo: "prata" },
-  { razao_social: "Laticínios Vale Verde Ltda", nome_fantasia: "Vale Verde", cnpj: "88.999.000/0001-08", cidade: "Juiz de Fora", estado: "MG", setor: "laticinios", selo_doador: true, nivel_selo: "ouro" },
+  {
+    razao_social: "Supermercado BomPreço Ltda",
+    nome_fantasia: "BomPreço Alimentos",
+    cnpj: "11.222.333/0001-01",
+    endereco: "Av. Paulista, 1000",
+    cidade: "São Paulo",
+    estado: "SP",
+    cep: "01310-100",
+    nivel_selo: "ouro" as const,
+    data_adesao_selo: new Date().toISOString(),
+  },
+  {
+    razao_social: "Distribuidora Alimentos do Norte S.A.",
+    nome_fantasia: "Norte Alimentos",
+    cnpj: "22.333.444/0001-02",
+    endereco: "Rua das Indústrias, 500",
+    cidade: "Manaus",
+    estado: "AM",
+    cep: "69005-010",
+    nivel_selo: "prata" as const,
+    data_adesao_selo: new Date().toISOString(),
+  },
+  {
+    razao_social: "Frigorífico Central Pecuária Ltda",
+    nome_fantasia: "FrigoCentral",
+    cnpj: "33.444.555/0001-03",
+    endereco: "Rodovia BR-163, km 12",
+    cidade: "Campo Grande",
+    estado: "MS",
+    cep: "79002-001",
+    nivel_selo: "aderente" as const,
+    data_adesao_selo: new Date().toISOString(),
+  },
+  {
+    razao_social: "Padaria & Confeitaria Horizonte ME",
+    nome_fantasia: "Padaria Horizonte",
+    cnpj: "44.555.666/0001-04",
+    endereco: "Rua da Bahia, 320",
+    cidade: "Belo Horizonte",
+    estado: "MG",
+    cep: "30160-010",
+    nivel_selo: "aderente" as const,
+    data_adesao_selo: new Date().toISOString(),
+  },
+  {
+    razao_social: "Cooperativa Agro Sul Ltda",
+    nome_fantasia: "AgroSul Cooperativa",
+    cnpj: "55.666.777/0001-05",
+    endereco: "Av. Ipiranga, 2400",
+    cidade: "Porto Alegre",
+    estado: "RS",
+    cep: "90160-090",
+    nivel_selo: "ouro" as const,
+    data_adesao_selo: new Date().toISOString(),
+  },
+  {
+    razao_social: "Restaurante Industrial Nexo S.A.",
+    nome_fantasia: "Nexo Refeições Coletivas",
+    cnpj: "66.777.888/0001-06",
+    endereco: "Rua XV de Novembro, 890",
+    cidade: "Curitiba",
+    estado: "PR",
+    cep: "80020-310",
+    nivel_selo: "prata" as const,
+    data_adesao_selo: new Date().toISOString(),
+  },
+  {
+    razao_social: "Hortifrutti Frescor do Campo Ltda",
+    nome_fantasia: "Frescor Horti",
+    cnpj: "77.888.999/0001-07",
+    endereco: "Av. Orosimbo Maia, 450",
+    cidade: "Campinas",
+    estado: "SP",
+    cep: "13010-211",
+    nivel_selo: "ouro" as const,
+    data_adesao_selo: new Date().toISOString(),
+  },
+  {
+    razao_social: "Laticínios Vale Verde S.A.",
+    nome_fantasia: "Laticínios Vale Verde",
+    cnpj: "88.999.000/0001-08",
+    endereco: "Rua Halfeld, 120",
+    cidade: "Juiz de Fora",
+    estado: "MG",
+    cep: "36010-000",
+    nivel_selo: "ouro" as const,
+    data_adesao_selo: new Date().toISOString(),
+  },
 ]
 
 const INSTITUICOES_SEED = [
-  { razao_social: "Associação Pão da Vida", nome_fantasia: "Pão da Vida", cnpj: "99.111.222/0001-01", tipo_instituicao: "banco_de_alimentos", cidade: "São Paulo", estado: "SP", pessoas_atendidas: 850 },
-  { razao_social: "ONG Mãos Que Alimentam", nome_fantasia: "Mãos Solidárias", cnpj: "99.222.333/0001-02", tipo_instituicao: "ong", cidade: "Rio de Janeiro", estado: "RJ", pessoas_atendidas: 420 },
-  { razao_social: "Abrigo Esperança da Criança", nome_fantasia: "Abrigo Esperança", cnpj: "99.333.444/0001-03", tipo_instituicao: "abrigo", cidade: "Salvador", estado: "BA", pessoas_atendidas: 180 },
-  { razao_social: "Centro Comunitário Raízes do Norte", nome_fantasia: "Raízes do Norte", cnpj: "99.444.555/0001-04", tipo_instituicao: "centro_comunitario", cidade: "Fortaleza", estado: "CE", pessoas_atendidas: 310 },
-  { razao_social: "Instituto Alimento e Dignidade", nome_fantasia: "IAD", cnpj: "99.555.666/0001-05", tipo_instituicao: "instituto", cidade: "Recife", estado: "PE", pessoas_atendidas: 560 },
-  { razao_social: "Casa de Acolhimento São Francisco", nome_fantasia: "Casa São Francisco", cnpj: "99.666.777/0001-06", tipo_instituicao: "abrigo", cidade: "Belém", estado: "PA", pessoas_atendidas: 95 },
+  {
+    razao_social: "Associação Beneficente Pão da Vida",
+    cnpj: "99.111.222/0001-01",
+    tipo_instituicao: "ong" as const,
+    capacidade_atend: 1000,
+    pessoas_atendidas: 850,
+    endereco: "Rua da Solidariedade, 45",
+    cidade: "São Paulo",
+    estado: "SP",
+    cep: "01000-000",
+    responsavel_tecnico: "Dra. Helena Martins",
+    alvara_sanitario: "ALV-SP-2025/9981",
+  },
+  {
+    razao_social: "Instituição de Amparo Mãos Que Acolhem",
+    cnpj: "99.222.333/0001-02",
+    tipo_instituicao: "ong" as const,
+    capacidade_atend: 500,
+    pessoas_atendidas: 420,
+    endereco: "Rua do Catete, 180",
+    cidade: "Rio de Janeiro",
+    estado: "RJ",
+    cep: "22220-000",
+    responsavel_tecnico: "Carlos Eduardo Souza",
+    alvara_sanitario: "ALV-RJ-2025/1102",
+  },
+  {
+    razao_social: "Abrigo Esperança e Fraternidade",
+    cnpj: "99.333.444/0001-03",
+    tipo_instituicao: "abrigo" as const,
+    capacidade_atend: 200,
+    pessoas_atendidas: 180,
+    endereco: "Ladeira do Pelourinho, 12",
+    cidade: "Salvador",
+    estado: "BA",
+    cep: "40026-010",
+    responsavel_tecnico: "Irmã Maria Clara",
+    alvara_sanitario: "ALV-BA-2025/4431",
+  },
+  {
+    razao_social: "Centro Comunitário Raízes do Ceará",
+    cnpj: "99.444.555/0001-04",
+    tipo_instituicao: "comunitaria" as const,
+    capacidade_atend: 400,
+    pessoas_atendidas: 310,
+    endereco: "Av. Beira Mar, 1050",
+    cidade: "Fortaleza",
+    estado: "CE",
+    cep: "60165-121",
+    responsavel_tecnico: "Prof. Francisco Bezerra",
+    alvara_sanitario: "ALV-CE-2025/7821",
+  },
+  {
+    razao_social: "Pastoral da Criança e Assistência Social",
+    cnpj: "99.555.666/0001-05",
+    tipo_instituicao: "religiosa" as const,
+    capacidade_atend: 650,
+    pessoas_atendidas: 560,
+    endereco: "Rua da Aurora, 200",
+    cidade: "Recife",
+    estado: "PE",
+    cep: "50050-000",
+    responsavel_tecnico: "Ana Paula Albuquerque",
+    alvara_sanitario: "ALV-PE-2025/5519",
+  },
+  {
+    razao_social: "Casa de Acolhimento São Francisco de Assis",
+    cnpj: "99.666.777/0001-06",
+    tipo_instituicao: "abrigo" as const,
+    capacidade_atend: 120,
+    pessoas_atendidas: 95,
+    endereco: "Travessa Padre Eutíquio, 90",
+    cidade: "Belém",
+    estado: "PA",
+    cep: "66015-000",
+    responsavel_tecnico: "Dr. Roberto Caldas",
+    alvara_sanitario: "ALV-PA-2025/3340",
+  },
 ]
 
 type SeedStep = {
@@ -47,8 +199,6 @@ type SeedStep = {
   status: "pending" | "running" | "done" | "error"
   count?: number
 }
-
-// ─── Componente ───────────────────────────────────────────────────────────────
 
 export default function SeedPage() {
   const [steps, setSteps] = useState<SeedStep[]>([
@@ -72,60 +222,127 @@ export default function SeedPage() {
     setSteps(prev => prev.map(s => ({ ...s, status: "pending" })))
 
     const supabase = createClient()
-    let empresaIds: string[] = []
-    let instituicaoIds: string[] = []
+    let empresaIds: number[] = []
+    let instituicaoIds: number[] = []
 
     try {
       // ── STEP 0: Empresas ──────────────────────────────────────────────────
       updateStep(0, { status: "running" })
-      const { data: empData, error: empErr } = await supabase
+
+      // Upsert/Insert tolerante: busca se já existem ou insere novos
+      const { data: empExistentes } = await supabase
         .from("empresas")
-        .insert(EMPRESAS_SEED.map(e => ({ ...e, verificada: true })))
-        .select("id")
-      if (empErr) throw new Error(`Empresas: ${empErr.message}`)
-      empresaIds = (empData || []).map((e: { id: string }) => e.id)
+        .select("id, cnpj")
+        .in("cnpj", EMPRESAS_SEED.map(e => e.cnpj))
+
+      const cnpjsCadastrados = new Set((empExistentes || []).map(e => e.cnpj))
+      const empresasParaInserir = EMPRESAS_SEED.filter(e => !cnpjsCadastrados.has(e.cnpj))
+
+      if (empresasParaInserir.length > 0) {
+        const { data: empData, error: empErr } = await supabase
+          .from("empresas")
+          .insert(empresasParaInserir)
+          .select("id")
+        if (empErr) throw new Error(`Empresas: ${empErr.message}`)
+        empresaIds = [
+          ...(empExistentes || []).map(e => e.id),
+          ...(empData || []).map(e => e.id),
+        ]
+      } else {
+        empresaIds = (empExistentes || []).map(e => e.id)
+      }
       updateStep(0, { status: "done", count: empresaIds.length })
 
       // ── STEP 1: Instituições ──────────────────────────────────────────────
       updateStep(1, { status: "running" })
-      const { data: instData, error: instErr } = await supabase
+
+      const { data: instExistentes } = await supabase
         .from("instituicoes")
-        .insert(INSTITUICOES_SEED.map(i => ({ ...i, verificada: true })))
-        .select("id")
-      if (instErr) throw new Error(`Instituições: ${instErr.message}`)
-      instituicaoIds = (instData || []).map((i: { id: string }) => i.id)
+        .select("id, cnpj")
+        .in("cnpj", INSTITUICOES_SEED.map(i => i.cnpj))
+
+      const cnpjsInstCadastrados = new Set((instExistentes || []).map(i => i.cnpj))
+      const instParaInserir = INSTITUICOES_SEED.filter(i => !cnpjsInstCadastrados.has(i.cnpj))
+
+      if (instParaInserir.length > 0) {
+        const { data: instData, error: instErr } = await supabase
+          .from("instituicoes")
+          .insert(instParaInserir)
+          .select("id")
+        if (instErr) throw new Error(`Instituições: ${instErr.message}`)
+        instituicaoIds = [
+          ...(instExistentes || []).map(i => i.id),
+          ...(instData || []).map(i => i.id),
+        ]
+      } else {
+        instituicaoIds = (instExistentes || []).map(i => i.id)
+      }
       updateStep(1, { status: "done", count: instituicaoIds.length })
 
       // ── STEP 2: Lotes de doação ───────────────────────────────────────────
       updateStep(2, { status: "running" })
 
-      const categorias = ["hortifruti", "graos_cereais", "laticinios", "proteinas", "panificacao", "bebidas", "conservas", "temperos"]
-      const statuses = ["disponivel", "disponivel", "disponivel", "reservado", "entregue", "entregue"]
-      const destinos = ["banco_de_alimentos", "ong", "abrigo", "cozinha_comunitaria", "escola_publica"]
+      // Enums válidos segundo o schema.sql
+      const categoriasValidas = [
+        "proteina",
+        "graos_cereais",
+        "fruta",
+        "hortalica",
+        "laticinio",
+        "ultraprocessado",
+        "outro",
+      ] as const
+
+      const statusesValidos = [
+        "disponivel",
+        "disponivel",
+        "disponivel",
+        "reservado",
+        "entregue",
+        "entregue",
+      ] as const
+
+      const armazenamentos = ["ambiente", "refrigerado", "congelado"] as const
+
+      const titulosExemplo = [
+        "Lote de Arroz e Feijão Orgânico",
+        "Frutas Selecionadas da Estação",
+        "Cortes de Frango Congelados",
+        "Hortaliças e Legumes Frescos",
+        "Leite Integral e Derivados",
+        "Pães e Alimentos Processados",
+        "Iogurtes e Queijos Pasteurizados",
+        "Maçãs e Bananas Climatizadas",
+      ]
 
       const hoje = new Date()
+      const timestampBase = Date.now().toString().slice(-6)
+
       const lotes = Array.from({ length: 24 }, (_, i) => {
         const validade = new Date(hoje)
-        validade.setDate(hoje.getDate() + Math.floor(Math.random() * 60) + 5)
-        const categoria = categorias[i % categorias.length]
-        const status = statuses[i % statuses.length]
+        validade.setDate(hoje.getDate() + Math.floor(Math.random() * 45) + 5)
+        const categoria = categoriasValidas[i % categoriasValidas.length]
+        const status = statusesValidos[i % statusesValidos.length]
         const empresaId = empresaIds[i % empresaIds.length]
-        const destinoInstId = instituicaoIds[i % instituicaoIds.length]
-        const codigo = `FC-${new Date().getFullYear()}-${String(100000 + i + 1)}`
+        const armaz = armazenamentos[i % armazenamentos.length]
+        const codigo = `FC-${hoje.getFullYear()}-${timestampBase}${String(i + 1).padStart(2, "0")}`
 
         return {
           empresa_id: empresaId,
+          codigo_rastreio: codigo,
+          titulo: titulosExemplo[i % titulosExemplo.length],
+          tipo_alimento: categoria.replace(/_/g, " "),
+          descricao: `Lote de ${categoria.replace(/_/g, " ")} para doação em conformidade com o PNCPDA — Demonstração PNCPDA TCC`,
           categoria,
-          descricao: `Lote de ${categoria.replace(/_/g, " ")} para doação — Demonstração PNCPDA`,
           quantidade_kg: Math.round((Math.random() * 450 + 50) * 10) / 10,
           data_validade: validade.toISOString().split("T")[0],
+          armazenamento: armaz,
+          condicao_armazenamento: armaz,
+          destino_recomendado: "humano" as const,
+          destino: "humano",
           status,
-          destino: destinos[i % destinos.length],
-          instituicao_destino_id: status !== "disponivel" ? destinoInstId : null,
-          codigo_rastreio: codigo,
-          condicoes_armazenamento: ["refrigerado", "temperatura_ambiente", "congelado"][i % 3],
-          certificado_sanitario: true,
-          observacoes: "Dados de demonstração — TCC FoodCycle",
+          microcoleta: false,
+          termo_aceite: true,
         }
       })
 
@@ -142,10 +359,11 @@ export default function SeedPage() {
         acao: "SEED_DADOS_DEMONSTRACAO",
         entidade: "seed",
         detalhes: {
-          empresas_inseridas: empresaIds.length,
-          instituicoes_inseridas: instituicaoIds.length,
-          lotes_inseridos: (loteData || []).length,
-          fonte: "Painel Admin → Seed de Demonstração",
+          empresas_cadastradas: empresaIds.length,
+          instituicoes_cadastradas: instituicaoIds.length,
+          lotes_gerados: (loteData || []).length,
+          timestamp: new Date().toISOString(),
+          origem: "Painel Admin → Seed Acadêmico",
         },
       })
       updateStep(3, { status: "done" })
@@ -157,7 +375,7 @@ export default function SeedPage() {
 
       setDone(true)
       toast.success("🌱 Seed concluído com sucesso!", {
-        description: `${empresaIds.length} empresas, ${instituicaoIds.length} instituições e ${(loteData || []).length} lotes inseridos.`,
+        description: `${empresaIds.length} empresas, ${instituicaoIds.length} instituições e ${(loteData || []).length} lotes prontos para a banca.`,
       })
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err)
@@ -172,10 +390,14 @@ export default function SeedPage() {
     setClearing(true)
     const supabase = createClient()
     try {
-      await supabase.from("doacoes").delete().like("observacoes", "%Dados de demonstração%")
+      await supabase.from("doacoes").delete().like("descricao", "%Demonstração PNCPDA TCC%")
       await supabase.from("instituicoes").delete().in("cnpj", INSTITUICOES_SEED.map(i => i.cnpj))
       await supabase.from("empresas").delete().in("cnpj", EMPRESAS_SEED.map(e => e.cnpj))
-      await logAdminAudit({ acao: "LIMPAR_SEED_DEMONSTRACAO", entidade: "seed", detalhes: { origem: "Painel Admin → Seed" } })
+      await logAdminAudit({
+        acao: "LIMPAR_SEED_DEMONSTRACAO",
+        entidade: "seed",
+        detalhes: { origem: "Painel Admin → Seed" },
+      })
       await broadcastMetricsUpdate()
       setDone(false)
       setSteps(prev => prev.map(s => ({ ...s, status: "pending" })))
@@ -207,7 +429,7 @@ export default function SeedPage() {
           Carga de Dados de Demonstração
         </h1>
         <p className="text-sm text-slate-500 dark:text-slate-400">
-          Popula o banco com dados realistas de empresas, instituições e lotes de doação para apresentação do TCC. Todos os registros são marcados como <code className="text-purple-400 text-xs bg-purple-950/40 px-1 py-0.5 rounded">demonstração</code> para fácil identificação e remoção.
+          Popula o banco com dados realistas de empresas, instituições e lotes de doação para apresentação do TCC. Todos os registros são marcados para fácil identificação e remoção posterior.
         </p>
       </div>
 
