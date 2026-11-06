@@ -20,7 +20,8 @@ import {
   X,
   ChevronRight,
   Sun,
-  Moon
+  Moon,
+  Database,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useState, useEffect } from "react"
@@ -73,6 +74,11 @@ const adminNavItems = [
     href: "/admin/auditoria",
     icon: ShieldCheck,
   },
+  {
+    title: "Seed de Demonstração",
+    href: "/admin/seed",
+    icon: Database,
+  },
 ]
 
 export function AdminSidebar({ userEmail, userName }: { userEmail: string; userName: string }) {
@@ -121,7 +127,7 @@ export function AdminSidebar({ userEmail, userName }: { userEmail: string; userN
         "fixed inset-y-0 left-0 z-40 flex w-72 flex-col border-r border-slate-200 dark:border-emerald-950/60 bg-white dark:bg-[#040E0B] text-slate-800 dark:text-[#F8FAFC] transition-all duration-300 lg:translate-x-0 selection:bg-purple-500 selection:text-white shadow-xl lg:shadow-none",
         mobileOpen ? "translate-x-0" : "-translate-x-full"
       )}>
-        {/* Header do Admin - Aponta para /admin */}
+        {/* Header do Admin */}
         <div className="flex h-20 items-center gap-3 border-b border-slate-200 dark:border-emerald-950/60 px-6">
           <Link href="/admin" className="flex items-center gap-2.5 group">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-purple-500 to-emerald-500 shadow-md shadow-purple-950/60 group-hover:scale-105 transition-transform">
@@ -130,7 +136,7 @@ export function AdminSidebar({ userEmail, userName }: { userEmail: string; userN
             <div>
               <span className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-1.5 font-sans">
                 FoodCycle
-                <span className="text-[9px] font-semibold uppercase tracking-wider text-purple-700 dark:text-purple-300 bg-purple-100 dark:bg-purple-950/80 border border-purple-300 dark:border-purple-800/60 px-1.5 py-0.2 rounded">
+                <span className="text-[9px] font-semibold uppercase tracking-wider text-purple-700 dark:text-purple-300 bg-purple-100 dark:bg-purple-950/80 border border-purple-300 dark:border-purple-800/60 px-1.5 py-0.5 rounded">
                   GOV
                 </span>
               </span>
@@ -160,6 +166,7 @@ export function AdminSidebar({ userEmail, userName }: { userEmail: string; userN
 
           {adminNavItems.map((item) => {
             const isActive = pathname === item.href
+            const isSeed = item.href === "/admin/seed"
             return (
               <Link
                 key={item.href}
@@ -169,13 +176,19 @@ export function AdminSidebar({ userEmail, userName }: { userEmail: string; userN
                   "group flex items-center justify-between rounded-xl px-3.5 py-2.5 text-xs font-medium transition-all",
                   isActive
                     ? "bg-purple-100 dark:bg-purple-950/80 text-purple-900 dark:text-purple-200 border border-purple-300 dark:border-purple-800/60 font-semibold shadow-sm"
+                    : isSeed
+                    ? "text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/20 hover:text-amber-700 dark:hover:text-amber-300"
                     : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-[#071B17] hover:text-slate-900 dark:hover:text-white"
                 )}
               >
                 <div className="flex items-center gap-3">
                   <item.icon className={cn(
                     "h-4 w-4 transition-colors",
-                    isActive ? "text-purple-600 dark:text-purple-400" : "text-slate-500 dark:text-slate-400 group-hover:text-purple-600 dark:group-hover:text-purple-400"
+                    isActive
+                      ? "text-purple-600 dark:text-purple-400"
+                      : isSeed
+                      ? "text-amber-500 dark:text-amber-400"
+                      : "text-slate-500 dark:text-slate-400 group-hover:text-purple-600 dark:group-hover:text-purple-400"
                   )} />
                   <span>{item.title}</span>
                 </div>
@@ -199,7 +212,7 @@ export function AdminSidebar({ userEmail, userName }: { userEmail: string; userN
           <Button
             variant="outline"
             size="sm"
-            className="w-full text-xs h-8.5 border-slate-300 dark:border-emerald-950 bg-white dark:bg-[#071B17] text-slate-700 dark:text-slate-300 hover:text-purple-600 dark:hover:text-purple-400 hover:border-purple-300 dark:hover:border-purple-800/60 hover:bg-purple-50 dark:hover:bg-purple-950/30 transition-all cursor-pointer shadow-sm flex items-center justify-center gap-2"
+            className="w-full text-xs border-slate-300 dark:border-emerald-950 bg-white dark:bg-[#071B17] text-slate-700 dark:text-slate-300 hover:text-purple-600 dark:hover:text-purple-400 hover:border-purple-300 dark:hover:border-purple-800/60 hover:bg-purple-50 dark:hover:bg-purple-950/30 transition-all cursor-pointer shadow-sm flex items-center justify-center gap-2"
             onClick={() => setTheme(isLight ? "dark" : "light")}
             title={isLight ? "Mudar para Tema Escuro" : "Mudar para Tema Claro"}
           >
@@ -220,7 +233,7 @@ export function AdminSidebar({ userEmail, userName }: { userEmail: string; userN
           <Button
             variant="outline"
             size="sm"
-            className="w-full text-xs h-8.5 border-slate-300 dark:border-emerald-950 bg-white dark:bg-[#071B17] text-slate-700 dark:text-slate-300 hover:text-red-600 dark:hover:text-red-400 hover:border-red-300 dark:hover:border-red-900/60 hover:bg-red-50 dark:hover:bg-red-950/30 transition-all cursor-pointer shadow-sm flex items-center justify-center gap-1.5"
+            className="w-full text-xs border-slate-300 dark:border-emerald-950 bg-white dark:bg-[#071B17] text-slate-700 dark:text-slate-300 hover:text-red-600 dark:hover:text-red-400 hover:border-red-300 dark:hover:border-red-900/60 hover:bg-red-50 dark:hover:bg-red-950/30 transition-all cursor-pointer shadow-sm flex items-center justify-center gap-1.5"
             onClick={handleLogout}
           >
             <LogOut className="h-3.5 w-3.5 mr-1" />
