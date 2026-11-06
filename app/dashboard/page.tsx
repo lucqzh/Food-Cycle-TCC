@@ -30,7 +30,8 @@ import {
   Sprout, 
   Recycle, 
   ShieldCheck,
-  Sparkles
+  Sparkles,
+  Zap
 } from "lucide-react"
 import { 
   BarChart, 
@@ -41,15 +42,6 @@ import {
   Tooltip, 
   ResponsiveContainer 
 } from "recharts"
-
-const fallbackCategories = [
-  { name: "Proteínas", value: 275, percentage: 22, color: "#10B981", icon: Beef, status: "Bom" },
-  { name: "Grãos e Cereais", value: 350, percentage: 28, color: "#F59E0B", icon: Wheat, status: "Excelente" },
-  { name: "Frutas", value: 188, percentage: 15, color: "#34D399", icon: Apple, status: "Adequado" },
-  { name: "Hortaliças", value: 225, percentage: 18, color: "#059669", icon: Carrot, status: "Bom" },
-  { name: "Laticínios", value: 125, percentage: 10, color: "#6EE7B7", icon: Milk, status: "Baixo" },
-  { name: "Ultraprocessados", value: 87, percentage: 7, color: "#F87171", icon: Cookie, status: "Adequado" }
-]
 
 const fallbackMonthly = [
   { mes: "Jan", quantidade: 800 },
@@ -86,7 +78,7 @@ const companyBadges = [
 
 export default function DashboardPage() {
   const router = useRouter()
-  const { metrics, isLoading } = useDonationMetrics()
+  const { metrics, isLoading, isRealtimeActive, isPulsing, lastUpdated } = useDonationMetrics()
 
   useEffect(() => {
     const supabase = createClient()
@@ -116,32 +108,33 @@ export default function DashboardPage() {
     verificarCadastro()
   }, [router])
 
+  // Se houver doações reais no banco, utiliza a métrica real calculada; senão fallback base
   const displayTotalKg = metrics.totalKg > 0 ? metrics.totalKg : 1250
-  const displayAtivas = metrics.totalKg > 0 ? metrics.doacoesAtivas : 24
+  const displayAtivas = metrics.totalDoacoes > 0 ? metrics.doacoesAtivas : 24
   const displayBeneficiarios = metrics.beneficiarios > 0 ? metrics.beneficiarios : 450
   const monthlyData = metrics.totalKg > 0 ? metrics.monthlyData : fallbackMonthly
 
   const destinacaoData = [
     {
       titulo: "Consumo Humano",
-      valor: `${Math.round(displayTotalKg * 0.86).toLocaleString("pt-BR")} kg`,
-      percentual: 86,
+      valor: `${Math.round(displayTotalKg * (metrics.totalKg > 0 ? (metrics.destinacaoData[0]?.percentual || 86) / 100 : 0.86)).toLocaleString("pt-BR")} kg`,
+      percentual: metrics.totalKg > 0 ? (metrics.destinacaoData[0]?.percentual || 86) : 86,
       icon: Heart,
       badge: "Prioridade Legal (PNCPDA)",
       color: "text-emerald-400 bg-emerald-500/10 border-emerald-500/20"
     },
     {
       titulo: "Consumo Animal",
-      valor: `${Math.round(displayTotalKg * 0.10).toLocaleString("pt-BR")} kg`,
-      percentual: 10,
+      valor: `${Math.round(displayTotalKg * (metrics.totalKg > 0 ? (metrics.destinacaoData[1]?.percentual || 10) / 100 : 0.10)).toLocaleString("pt-BR")} kg`,
+      percentual: metrics.totalKg > 0 ? (metrics.destinacaoData[1]?.percentual || 10) : 10,
       icon: Sprout,
       badge: "2ª Opção Prioritária",
       color: "text-amber-400 bg-amber-500/10 border-amber-500/20"
     },
     {
       titulo: "Compostagem / Biomassa",
-      valor: `${Math.round(displayTotalKg * 0.04).toLocaleString("pt-BR")} kg`,
-      percentual: 4,
+      valor: `${Math.round(displayTotalKg * (metrics.totalKg > 0 ? (metrics.destinacaoData[2]?.percentual || 4) / 100 : 0.04)).toLocaleString("pt-BR")} kg`,
+      percentual: metrics.totalKg > 0 ? (metrics.destinacaoData[2]?.percentual || 4) : 4,
       icon: Recycle,
       badge: "Última Instância",
       color: "text-slate-300 bg-slate-500/10 border-slate-500/20"
@@ -152,25 +145,25 @@ export default function DashboardPage() {
     {
       title: "Total de Alimentos Salvos",
       value: isLoading ? "..." : `${displayTotalKg.toLocaleString("pt-BR")} kg`,
-      description: metrics.totalKg > 0 ? "Registrados em blockchain/banco" : "Volume acumulado na rede",
+      description: metrics.totalKg > 0 ? "Registrados em tempo real no banco" : "Volume acumulado na rede",
       icon: Package,
-      trend: `${metrics.totalDoacoes || 8} lotes ativos`,
+      trend: `${metrics.totalDoacoes > 0 ? metrics.totalDoacoes : 8} lotes registrados`,
       iconBg: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30"
     },
     {
       title: "Doações Disponíveis para Retirada",
       value: isLoading ? "..." : `${displayAtivas}`,
-      description: "Lotes aguardando instituição",
+      description: "Lotes aguardando instituição receptora",
       icon: TrendingUp,
-      trend: "Tempo real",
+      trend: isRealtimeActive ? "Sincronizado" : "Tempo real",
       iconBg: "bg-amber-500/20 text-amber-400 border-amber-500/30"
     },
     {
       title: "Pessoas Beneficiadas",
       value: isLoading ? "..." : `${displayBeneficiarios.toLocaleString("pt-BR")}`,
-      description: "Impacto social mapeado",
+      description: "Impacto social mapeado (ODS 2)",
       icon: Users,
-      trend: "ODS 2 Fome Zero",
+      trend: `${metrics.totalRefeicoes > 0 ? metrics.totalRefeicoes : Math.round(displayTotalKg * 4)} refeições`,
       iconBg: "bg-blue-500/20 text-blue-400 border-blue-500/30"
     }
   ]
@@ -178,10 +171,10 @@ export default function DashboardPage() {
   const recentList = metrics.recentDonations.length > 0
     ? metrics.recentDonations
     : [
-        { alimento: "Arroz Integral", empresa: "Supermercado Bom Preço", quantidade: "50 kg", categoria: "Graos" },
-        { alimento: "Maçãs Gala", empresa: "Hortifruti Central", quantidade: "30 kg", categoria: "Frutas" },
-        { alimento: "Leite Pasteurizado", empresa: "Laticínios Sul", quantidade: "100 L", categoria: "Laticinios" },
-        { alimento: "Feijão Preto Tipo 1", empresa: "Distribuidora Alimentos", quantidade: "40 kg", categoria: "Graos" }
+        { id: 1, alimento: "Arroz Integral", empresa: "Supermercado Bom Preço", quantidade: "50 kg", categoria: "Graos", destino: "humano", status: "disponivel" },
+        { id: 2, alimento: "Maçãs Gala", empresa: "Hortifruti Central", quantidade: "30 kg", categoria: "Frutas", destino: "humano", status: "disponivel" },
+        { id: 3, alimento: "Leite Pasteurizado", empresa: "Laticínios Sul", quantidade: "100 L", categoria: "Laticinios", destino: "humano", status: "disponivel" },
+        { id: 4, alimento: "Feijão Preto Tipo 1", empresa: "Distribuidora Alimentos", quantidade: "40 kg", categoria: "Graos", destino: "humano", status: "disponivel" }
       ]
 
   return (
@@ -189,10 +182,31 @@ export default function DashboardPage() {
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between pb-6 border-b border-emerald-950/60">
         <div>
-          <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-emerald-950/80 border border-emerald-800/40 px-3 py-1 text-xs font-medium text-emerald-300">
-            <Scale className="h-3.5 w-3.5 text-amber-400" />
-            Conformidade Integral Lei nº 15.224/2025 • PNCPDA
+          <div className="flex flex-wrap items-center gap-2 mb-2">
+            <div className="inline-flex items-center gap-2 rounded-full bg-emerald-950/80 border border-emerald-800/40 px-3 py-1 text-xs font-medium text-emerald-300">
+              <Scale className="h-3.5 w-3.5 text-amber-400" />
+              Conformidade Integral Lei nº 15.224/2025 • PNCPDA
+            </div>
+
+            {/* Badge de Sincronização em Tempo Real */}
+            <div className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-mono font-medium border transition-all duration-300 ${
+              isPulsing 
+                ? "bg-emerald-500/30 text-emerald-300 border-emerald-400 scale-105 shadow-[0_0_15px_rgba(16,185,129,0.5)]" 
+                : isRealtimeActive
+                  ? "bg-emerald-950/60 text-emerald-400 border-emerald-800/40"
+                  : "bg-slate-800/60 text-slate-400 border-slate-700/40"
+            }`}>
+              <span className={`h-2 w-2 rounded-full ${isRealtimeActive ? "bg-emerald-400 animate-pulse" : "bg-slate-400"}`} />
+              <Zap className="h-3 w-3 text-emerald-400" />
+              <span>{isRealtimeActive ? "Sincronização em Tempo Real Ativa" : "Conectando ao Realtime..."}</span>
+              {lastUpdated && (
+                <span className="hidden md:inline text-[10px] text-emerald-400/80 ml-1">
+                  • {lastUpdated.toLocaleTimeString("pt-BR")}
+                </span>
+              )}
+            </div>
           </div>
+
           <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white font-serif">
             Painel Operacional
           </h1>
@@ -200,6 +214,7 @@ export default function DashboardPage() {
             Gestão de excedentes, rastreabilidade de lotes e metas de combate à fome.
           </p>
         </div>
+
         <div className="flex items-center gap-3">
           <Button asChild className="h-10 bg-emerald-500 hover:bg-emerald-400 text-[#071B17] font-bold text-xs tracking-wide shadow-lg shadow-emerald-950/60 cursor-pointer">
             <Link href="/dashboard/doacoes">
@@ -210,12 +225,16 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Stats Cards */}
+      {/* Stats Cards com Pulso Dinâmico quando alterado pelo Admin */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {statsCards.map((stat) => (
           <div
             key={stat.title}
-            className="rounded-2xl border border-emerald-950/80 bg-gradient-to-br from-[#0A241F]/80 to-[#071B17]/90 p-6 backdrop-blur shadow-xl relative overflow-hidden group hover:border-emerald-800/60 transition-all"
+            className={`rounded-2xl border bg-gradient-to-br from-[#0A241F]/80 to-[#071B17]/90 p-6 backdrop-blur shadow-xl relative overflow-hidden group transition-all duration-300 ${
+              isPulsing 
+                ? "border-emerald-400 shadow-[0_0_25px_rgba(16,185,129,0.35)] scale-[1.01]" 
+                : "border-emerald-950/80 hover:border-emerald-800/60"
+            }`}
           >
             <div className="flex items-start justify-between">
               <div>
@@ -259,13 +278,15 @@ export default function DashboardPage() {
             return (
               <div
                 key={item.titulo}
-                className="rounded-xl border border-emerald-950/60 bg-[#0A241F]/40 p-5 space-y-3 relative"
+                className="rounded-xl border border-emerald-950/60 bg-[#0A241F]/40 p-4 space-y-3"
               >
                 <div className="flex items-center justify-between">
-                  <span className={`text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full border ${item.color}`}>
+                  <div className={`p-2 rounded-lg ${item.color}`}>
+                    <Icon className="h-4 w-4" />
+                  </div>
+                  <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 font-mono">
                     {item.badge}
                   </span>
-                  <Icon className="h-5 w-5 text-slate-400" />
                 </div>
                 <div>
                   <h4 className="text-sm font-bold text-white">{item.titulo}</h4>
@@ -384,6 +405,8 @@ export default function DashboardPage() {
                 <th className="py-3 px-4">Empresa / Doador</th>
                 <th className="py-3 px-4">Quantidade</th>
                 <th className="py-3 px-4">Categoria Nutricional</th>
+                <th className="py-3 px-4">Destino</th>
+                <th className="py-3 px-4">Status</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-emerald-950/50">
@@ -391,10 +414,20 @@ export default function DashboardPage() {
                 <tr key={idx} className="hover:bg-[#0A241F]/30 transition-colors">
                   <td className="py-3.5 px-4 font-semibold text-white">{item.alimento}</td>
                   <td className="py-3.5 px-4 text-slate-300">{item.empresa}</td>
-                  <td className="py-3.5 px-4 font-mono text-emerald-400">{item.quantidade}</td>
+                  <td className="py-3.5 px-4 font-mono text-emerald-400 font-bold">{item.quantidade}</td>
                   <td className="py-3.5 px-4">
                     <span className="px-2 py-0.5 rounded-full text-[10px] font-mono bg-emerald-950 text-emerald-300 border border-emerald-800/40">
                       {item.categoria}
+                    </span>
+                  </td>
+                  <td className="py-3.5 px-4 capitalize text-slate-400">{item.destino || "Humano"}</td>
+                  <td className="py-3.5 px-4">
+                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono ${
+                      item.status === "entregue"
+                        ? "bg-purple-950 text-purple-300 border border-purple-800/40"
+                        : "bg-emerald-950 text-emerald-300 border border-emerald-800/40"
+                    }`}>
+                      {item.status || "disponível"}
                     </span>
                   </td>
                 </tr>

@@ -13,6 +13,7 @@ import {
   TrendingUp,
   Package
 } from "lucide-react"
+import { RealtimeMetricasController } from "@/components/admin/realtime-metricas-controller"
 
 export default async function AdminMetricasPage() {
   const supabase = await createClient()
@@ -71,10 +72,13 @@ export default async function AdminMetricasPage() {
           Alinhamento com Meta 12.3 e ODS 2 da ONU
         </div>
         <h1 className="text-3xl font-bold tracking-tight text-foreground">Métricas de Impacto Social & Ambiental</h1>
-        <p className="text-muted-foreground">
+        <p className="text-muted-foreground text-xs sm:text-sm">
           Indicadores consolidados para apresentação de TCC e prestação de contas da PNCPDA (Lei nº 15.224/2025).
         </p>
       </div>
+
+      {/* Console de Controle em Tempo Real do Dashboard */}
+      <RealtimeMetricasController />
 
       {/* Grid de Impacto */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">

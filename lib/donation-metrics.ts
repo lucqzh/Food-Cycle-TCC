@@ -27,6 +27,7 @@ export interface MetricSummary {
   totalDoacoes: number
   doacoesAtivas: number
   beneficiarios: number
+  totalRefeicoes: number
   categoryData: {
     name: string
     value: number
@@ -43,10 +44,14 @@ export interface MetricSummary {
   }[]
   monthlyData: { mes: string; quantidade: number }[]
   recentDonations: {
+    id: number
     alimento: string
     empresa: string
     quantidade: string
+    quantidadeNum: number
     categoria: string
+    destino: string
+    status: string
   }[]
 }
 
@@ -55,16 +60,45 @@ const emptySummary: MetricSummary = {
   totalDoacoes: 0,
   doacoesAtivas: 0,
   beneficiarios: 0,
+  totalRefeicoes: 0,
   categoryData: [],
   destinacaoData: [],
   monthlyData: [],
   recentDonations: [],
 }
 
+/**
+ * Transmite uma notificação via Supabase Realtime Broadcast
+ * para atualizar instantaneamente todos os dashboards e telas abertas.
+ */
+export async function broadcastMetricsUpdate(detail?: string) {
+  try {
+    const supabase = createClient()
+    const channel = supabase.channel("foodcycle-realtime-metrics")
+    channel.subscribe((status) => {
+      if (status === "SUBSCRIBED") {
+        channel.send({
+          type: "broadcast",
+          event: "metrics_sync",
+          payload: {
+            timestamp: new Date().toISOString(),
+            detail: detail || "Atualização administrativa transmitida em tempo real"
+          }
+        })
+      }
+    })
+  } catch (e) {
+    console.error("Erro ao emitir broadcast de métricas:", e)
+  }
+}
+
 export function useDonationMetrics() {
   const [metrics, setMetrics] = useState<MetricSummary>(emptySummary)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [isRealtimeActive, setIsRealtimeActive] = useState(false)
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
+  const [isPulsing, setIsPulsing] = useState(false)
 
   const load = useCallback(async () => {
     try {
@@ -130,7 +164,7 @@ export function useDonationMetrics() {
           name: "Proteínas",
           value: categoryMap.proteina,
           percentage: Math.round((categoryMap.proteina / totalCalculado) * 100),
-          color: "hsl(var(--chart-1))",
+          color: "#10B981",
           icon: Beef,
           status: categoryMap.proteina > 0 ? "Bom" : "Adequado",
         },
@@ -138,7 +172,7 @@ export function useDonationMetrics() {
           name: "Grãos e Cereais",
           value: categoryMap.graos_cereais,
           percentage: Math.round((categoryMap.graos_cereais / totalCalculado) * 100),
-          color: "hsl(var(--chart-2))",
+          color: "#F59E0B",
           icon: Wheat,
           status: categoryMap.graos_cereais > 0 ? "Excelente" : "Adequado",
         },
@@ -146,7 +180,7 @@ export function useDonationMetrics() {
           name: "Frutas",
           value: categoryMap.fruta,
           percentage: Math.round((categoryMap.fruta / totalCalculado) * 100),
-          color: "hsl(var(--chart-3))",
+          color: "#34D399",
           icon: Apple,
           status: categoryMap.fruta > 0 ? "Adequado" : "Adequado",
         },
@@ -154,7 +188,7 @@ export function useDonationMetrics() {
           name: "Hortaliças",
           value: categoryMap.hortalica,
           percentage: Math.round((categoryMap.hortalica / totalCalculado) * 100),
-          color: "hsl(var(--chart-4))",
+          color: "#059669",
           icon: Carrot,
           status: categoryMap.hortalica > 0 ? "Bom" : "Adequado",
         },
@@ -162,7 +196,7 @@ export function useDonationMetrics() {
           name: "Laticínios",
           value: categoryMap.laticinio,
           percentage: Math.round((categoryMap.laticinio / totalCalculado) * 100),
-          color: "hsl(var(--chart-5))",
+          color: "#6EE7B7",
           icon: Milk,
           status: categoryMap.laticinio > 0 ? "Adequado" : "Baixo",
         },
@@ -170,7 +204,7 @@ export function useDonationMetrics() {
           name: "Ultraprocessados",
           value: categoryMap.ultraprocessado,
           percentage: Math.round((categoryMap.ultraprocessado / totalCalculado) * 100),
-          color: "hsl(var(--accent))",
+          color: "#F87171",
           icon: Cookie,
           status: "Controlado",
         },
@@ -192,35 +226,40 @@ export function useDonationMetrics() {
           titulo: "Consumo humano",
           valor: `${destinoMap.humano.toLocaleString("pt-BR")} kg`,
           percentual: Math.round((destinoMap.humano / totalCalculado) * 100) || 100,
-          badge: "Prioridade",
+          badge: "Prioridade Legal (PNCPDA)",
         },
         {
           titulo: "Consumo animal",
           valor: `${destinoMap.animal.toLocaleString("pt-BR")} kg`,
           percentual: Math.round((destinoMap.animal / totalCalculado) * 100) || 0,
-          badge: "Segunda opção",
+          badge: "2ª Opção Prioritária",
         },
         {
           titulo: "Compostagem / Biomassa",
           valor: `${destinoMap.compostagem.toLocaleString("pt-BR")} kg`,
           percentual: Math.round((destinoMap.compostagem / totalCalculado) * 100) || 0,
-          badge: "Última opção",
+          badge: "Última Instância",
         },
       ]
 
       // Recent donations
-      const recentDonations = doacoes.slice(0, 5).map((d) => ({
-        alimento: d.tipo_alimento,
+      const recentDonations = doacoes.slice(0, 8).map((d) => ({
+        id: d.id,
+        alimento: d.tipo_alimento || "Alimento Doador",
         empresa: d.empresas?.nome_fantasia || d.empresas?.razao_social || "Empresa Doadora",
         quantidade: `${d.quantidade_kg} kg`,
+        quantidadeNum: Number(d.quantidade_kg || 0),
         categoria: d.categoria,
+        destino: d.destino,
+        status: d.status,
       }))
 
       setMetrics({
         totalKg: realKg,
         totalDoacoes: doacoes.length,
         doacoesAtivas,
-        beneficiarios: realBeneficiarios > 0 ? realBeneficiarios : insts.length * 45,
+        beneficiarios: realBeneficiarios > 0 ? realBeneficiarios : (insts.length > 0 ? insts.length * 45 : 450),
+        totalRefeicoes: Math.round(realKg * 4),
         categoryData,
         destinacaoData,
         monthlyData: [
@@ -230,18 +269,77 @@ export function useDonationMetrics() {
         ],
         recentDonations,
       })
+      setLastUpdated(new Date())
       setError(null)
     } catch (e: any) {
-      console.error(e)
+      console.error("Erro ao carregar métricas de doação:", e)
       setError(e.message)
     } finally {
       setIsLoading(false)
     }
   }, [])
 
-  useEffect(() => {
+  // Disparador de pulso visual de tempo real
+  const triggerRealtimeSync = useCallback(() => {
+    setIsPulsing(true)
     load()
+    setTimeout(() => {
+      setIsPulsing(false)
+    }, 1500)
   }, [load])
 
-  return { metrics, isLoading, error, reload: load }
+  useEffect(() => {
+    load()
+
+    // Conexão em tempo real via WebSocket do Supabase
+    const supabase = createClient()
+    const channel = supabase.channel("foodcycle-realtime-metrics")
+
+    channel
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "doacoes" },
+        () => {
+          triggerRealtimeSync()
+        }
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "instituicoes" },
+        () => {
+          triggerRealtimeSync()
+        }
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "solicitacoes" },
+        () => {
+          triggerRealtimeSync()
+        }
+      )
+      .on(
+        "broadcast",
+        { event: "metrics_sync" },
+        () => {
+          triggerRealtimeSync()
+        }
+      )
+      .subscribe((status) => {
+        setIsRealtimeActive(status === "SUBSCRIBED")
+      })
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [load, triggerRealtimeSync])
+
+  return { 
+    metrics, 
+    isLoading, 
+    error, 
+    reload: load, 
+    isRealtimeActive, 
+    lastUpdated,
+    isPulsing
+  }
 }

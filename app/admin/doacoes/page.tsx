@@ -1,7 +1,8 @@
-"use client"
+﻿"use client"
 
 import { useEffect, useState, useMemo } from "react"
 import { createClient } from "@/lib/supabase/client"
+import { broadcastMetricsUpdate } from "@/lib/donation-metrics"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -174,6 +175,7 @@ export default function AdminDoacoesPage() {
         }
       })
 
+      await broadcastMetricsUpdate(`Status da doa��o ${doacaoSelecionada.codigo_rastreio} alterado para ${novoStatus.toUpperCase()}`)
       setAviso({
         tipo: "sucesso",
         texto: `Status da doação ${doacaoSelecionada.codigo_rastreio} atualizado para "${novoStatus.toUpperCase()}".`
@@ -446,3 +448,4 @@ export default function AdminDoacoesPage() {
     </div>
   )
 }
+
