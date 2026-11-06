@@ -1,0 +1,161 @@
+================================================================================
+          ROTEIRO DE APRESENTAÇÃO DO TCC — PLATAFORMA FOODCYCLE
+         Guia Passo a Passo com Demonstração de Seed em Tempo Real
+================================================================================
+
+PROJETO: FoodCycle — Plataforma Digital de Redistribuição de Alimentos
+BASE LEGAL: Lei nº 15.224/2025 (PNCPDA - Programa Nacional de Combate ao
+            Desperdício de Alimentos) e Lei nº 14.016/2020
+OBJETIVO ONU: ODS 2 — Fome Zero e Agricultura Sustentável
+
+--------------------------------------------------------------------------------
+1. PREPARAÇÃO ANTES DA BANCA ENTRAR NA SALA
+--------------------------------------------------------------------------------
+[ ] Deixe duas abas do navegador abertas lado a lado (ou em telas separadas):
+    - Aba 1: Painel do Usuário / Dashboard Geral (http://localhost:3000/dashboard)
+    - Aba 2: Painel Administrativo / Seed (http://localhost:3000/admin/seed)
+[ ] Verifique se o servidor local está rodando (`npm run dev`).
+[ ] Tema recomendado: Você pode alternar entre o tema escuro e claro usando o 
+    botão no rodapé da barra lateral para mostrar acessibilidade visual.
+
+--------------------------------------------------------------------------------
+2. ESTRUTURA E DIVISÃO DE FALA DO GRUPO (Sugestão de 10 a 15 min)
+--------------------------------------------------------------------------------
+
+Membro 1 — Introdução e Contexto Legal (2 a 3 min)
+Membro 2 — Arquitetura Técnica e Tecnologias (2 min)
+Membro 3 — Demonstração Prática do Sistema e Seed ao Vivo (5 a 7 min)
+Membro 4 — Auditoria, Termo Sanitário Oficial e Conclusão (3 min)
+
+--------------------------------------------------------------------------------
+3. ROTEIRO PASSO A PASSO DA DEMONSTRAÇÃO PRÁTICA (O QUE FAZER E FALAR)
+--------------------------------------------------------------------------------
+
+PASSO 1: Contextualização do Problema e a Legislação
+---------------------------------------------------
+FALA SUGERIDA:
+"Boa tarde a todos os membros da banca. O Brasil desperdiça mais de 40 milhões 
+de toneladas de alimentos por ano, enquanto milhões vivem em insegurança alimentar. 
+Com a promulgação da recente Lei nº 15.224 de 2025, o Governo Federal instituiu 
+o PNCPDA, exigindo rastreabilidade sanitária, controle de lotes e auditoria formal 
+nas doações. O FoodCycle foi desenvolvido como a resposta tecnológica para 
+atender a essas exigências."
+
+PASSO 2: Mostrando o Dashboard Inicial (Aba 1)
+---------------------------------------------
+AÇÃO:
+- Mostre a tela do Dashboard (http://localhost:3000/dashboard).
+- Mostre que o sistema conta com telemetria ativa e escuta via WebSockets 
+  (Supabase Realtime).
+
+FALA SUGERIDA:
+"Aqui temos o painel em tempo real da plataforma. Observem o indicador de 
+telemetria ativa no topo. Ele utiliza WebSockets para refletir qualquer doação 
+ou movimentação de estoque instantaneamente, sem necessidade de recarregar a 
+página."
+
+PASSO 3: O Momento do SEED no Painel Admin (O "Pulo do Gato")
+-------------------------------------------------------------
+AÇÃO:
+- Mude para a Aba 2 (http://localhost:3000/admin/seed).
+- Explique o que é a tela antes de clicar.
+
+FALA SUGERIDA:
+"Para simular o ecossistema funcionando em escala nacional com múltiplos 
+atores, desenvolvemos este módulo de Carga de Demonstração (Seed). 
+Ele insere dados estritamente validados contra as regras sanitárias e 
+relacionais do banco de dados: 8 empresas doadoras de diferentes estados, 
+6 instituições receptoras credenciadas e 24 lotes com diferentes categorias 
+nutricionais da PNCPDA."
+
+AÇÃO:
+- Clique no botão verde: [ Executar Seed de Demonstração ].
+- Acompanhe a lista de etapas sendo concluídas com os ícones verdes de "check".
+- Observe o Toast Sonner surgindo no canto superior direito:
+  "🌱 Seed concluído com sucesso!".
+
+FALA SUGERIDA:
+"Vejam que todas as etapas foram concluídas em segundos: inserção das empresas, 
+instituições, geração dos códigos de rastreio alfanuméricos com padrão nacional, 
+geração do log de auditoria imutável e o disparo do evento de broadcast em 
+tempo real."
+
+PASSO 4: O Efeito em Tempo Real no Dashboard
+--------------------------------------------
+AÇÃO:
+- Volte imediatamente para a Aba 1 (Dashboard).
+- Aponte os cards pulsando e os números atualizados automaticamente sem dar F5!
+
+FALA SUGERIDA:
+"Sem dar nenhum refresh na tela, o Dashboard capturou a transmissão via 
+WebSocket. Os indicadores de volume total em quilos (kg), total de lotes 
+ativos e refeições potenciais foram atualizados dinamicamente."
+
+PASSO 5: Rastreabilidade Sanitária e Termo em PDF (Lei 15.224/2025)
+------------------------------------------------------------------
+AÇÃO:
+- Vá para o menu "Lotes de Doações" (http://localhost:3000/admin/doacoes) ou 
+  "Histórico" no Dashboard.
+- Clique no botão "Termo (PDF)" de qualquer lote.
+- Uma janela modal em formato A4 oficial será exibida.
+
+FALA SUGERIDA:
+"O Artigo 7º da Lei 15.224/2025 exige comprovação sanitária e rastreabilidade 
+para isentar de responsabilidade o doador de boa-fé. Aqui geramos o Termo de 
+Doação e Conformidade Sanitária com hash de autenticação, informações de 
+armazenamento, validade e declarações jurídicas, pronto para impressão ou 
+salvamento em PDF pelo botão Imprimir."
+
+PASSO 6: Governança e Log de Auditoria Imutável
+-----------------------------------------------
+AÇÃO:
+- Acesse o menu "Auditoria do Sistema" (http://localhost:3000/admin/auditoria).
+- Mostre a linha gravada com a ação `SEED_DADOS_DEMONSTRACAO` ou as ações de 
+  exclusão e edição.
+
+FALA SUGERIDA:
+"Para governança total, nenhuma alteração ocorre no FoodCycle sem gerar um 
+registro de auditoria. Vejam que até mesmo a nossa carga de demonstração gerou 
+um log completo com autor, data, IP/User-Agent e detalhes técnicos."
+
+PASSO 7: Encerramento e Limpeza
+-------------------------------
+FALA SUGERIDA:
+"O sistema pode ter seus dados de demonstração limpos a qualquer momento pelo 
+botão 'Limpar Dados' sem afetar usuários reais, garantindo idempotência e 
+segurança. Abrimos agora para os comentários e perguntas da banca. Obrigado!"
+
+--------------------------------------------------------------------------------
+4. PERGUNTAS QUE A BANCA PODE FAZER E COMO RESPONDER
+--------------------------------------------------------------------------------
+
+Pergunta 1: "Qual a diferença do FoodCycle para um simples CRUD de doação?"
+Resposta:
+"O FoodCycle não é um CRUD básico. Ele implementa uma arquitetura orientada a 
+eventos com Supabase Realtime (WebSockets), Row Level Security (RLS) a nível de 
+banco para proteção de dados, controle de papéis de usuários (RBAC), auditoria 
+imutável e documentos legais customizados para o cumprimento da Lei 15.224/2025."
+
+Pergunta 2: "Se o servidor do Supabase cair, o que acontece?"
+Resposta:
+"A aplicação Next.js foi desenvolvida com Server Components híbridos e 
+mecanismos de fallback (try/catch e tratamento tolerante de erro), garantindo 
+que as páginas estáticas e institucionais continuem acessíveis, enquanto as 
+telas dinâmicas exibem mensagens amigáveis de reconexão."
+
+Pergunta 3: "Como foi garantida a segurança contra acessos indevidos?"
+Resposta:
+"Utilizamos autenticação gerenciada via JWT pelo Supabase Auth. Além das 
+verificações de rotas no Next.js (Middleware/Proxy), a segurança primária é 
+garantida diretamente no banco de dados via RLS (Row Level Security), impedindo 
+que uma empresa acesse doações ou solicitações de terceiros via API."
+
+Pergunta 4: "Esses dados do Seed não vão sujar o banco de produção?"
+Resposta:
+"Não. Todos os registros de seed possuem CNPJs e descrições identificadas com a 
+tag 'Demonstração PNCPDA TCC'. Desenvolvemos a rotina reversa de exclusão em 
+cascata que limpa exatamente esses registros com um clique."
+
+================================================================================
+Boa apresentação! O projeto está técnico, robusto e totalmente fundamentado.
+================================================================================
