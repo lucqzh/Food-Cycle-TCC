@@ -2,7 +2,6 @@ import Link from "next/link"
 import { Header } from "@/components/layout/header"
 import { Footer } from "@/components/layout/footer"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { 
   Target, 
   Leaf, 
@@ -13,277 +12,164 @@ import {
   CheckCircle2,
   Globe,
   Heart,
-  Sprout
+  Sprout,
+  Sparkles
 } from "lucide-react"
 
 const odsGoals = [
   {
     number: "2.1",
-    title: "Acesso a alimentos seguros e suficientes",
-    description: "Até 2030, acabar com a fome e garantir o acesso de todas as pessoas, em particular os pobres e pessoas em situações vulneráveis, incluindo crianças, a alimentos seguros, nutritivos e suficientes durante todo o ano.",
+    title: "Acesso a Alimentos Seguros e Suficientes",
+    description: "Até 2030, acabar com a fome e garantir o acesso de todas as pessoas, em particular pessoas em vulnerabilidade, a alimentos nutritivos durante todo o ano.",
     icon: Apple,
-    color: "bg-primary",
+    color: "from-emerald-400 to-emerald-600 text-[#071B17]",
     contribution: [
-      "Redistribuímos alimentos ainda em condições de consumo para instituições carentes",
-      "Garantimos rastreabilidade e informações sobre validade e armazenamento",
-      "Conectamos excedentes de qualidade a quem precisa"
+      "Redistribuição de excedentes frescos antes do término da validade comercial",
+      "Rastreabilidade completa com garantias sanitárias da Lei nº 15.224/2025",
+      "Eliminação de intermediários onerosos na destinação social"
     ]
   },
   {
     number: "2.2",
-    title: "Combater a desnutrição e melhorar qualidade nutricional",
-    description: "Até 2030, acabar com todas as formas de desnutrição, incluindo atingir, até 2025, as metas acordadas internacionalmente sobre nanismo e definhamento em crianças menores de cinco anos de idade.",
+    title: "Combate à Desnutrição e Diversidade Nutricional",
+    description: "Erradicar todas as formas de desnutrição através de dietas balanceadas com micro e macronutrientes essenciais.",
     icon: Scale,
-    color: "bg-secondary",
+    color: "from-amber-400 to-amber-600 text-[#071B17]",
     contribution: [
-      "Sistema de categorização nutricional dos alimentos doados",
-      "Dashboard de diversidade alimentar para instituições",
-      "Alertas sobre excesso de ultraprocessados e baixa diversidade"
+      "Algoritmo que mede e incentiva o equilíbrio de 5 grupos alimentares",
+      "Painel de diversidade nutricional para as instituições beneficiárias",
+      "Controle ativo sobre o percentual de ultraprocessados"
     ]
   },
   {
     number: "2.4",
-    title: "Sistemas alimentares sustentáveis",
-    description: "Até 2030, garantir sistemas sustentáveis de produção de alimentos e implementar práticas agrícolas resilientes, que aumentem a produtividade e a produção.",
+    title: "Sistemas Alimentares Sustentáveis e Resilientes",
+    description: "Garantir sistemas sustentáveis de produção e consumo, evitando a emissão de metano decorrente do descarte de alimentos em aterros.",
     icon: Recycle,
-    color: "bg-accent",
+    color: "from-blue-400 to-blue-600 text-[#071B17]",
     contribution: [
-      "Redução do desperdício de alimentos na cadeia de distribuição",
-      "Métricas de impacto ambiental através da redistribuição",
-      "Incentivo a práticas sustentáveis entre empresas parceiras"
+      "Evita o descarte de toneladas de matéria orgânica aproveitável",
+      "Redução da pegada de carbono no ecossistema de varejo",
+      "Selo ESG reconhecido para empresas parceiras"
     ]
   }
 ]
 
 export default function ODS2Page() {
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-screen flex-col bg-[#071B17] text-[#F8FAFC] selection:bg-emerald-500 selection:text-white">
       <Header />
       
       <main className="flex-1">
         {/* Hero Section */}
-        <section className="bg-card py-16 md:py-24">
-          <div className="container mx-auto px-4 md:px-6">
-            <div className="mx-auto max-w-4xl">
-              <div className="mb-8 flex items-center justify-center">
-                <div className="flex h-24 w-24 items-center justify-center rounded-2xl bg-accent text-accent-foreground">
-                  <Target className="h-12 w-12" />
-                </div>
-              </div>
-              <div className="text-center">
-                <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-accent/10 px-4 py-2 text-sm font-medium text-accent">
-                  <Globe className="h-4 w-4" />
-                  Objetivos de Desenvolvimento Sustentável
-                </div>
-                <h1 className="mb-6 text-4xl font-bold tracking-tight text-foreground md:text-5xl">
-                  ODS 2 - Fome Zero e Agricultura Sustentável
-                </h1>
-                <p className="text-lg text-muted-foreground md:text-xl leading-relaxed">
-                  Acabar com a fome, alcançar a segurança alimentar e melhoria da nutrição, 
-                  e promover a agricultura sustentável. Conheça como nossa plataforma contribui 
-                  para esses objetivos globais.
-                </p>
-              </div>
-            </div>
-          </div>
-        </section>
+        <section className="relative overflow-hidden py-24 md:py-32 border-b border-emerald-950/60 bg-gradient-to-b from-[#052E24] via-[#071B17] to-[#040E0B]">
+          <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[700px] h-[350px] bg-amber-500/10 blur-[130px] rounded-full pointer-events-none" />
 
-        {/* What is ODS */}
-        <section className="py-16 md:py-24">
-          <div className="container mx-auto px-4 md:px-6">
-            <div className="mx-auto max-w-4xl">
-              <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
-                <div>
-                  <h2 className="mb-6 text-3xl font-bold text-foreground md:text-4xl">
-                    O que são os ODS?
-                  </h2>
-                  <p className="mb-6 text-muted-foreground leading-relaxed">
-                    Os Objetivos de Desenvolvimento Sustentável (ODS) são um chamado universal 
-                    das Nações Unidas para ação contra a pobreza, para proteger o planeta e 
-                    garantir que todas as pessoas desfrutem de paz e prosperidade.
-                  </p>
-                  <p className="mb-6 text-muted-foreground leading-relaxed">
-                    São 17 objetivos interconectados que abordam os desafios globais que 
-                    enfrentamos, incluindo pobreza, desigualdade, mudança climática, 
-                    degradação ambiental, paz e justiça.
-                  </p>
-                  <p className="text-muted-foreground leading-relaxed">
-                    O <strong className="text-foreground">ODS 2 - Fome Zero</strong> visa acabar com 
-                    a fome, alcançar a segurança alimentar e melhorar a nutrição, 
-                    promovendo a agricultura sustentável até 2030.
-                  </p>
-                </div>
-                
-                <div className="grid grid-cols-2 gap-4">
-                  <Card className="border-border bg-primary/5">
-                    <CardContent className="flex flex-col items-center p-6 text-center">
-                      <Sprout className="mb-3 h-10 w-10 text-primary" />
-                      <span className="text-2xl font-bold text-foreground">17</span>
-                      <span className="text-sm text-muted-foreground">Objetivos Globais</span>
-                    </CardContent>
-                  </Card>
-                  <Card className="border-border bg-secondary/10">
-                    <CardContent className="flex flex-col items-center p-6 text-center">
-                      <Globe className="mb-3 h-10 w-10 text-secondary" />
-                      <span className="text-2xl font-bold text-foreground">193</span>
-                      <span className="text-sm text-muted-foreground">Países Comprometidos</span>
-                    </CardContent>
-                  </Card>
-                  <Card className="border-border bg-accent/10">
-                    <CardContent className="flex flex-col items-center p-6 text-center">
-                      <Target className="mb-3 h-10 w-10 text-accent" />
-                      <span className="text-2xl font-bold text-foreground">2030</span>
-                      <span className="text-sm text-muted-foreground">Meta Global</span>
-                    </CardContent>
-                  </Card>
-                  <Card className="border-border bg-primary/5">
-                    <CardContent className="flex flex-col items-center p-6 text-center">
-                      <Heart className="mb-3 h-10 w-10 text-primary" />
-                      <span className="text-2xl font-bold text-foreground">690M</span>
-                      <span className="text-sm text-muted-foreground">Pessoas com Fome</span>
-                    </CardContent>
-                  </Card>
-                </div>
+          <div className="container mx-auto px-4 sm:px-6 relative z-10">
+            <div className="max-w-4xl mx-auto text-center space-y-6">
+              <div className="inline-flex items-center gap-2 rounded-full bg-amber-950/80 border border-amber-800/40 px-4 py-1.5 text-xs font-mono text-amber-300">
+                <Target className="h-3.5 w-3.5" />
+                Pacto Global ONU • Agenda 2030
               </div>
-            </div>
-          </div>
-        </section>
 
-        {/* Goals Section */}
-        <section className="bg-card py-16 md:py-24">
-          <div className="container mx-auto px-4 md:px-6">
-            <div className="mx-auto max-w-3xl text-center">
-              <h2 className="mb-6 text-3xl font-bold text-foreground md:text-4xl">
-                Metas trabalhadas pelo projeto
-              </h2>
-              <p className="mb-12 text-lg text-muted-foreground leading-relaxed">
-                Nossa plataforma contribui diretamente para três metas específicas do ODS 2.
+              <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black tracking-tight text-white leading-tight font-serif">
+                ODS 2: <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-amber-300 to-emerald-400">Fome Zero</span> e Agricultura Sustentável.
+              </h1>
+
+              <p className="text-base sm:text-lg text-slate-300 font-light max-w-2xl mx-auto leading-relaxed">
+                Como nossa arquitetura tecnológica implementa na prática as metas globais de combate à fome e mitigação de perdas ao longo da cadeia de valor brasileira.
               </p>
             </div>
-            
-            <div className="mx-auto max-w-5xl">
-              <div className="flex flex-col gap-8">
-                {odsGoals.map((goal) => (
-                  <Card key={goal.number} className="border-border bg-background overflow-hidden">
-                    <div className="grid lg:grid-cols-3">
-                      <div className={`${goal.color} p-6 lg:p-8`}>
-                        <div className="flex h-full flex-col items-center justify-center text-center text-primary-foreground">
-                          <goal.icon className="mb-4 h-16 w-16" />
-                          <span className="mb-2 text-4xl font-bold">{goal.number}</span>
-                          <h3 className="text-lg font-semibold">{goal.title}</h3>
-                        </div>
-                      </div>
-                      
-                      <div className="p-6 lg:col-span-2 lg:p-8">
-                        <p className="mb-6 text-muted-foreground leading-relaxed">
-                          {goal.description}
-                        </p>
-                        
-                        <div className="space-y-1">
-                          <h4 className="mb-3 font-semibold text-foreground">
-                            Como contribuímos:
-                          </h4>
-                          {goal.contribution.map((item, index) => (
-                            <div key={index} className="flex items-start gap-3">
-                              <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
-                              <span className="text-muted-foreground">{item}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  </Card>
-                ))}
-              </div>
-            </div>
           </div>
         </section>
 
-        {/* Impact Connection */}
-        <section className="py-16 md:py-24">
-          <div className="container mx-auto px-4 md:px-6">
-            <div className="mx-auto max-w-4xl">
-              <div className="text-center">
-                <h2 className="mb-6 text-3xl font-bold text-foreground md:text-4xl">
-                  Nosso compromisso com o futuro
-                </h2>
-                <p className="mb-12 text-lg text-muted-foreground leading-relaxed">
-                  Cada doação realizada através da nossa plataforma é um passo em direção 
-                  aos objetivos globais de desenvolvimento sustentável.
-                </p>
-              </div>
-              
-              <div className="grid gap-6 md:grid-cols-3">
-                <Card className="border-border bg-card text-center">
-                  <CardContent className="p-6">
-                    <div className="mb-4 flex h-14 w-14 mx-auto items-center justify-center rounded-xl bg-primary/10">
-                      <Apple className="h-7 w-7 text-primary" />
-                    </div>
-                    <h3 className="mb-2 font-semibold text-foreground">Segurança Alimentar</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Garantimos que alimentos de qualidade cheguem a quem precisa
-                    </p>
-                  </CardContent>
-                </Card>
-                
-                <Card className="border-border bg-card text-center">
-                  <CardContent className="p-6">
-                    <div className="mb-4 flex h-14 w-14 mx-auto items-center justify-center rounded-xl bg-secondary/20">
-                      <Scale className="h-7 w-7 text-secondary" />
-                    </div>
-                    <h3 className="mb-2 font-semibold text-foreground">Nutrição Equilibrada</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Monitoramos a diversidade nutricional das doações
-                    </p>
-                  </CardContent>
-                </Card>
-                
-                <Card className="border-border bg-card text-center">
-                  <CardContent className="p-6">
-                    <div className="mb-4 flex h-14 w-14 mx-auto items-center justify-center rounded-xl bg-accent/20">
-                      <Leaf className="h-7 w-7 text-accent" />
-                    </div>
-                    <h3 className="mb-2 font-semibold text-foreground">Sustentabilidade</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Reduzimos o desperdício e o impacto ambiental
-                    </p>
-                  </CardContent>
-                </Card>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* CTA Section */}
-        <section className="bg-primary py-16 md:py-24">
-          <div className="container mx-auto px-4 md:px-6">
-            <div className="mx-auto max-w-3xl text-center">
-              <Leaf className="mx-auto mb-6 h-16 w-16 text-primary-foreground" />
-              <h2 className="mb-6 text-3xl font-bold text-primary-foreground md:text-4xl">
-                Junte-se a essa causa
-              </h2>
-              <p className="mb-8 text-lg text-primary-foreground/80 leading-relaxed">
-                Contribua para os Objetivos de Desenvolvimento Sustentável e faça parte 
-                da transformação que o mundo precisa.
+        {/* Metas Específicas do ODS 2 */}
+        <section className="py-20 border-b border-emerald-950/60 bg-[#071B17]">
+          <div className="container mx-auto px-4 sm:px-6 max-w-6xl">
+            <div className="text-center max-w-2xl mx-auto mb-14 space-y-3">
+              <span className="text-xs font-mono uppercase tracking-widest text-emerald-400">Implementação Prática</span>
+              <h2 className="text-3xl sm:text-4xl font-extrabold text-white font-serif">Metas Vinculadas ao FoodCycle</h2>
+              <p className="text-xs sm:text-sm text-slate-400">
+                Alinhamento direto com os sub-objetivos definidos pelas Nações Unidas.
               </p>
-              <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
-                <Button size="lg" variant="secondary" asChild className="gap-2">
-                  <Link href="/cadastro">
-                    Participar agora
-                    <ArrowRight className="h-4 w-4" />
-                  </Link>
-                </Button>
-                <Button size="lg" variant="outline" asChild className="gap-2 border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10">
-                  <Link href="/impacto">
-                    Ver nosso impacto
-                  </Link>
-                </Button>
-              </div>
+            </div>
+
+            <div className="grid gap-6 md:grid-cols-3">
+              {odsGoals.map((goal) => {
+                const Icon = goal.icon
+                return (
+                  <div
+                    key={goal.number}
+                    className="rounded-3xl border border-emerald-950/80 bg-gradient-to-br from-[#0A241F]/80 to-[#071B17]/90 p-7 backdrop-blur shadow-xl hover:border-emerald-800/60 transition-all flex flex-col justify-between space-y-6"
+                  >
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div className={`flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br ${goal.color} font-black text-xl shadow-lg`}>
+                          <Icon className="h-6 w-6" />
+                        </div>
+                        <span className="text-2xl font-black font-mono text-amber-400">
+                          Meta {goal.number}
+                        </span>
+                      </div>
+
+                      <h3 className="text-lg font-bold text-white font-serif leading-snug">{goal.title}</h3>
+                      <p className="text-xs text-slate-300 leading-relaxed">{goal.description}</p>
+                    </div>
+
+                    <div className="space-y-2 pt-4 border-t border-emerald-950/60">
+                      <span className="text-[10px] uppercase font-mono tracking-wider text-emerald-400 font-bold block mb-1">
+                        Como o FoodCycle atua:
+                      </span>
+                      {goal.contribution.map((c, idx) => (
+                        <div key={idx} className="flex items-start gap-2 text-xs text-slate-400">
+                          <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400 shrink-0 mt-0.5" />
+                          <span>{c}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        </section>
+
+        {/* Citação Editorial */}
+        <section className="py-20 border-b border-emerald-950/60 bg-[#052E24]/20">
+          <div className="container mx-auto px-4 sm:px-6 max-w-4xl text-center space-y-6">
+            <div className="inline-flex p-4 rounded-3xl bg-amber-500/10 border border-amber-500/20 text-amber-400 mb-2">
+              <Globe className="h-8 w-8" />
+            </div>
+            <blockquote className="text-2xl sm:text-3xl font-serif text-white italic leading-relaxed">
+              &ldquo;O desperdício de alimentos não é apenas um problema ético e humanitário, mas uma das maiores falhas de eficiência e sustentabilidade da história contemporânea.&rdquo;
+            </blockquote>
+            <p className="text-xs font-mono text-slate-400 uppercase tracking-widest">
+              ONU • Organização das Nações Unidas para a Alimentação e a Agricultura (FAO)
+            </p>
+          </div>
+        </section>
+
+        {/* CTA */}
+        <section className="py-20 bg-gradient-to-t from-[#040E0B] via-[#071B17] to-[#052E24]">
+          <div className="container mx-auto px-4 sm:px-6 max-w-3xl text-center space-y-6">
+            <h2 className="text-3xl sm:text-5xl font-black text-white font-serif">
+              Faça sua empresa liderar o cumprimento do ODS 2.
+            </h2>
+            <p className="text-sm text-slate-300 leading-relaxed max-w-xl mx-auto">
+              Obtenha relatórios de responsabilidade socioambiental auditáveis e transforme sua gestão de excedentes.
+            </p>
+            <div className="flex justify-center pt-2">
+              <Button asChild className="h-11 px-8 bg-emerald-500 hover:bg-emerald-400 text-[#071B17] font-bold text-sm tracking-wide shadow-lg shadow-emerald-950/60">
+                <Link href="/cadastro">
+                  Junte-se ao Movimento
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
+              </Button>
             </div>
           </div>
         </section>
       </main>
-      
+
       <Footer />
     </div>
   )

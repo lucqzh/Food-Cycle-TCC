@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react"
 import { createClient } from "@/lib/supabase/client"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { 
@@ -15,7 +14,9 @@ import {
   AlertCircle,
   CheckCircle2,
   Inbox,
-  Truck
+  Truck,
+  Sparkles,
+  ArrowRight
 } from "lucide-react"
 
 interface SolicitacaoItem {
@@ -72,7 +73,6 @@ export default function SolicitacoesPage() {
       const uid = authData.user.id
       setPerfilId(uid)
 
-      // Identifica o papel do usuário
       const [emp, inst] = await Promise.all([
         supabase.from("empresas").select("id").eq("perfil_id", uid).maybeSingle(),
         supabase.from("instituicoes").select("id").eq("perfil_id", uid).maybeSingle(),
@@ -83,7 +83,6 @@ export default function SolicitacoesPage() {
       else if (inst.data) role = "instituicao"
       setTipoUsuario(role)
 
-      // Busca as solicitações no banco com joins
       const { data, error } = await supabase
         .from("solicitacoes")
         .select(`
@@ -122,7 +121,6 @@ export default function SolicitacoesPage() {
       if (error) {
         console.error("Erro ao carregar solicitações:", error)
       } else if (data) {
-        // Se for instituição, filtra as dela. Se for empresa, filtra as doações dela.
         let filtradas = data as unknown as SolicitacaoItem[]
         const instId = inst.data?.id
         const empId = emp.data?.id
@@ -151,7 +149,6 @@ export default function SolicitacoesPage() {
     try {
       const supabase = createClient()
 
-      // 1. Atualiza status da doação para 'entregue'
       const { error: errDoacao } = await supabase
         .from("doacoes")
         .update({ status: "entregue" })
@@ -159,7 +156,6 @@ export default function SolicitacoesPage() {
 
       if (errDoacao) throw errDoacao
 
-      // 2. Cria registro na tabela de entregas
       const agora = new Date().toISOString()
       const { error: errEntrega } = await supabase
         .from("entregas")
@@ -177,7 +173,6 @@ export default function SolicitacoesPage() {
         console.warn("Aviso ao registrar entrega:", errEntrega.message)
       }
 
-      // 3. Registra no histórico de status
       try {
         await supabase.from("historico_status").insert({
           entidade: "doacao",
@@ -192,7 +187,7 @@ export default function SolicitacoesPage() {
 
       setAviso({
         tipo: "sucesso",
-        texto: "🎉 Entrega confirmada com sucesso! O ciclo de vida desta doação foi concluído."
+        texto: "Entrega física confirmada com sucesso! O ciclo de vida desta doação foi concluído."
       })
       await carregarDados()
     } catch (e: any) {
@@ -209,7 +204,6 @@ export default function SolicitacoesPage() {
     try {
       const supabase = createClient()
 
-      // Atualiza o status da solicitação
       const { error: errSol } = await supabase
         .from("solicitacoes")
         .update({
@@ -224,7 +218,6 @@ export default function SolicitacoesPage() {
         return
       }
 
-      // Se for aprovado, muda o status da doação para 'reservado'
       if (novoStatus === "aprovado") {
         await supabase
           .from("doacoes")
@@ -247,22 +240,22 @@ export default function SolicitacoesPage() {
   const getStatusBadge = (status: string) => {
     const config: Record<
       string,
-      { label: string; variant: "default" | "secondary" | "destructive" | "outline"; icon: typeof CheckCircle }
+      { label: string; badgeClass: string; icon: typeof CheckCircle }
     > = {
-      pendente: { label: "Pendente", variant: "secondary", icon: Clock },
-      aprovado: { label: "Aprovada", variant: "default", icon: CheckCircle },
-      recusado: { label: "Recusada", variant: "destructive", icon: XCircle },
-      cancelado: { label: "Cancelada", variant: "outline", icon: XCircle },
+      pendente: { label: "Pendente", badgeClass: "bg-amber-950 text-amber-300 border-amber-800/40", icon: Clock },
+      aprovado: { label: "Aprovada", badgeClass: "bg-emerald-950 text-emerald-300 border-emerald-800/40", icon: CheckCircle },
+      recusado: { label: "Recusada", badgeClass: "bg-red-950 text-red-300 border-red-800/40", icon: XCircle },
+      cancelado: { label: "Cancelada", badgeClass: "bg-slate-900 text-slate-400 border-slate-700/40", icon: XCircle },
     }
 
     const item = config[status] || config.pendente
     const Icon = item.icon
 
     return (
-      <Badge variant={item.variant} className="flex items-center gap-1">
+      <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-mono border font-semibold ${item.badgeClass}`}>
         <Icon className="h-3 w-3" />
         {item.label}
-      </Badge>
+      </span>
     )
   }
 
@@ -273,222 +266,173 @@ export default function SolicitacoesPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-foreground">
-          {tipoUsuario === "empresa" ? "Solicitações Recebidas" : "Minhas Solicitações"}
-        </h1>
-        <p className="text-muted-foreground">
-          {tipoUsuario === "empresa"
-            ? "Gerencie os pedidos feitos por instituições para os seus lotes de doação"
-            : "Acompanhe o andamento das solicitações de alimentos para a sua instituição"}
-        </p>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between pb-6 border-b border-emerald-950/60">
+        <div>
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-950 border border-emerald-800/40 text-[10px] font-mono text-emerald-400 mb-1">
+            <Sparkles className="h-3 w-3 text-amber-400" />
+            Fluxo de Destinação Legal
+          </div>
+          <h1 className="text-3xl font-extrabold text-white font-serif">
+            {tipoUsuario === "empresa" ? "Solicitações Recebidas" : "Minhas Solicitações"}
+          </h1>
+          <p className="text-xs text-slate-400">
+            {tipoUsuario === "empresa"
+              ? "Aprove ou recuse pedidos de instituições receptoras para liberação física de lotes"
+              : "Acompanhe o status e a autorização de retirada dos alimentos solicitados"}
+          </p>
+        </div>
       </div>
 
       {aviso && (
         <div
-          className={`flex items-center gap-3 rounded-lg p-4 text-sm font-medium ${
+          className={`flex items-center gap-3 rounded-xl p-4 text-xs font-semibold ${
             aviso.tipo === "sucesso"
-              ? "border border-primary/30 bg-primary/10 text-primary"
-              : "border border-destructive/30 bg-destructive/10 text-destructive"
+              ? "border border-emerald-800/80 bg-emerald-950/60 text-emerald-200"
+              : "border border-red-800/80 bg-red-950/60 text-red-200"
           }`}
         >
           {aviso.tipo === "sucesso" ? (
-            <CheckCircle2 className="h-5 w-5 shrink-0" />
+            <CheckCircle2 className="h-5 w-5 text-emerald-400 shrink-0" />
           ) : (
-            <AlertCircle className="h-5 w-5 shrink-0" />
+            <AlertCircle className="h-5 w-5 text-red-400 shrink-0" />
           )}
           <span>{aviso.texto}</span>
         </div>
       )}
 
-      {/* Summary Cards */}
+      {/* KPI Cards */}
       <div className="grid gap-4 sm:grid-cols-3">
-        <Card className="border-border bg-card">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted">
-                <Clock className="h-5 w-5 text-muted-foreground" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-foreground">{pendentes}</p>
-                <p className="text-sm text-muted-foreground">Pendentes</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border-border bg-card">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
-                <CheckCircle className="h-5 w-5 text-primary" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-foreground">{aprovadas}</p>
-                <p className="text-sm text-muted-foreground">Aprovadas</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border-border bg-card">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-destructive/10">
-                <XCircle className="h-5 w-5 text-destructive" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-foreground">{concluidas}</p>
-                <p className="text-sm text-muted-foreground">Recusadas / Canceladas</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <div className="rounded-2xl border border-emerald-950/80 bg-[#071B17]/90 p-5 backdrop-blur shadow-xl">
+          <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Pendentes de Análise</p>
+          <p className="mt-2 text-3xl font-black text-amber-400 font-mono">{pendentes}</p>
+        </div>
+        <div className="rounded-2xl border border-emerald-950/80 bg-[#071B17]/90 p-5 backdrop-blur shadow-xl">
+          <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Aprovadas / Reservadas</p>
+          <p className="mt-2 text-3xl font-black text-emerald-400 font-mono">{aprovadas}</p>
+        </div>
+        <div className="rounded-2xl border border-emerald-950/80 bg-[#071B17]/90 p-5 backdrop-blur shadow-xl">
+          <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Finalizadas</p>
+          <p className="mt-2 text-3xl font-black text-slate-300 font-mono">{concluidas}</p>
+        </div>
       </div>
 
-      {/* Solicitations List */}
-      <Card className="border-border bg-card">
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="text-foreground">Histórico de Solicitações</CardTitle>
-              <CardDescription>Lista atualizada diretamente do banco de dados</CardDescription>
-            </div>
-            <button
-              onClick={carregarDados}
-              className="text-xs text-primary hover:underline focus:outline-none"
-            >
-              Recarregar
-            </button>
-          </div>
-        </CardHeader>
-        <CardContent>
-          {carregando ? (
-            <div className="flex min-h-[180px] items-center justify-center text-muted-foreground text-sm">
-              Carregando solicitações do banco de dados...
-            </div>
-          ) : solicitacoes.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-12 text-center text-muted-foreground">
-              <Inbox className="h-10 w-10 text-muted-foreground/40 mb-2" />
-              <p className="font-medium text-foreground">Nenhuma solicitação encontrada</p>
-              <p className="text-xs mt-1">
-                Quando uma instituição solicitar uma doação na tela de Doações, o pedido aparecerá aqui.
-              </p>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {solicitacoes.map((sol) => {
-                const doacaoNome = sol.doacoes?.tipo_alimento || "Alimento"
-                const quantidade = sol.doacoes?.quantidade_kg ? `${sol.doacoes.quantidade_kg} kg` : ""
-                const empresaNome =
-                  sol.doacoes?.empresas?.nome_fantasia ||
-                  sol.doacoes?.empresas?.razao_social ||
-                  "Empresa Doadora"
-                const instituicaoNome = sol.instituicoes?.razao_social || "Instituição Receptora"
+      {/* Lista de Solicitações */}
+      {carregando ? (
+        <div className="flex min-h-[300px] items-center justify-center font-mono text-xs text-emerald-400">
+          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping mr-2" />
+          Carregando solicitações do Supabase...
+        </div>
+      ) : solicitacoes.length === 0 ? (
+        <div className="rounded-2xl border border-emerald-950/80 bg-[#071B17]/90 p-12 text-center max-w-md mx-auto space-y-3">
+          <Inbox className="h-12 w-12 text-emerald-500/40 mx-auto" />
+          <h3 className="text-base font-bold text-white">Nenhuma solicitação encontrada</h3>
+          <p className="text-xs text-slate-400 leading-relaxed">
+            Assim que instituições solicitarem doações ou você enviar um pedido, os registros aparecerão aqui com status em tempo real.
+          </p>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {solicitacoes.map((item) => {
+            const doacao = item.doacoes
+            const inst = item.instituicoes
+            const isEmpresa = tipoUsuario === "empresa"
+            const doacaoEntregue = doacao?.status === "entregue"
 
-                return (
-                  <div
-                    key={sol.id}
-                    className="flex flex-col gap-4 rounded-lg border border-border p-4 sm:flex-row sm:items-center sm:justify-between"
-                  >
-                    <div className="flex-1 space-y-1">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <h3 className="font-semibold text-foreground">{doacaoNome}</h3>
-                        {getStatusBadge(sol.status)}
-                        {sol.doacoes?.codigo_rastreio && (
-                          <Badge variant="outline" className="text-[10px]">
-                            {sol.doacoes.codigo_rastreio}
-                          </Badge>
-                        )}
-                      </div>
-
-                      <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
-                        <span className="flex items-center gap-1">
-                          <Building2 className="h-4 w-4" />
-                          {tipoUsuario === "empresa" ? `Solicitante: ${instituicaoNome}` : `Doador: ${empresaNome}`}
+            return (
+              <div
+                key={item.id}
+                className="rounded-2xl border border-emerald-950/80 bg-gradient-to-br from-[#0A241F]/60 to-[#071B17]/90 p-6 backdrop-blur shadow-xl hover:border-emerald-800/60 transition-all space-y-4"
+              >
+                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-lg font-bold text-white">
+                        {doacao?.tipo_alimento || "Lote de Alimento"}
+                      </h3>
+                      {getStatusBadge(item.status)}
+                      {doacaoEntregue && (
+                        <span className="px-2 py-0.5 rounded-full text-[9px] font-mono bg-blue-950 text-blue-300 border border-blue-800/40 font-bold uppercase">
+                          Entregue
                         </span>
-                        {quantidade && (
-                          <span className="flex items-center gap-1">
-                            <Package className="h-4 w-4" />
-                            {quantidade}
-                          </span>
-                        )}
-                        <span className="flex items-center gap-1">
-                          <Calendar className="h-4 w-4" />
-                          {new Date(sol.data_solicitacao).toLocaleDateString("pt-BR")}
-                        </span>
-                      </div>
-
-                      {sol.mensagem && (
-                        <p className="text-xs text-muted-foreground bg-muted/30 p-2 rounded mt-1 italic">
-                          "{sol.mensagem}"
-                        </p>
                       )}
                     </div>
+                    <p className="text-xs text-slate-400 mt-1 font-mono">
+                      Rastreio: <strong className="text-emerald-400">{doacao?.codigo_rastreio}</strong> • {doacao?.quantidade_kg} kg
+                    </p>
+                  </div>
 
-                    {/* Ações para a Empresa: Aprovar ou Recusar */}
-                    {tipoUsuario === "empresa" && sol.status === "pendente" && (
-                      <div className="flex items-center gap-2">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="border-destructive/40 text-destructive hover:bg-destructive/10"
-                          disabled={processandoId === sol.id}
-                          onClick={() => atualizarStatus(sol.id, sol.doacao_id, "recusado")}
-                        >
-                          Recusar
-                        </Button>
-                        <Button
-                          size="sm"
-                          className="bg-primary text-primary-foreground hover:bg-primary/90"
-                          disabled={processandoId === sol.id}
-                          onClick={() => atualizarStatus(sol.id, sol.doacao_id, "aprovado")}
-                        >
-                          Aprovar
-                        </Button>
-                      </div>
+                  <div className="text-left sm:text-right text-[11px] text-slate-400 font-mono">
+                    <div>Solicitado em: {new Date(item.data_solicitacao).toLocaleDateString("pt-BR")}</div>
+                    {item.data_resposta && (
+                      <div className="text-slate-500">Respondido em: {new Date(item.data_resposta).toLocaleDateString("pt-BR")}</div>
                     )}
+                  </div>
+                </div>
 
-                    {/* Ações para a Instituição: Cancelar */}
-                    {tipoUsuario === "instituicao" && sol.status === "pendente" && (
+                <div className="grid gap-3 sm:grid-cols-2 text-xs pt-1">
+                  <div className="p-3 rounded-xl bg-[#071B17]/80 border border-emerald-950/60">
+                    <span className="text-[10px] uppercase font-mono tracking-wider text-slate-500">Instituição Receptora:</span>
+                    <p className="font-bold text-white mt-0.5">{inst?.razao_social || "Instituição"}</p>
+                    <p className="text-slate-400 text-[11px]">{inst?.cidade} / {inst?.estado}</p>
+                  </div>
+
+                  <div className="p-3 rounded-xl bg-[#071B17]/80 border border-emerald-950/60">
+                    <span className="text-[10px] uppercase font-mono tracking-wider text-slate-500">Empresa Doadora:</span>
+                    <p className="font-bold text-white mt-0.5">
+                      {doacao?.empresas?.nome_fantasia || doacao?.empresas?.razao_social || "Empresa"}
+                    </p>
+                  </div>
+                </div>
+
+                {item.mensagem && (
+                  <div className="p-3 rounded-xl bg-[#0A241F]/40 border border-emerald-950/40 text-xs text-slate-300">
+                    <span className="font-bold text-slate-400">Mensagem: </span>
+                    {item.mensagem}
+                  </div>
+                )}
+
+                {/* Ações */}
+                <div className="flex flex-wrap items-center justify-end gap-2 pt-2 border-t border-emerald-950/60">
+                  {isEmpresa && item.status === "pendente" && doacao && (
+                    <>
                       <Button
                         size="sm"
                         variant="outline"
-                        disabled={processandoId === sol.id}
-                        onClick={() => atualizarStatus(sol.id, sol.doacao_id, "cancelado")}
+                        onClick={() => atualizarStatus(item.id, doacao.id, "recusado")}
+                        disabled={processandoId === item.id}
+                        className="h-9 border-red-900/60 text-red-300 hover:bg-red-950/40 text-xs"
                       >
-                        Cancelar pedido
+                        Recusar Solicitação
                       </Button>
-                    )}
+                      <Button
+                        size="sm"
+                        onClick={() => atualizarStatus(item.id, doacao.id, "aprovado")}
+                        disabled={processandoId === item.id}
+                        className="h-9 bg-emerald-500 hover:bg-emerald-400 text-[#071B17] font-bold text-xs"
+                      >
+                        Aprovar e Reservar Lote
+                      </Button>
+                    </>
+                  )}
 
-                    {/* Ciclo de Entrega quando aprovado */}
-                    {sol.status === "aprovado" && (
-                      <div className="flex items-center gap-2">
-                        {sol.doacoes?.status === "entregue" ? (
-                          <Badge className="bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 flex items-center gap-1.5 py-1 px-2.5">
-                            <CheckCircle2 className="h-3.5 w-3.5" />
-                            Ciclo Concluído (Entregue)
-                          </Badge>
-                        ) : (
-                          <Button
-                            size="sm"
-                            className="bg-emerald-600 hover:bg-emerald-700 text-white gap-1.5 shadow-sm"
-                            disabled={processandoId === sol.id}
-                            onClick={() => confirmarEntrega(sol.id, sol.doacao_id)}
-                          >
-                            <Truck className="h-4 w-4" />
-                            {tipoUsuario === "empresa" ? "Confirmar Retirada" : "Confirmar Recebimento"}
-                          </Button>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                )
-              })}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+                  {/* Botão de confirmação de entrega física */}
+                  {item.status === "aprovado" && doacao && !doacaoEntregue && (
+                    <Button
+                      size="sm"
+                      onClick={() => confirmarEntrega(item.id, doacao.id)}
+                      disabled={processandoId === item.id}
+                      className="h-9 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-[#071B17] font-bold text-xs tracking-wide shadow-md shadow-amber-950/60"
+                    >
+                      <Truck className="h-4 w-4 mr-1.5" />
+                      {processandoId === item.id ? "Gravando Entrega..." : "Confirmar Retirada / Recebimento"}
+                    </Button>
+                  )}
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      )}
     </div>
   )
 }

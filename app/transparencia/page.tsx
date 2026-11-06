@@ -2,18 +2,15 @@ import Link from "next/link"
 import { Header } from "@/components/layout/header"
 import { Footer } from "@/components/layout/footer"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { 
-  FileText, 
   Calendar,
-  Package,
   Building2,
   Heart,
-  Download,
   Eye,
   CheckCircle2,
-  Clock,
-  ArrowRight
+  ArrowRight,
+  ShieldCheck,
+  Scale
 } from "lucide-react"
 
 const recentDonations = [
@@ -21,46 +18,46 @@ const recentDonations = [
     id: 1,
     date: "12/03/2026",
     empresa: "Supermercado Vida",
-    instituicao: "Lar dos Idosos",
-    alimentos: "Frutas variadas",
+    instituicao: "Lar dos Idosos Esperança",
+    alimentos: "Frutas frescas variadas",
     quantidade: "45 kg",
-    status: "Entregue"
+    status: "Entregue e Auditado"
   },
   {
     id: 2,
     date: "11/03/2026",
     empresa: "Padaria Pão Quente",
-    instituicao: "Casa da Criança",
-    alimentos: "Pães e bolos",
+    instituicao: "Casa da Criança e Juventude",
+    alimentos: "Pães integrais e bolos",
     quantidade: "30 kg",
-    status: "Entregue"
+    status: "Entregue e Auditado"
   },
   {
     id: 3,
     date: "11/03/2026",
     empresa: "Restaurante Sabor & Cia",
     instituicao: "Comunidade São José",
-    alimentos: "Marmitas prontas",
-    quantidade: "50 unidades",
-    status: "Entregue"
+    alimentos: "Refeições prontas higienizadas",
+    quantidade: "50 kg",
+    status: "Entregue e Auditado"
   },
   {
     id: 4,
     date: "10/03/2026",
     empresa: "Hortifruti Verde",
     instituicao: "Abrigo Esperança",
-    alimentos: "Legumes e verduras",
+    alimentos: "Legumes e hortaliças colhidos",
     quantidade: "80 kg",
-    status: "Entregue"
+    status: "Entregue e Auditado"
   },
   {
     id: 5,
     date: "10/03/2026",
     empresa: "Supermercado Vida",
     instituicao: "Creche Arco-Íris",
-    alimentos: "Laticínios",
+    alimentos: "Laticínios e derivados pasteurizados",
     quantidade: "25 kg",
-    status: "Entregue"
+    status: "Entregue e Auditado"
   },
 ]
 
@@ -70,272 +67,143 @@ const monthlyStats = [
   { month: "Março", doacoes: 55, kg: 1100, empresas: 35, instituicoes: 22 },
 ]
 
-const categoryBreakdown = [
-  { categoria: "Proteínas", kg: 2750, percentual: 22 },
-  { categoria: "Grãos e Cereais", kg: 3500, percentual: 28 },
-  { categoria: "Frutas", kg: 1875, percentual: 15 },
-  { categoria: "Hortaliças", kg: 2250, percentual: 18 },
-  { categoria: "Laticínios", kg: 1250, percentual: 10 },
-  { categoria: "Ultraprocessados", kg: 500, percentual: 4 },
-  { categoria: "Outros", kg: 375, percentual: 3 },
-]
-
 export default function TransparenciaPage() {
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-screen flex-col bg-[#071B17] text-[#F8FAFC] selection:bg-emerald-500 selection:text-white">
       <Header />
       
       <main className="flex-1">
         {/* Hero Section */}
-        <section className="bg-card py-16 md:py-24">
-          <div className="container mx-auto px-4 md:px-6">
-            <div className="mx-auto max-w-3xl text-center">
-              <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-2 text-sm font-medium text-primary">
-                <Eye className="h-4 w-4" />
-                Dados Públicos
+        <section className="relative overflow-hidden py-24 md:py-32 border-b border-emerald-950/60 bg-gradient-to-b from-[#052E24] via-[#071B17] to-[#040E0B]">
+          <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[700px] h-[350px] bg-emerald-500/10 blur-[130px] rounded-full pointer-events-none" />
+
+          <div className="container mx-auto px-4 sm:px-6 relative z-10">
+            <div className="max-w-4xl mx-auto text-center space-y-6">
+              <div className="inline-flex items-center gap-2 rounded-full bg-emerald-950/80 border border-emerald-800/40 px-4 py-1.5 text-xs font-mono text-emerald-300">
+                <Eye className="h-3.5 w-3.5 text-amber-400" />
+                Auditoria Cidadã e Dados Abertos
               </div>
-              <h1 className="mb-6 text-4xl font-bold tracking-tight text-foreground md:text-5xl">
-                Transparência
+
+              <h1 className="text-4xl sm:text-6xl font-black tracking-tight text-white leading-tight font-serif">
+                Transparência e <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-emerald-300 to-amber-300">Prestação de Contas</span>.
               </h1>
-              <p className="text-lg text-muted-foreground md:text-xl leading-relaxed">
-                Acreditamos na transparência total. Aqui você encontra o histórico completo 
-                de doações, dados mensais e informações detalhadas sobre nossa operação.
+
+              <p className="text-base sm:text-lg text-slate-300 font-light max-w-2xl mx-auto leading-relaxed">
+                Histórico aberto de movimentação de alimentos, certificando a conformidade legal com a Lei nº 15.224/2025 e a integridade de todas as transações sociais.
               </p>
             </div>
           </div>
         </section>
 
-        {/* Recent Donations */}
-        <section className="py-16 md:py-24">
-          <div className="container mx-auto px-4 md:px-6">
-            <div className="mx-auto max-w-5xl">
-              <div className="mb-8 flex items-center justify-between">
-                <h2 className="text-2xl font-bold text-foreground md:text-3xl">
-                  Histórico de Doações
-                </h2>
-                <Button variant="outline" size="sm" className="gap-2">
-                  <Download className="h-4 w-4" />
-                  Exportar
-                </Button>
+        {/* Tabela de Doações Auditadas */}
+        <section className="py-20 border-b border-emerald-950/60 bg-[#071B17]">
+          <div className="container mx-auto px-4 sm:px-6 max-w-6xl">
+            <div className="rounded-3xl border border-emerald-950/80 bg-[#071B17]/90 p-6 sm:p-8 backdrop-blur shadow-xl space-y-6">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-4 border-b border-emerald-950/60">
+                <div>
+                  <h3 className="text-xl font-bold text-white font-serif">Livro Público de Entregas</h3>
+                  <p className="text-xs text-slate-400 mt-1">Registros recentes de alimentos redistribuídos com atestado de conformidade</p>
+                </div>
+                <div className="text-xs font-mono text-emerald-400 bg-emerald-950 px-3 py-1 rounded-full border border-emerald-800/40">
+                  Totalmente Auditável
+                </div>
               </div>
-              
-              <Card className="border-border bg-card overflow-hidden">
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead>
-                      <tr className="border-b border-border bg-muted/50">
-                        <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">Data</th>
-                        <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">Empresa</th>
-                        <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">Instituição</th>
-                        <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">Alimentos</th>
-                        <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">Quantidade</th>
-                        <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">Status</th>
+
+              <div className="overflow-x-auto rounded-xl border border-emerald-950/60">
+                <table className="w-full text-left text-xs">
+                  <thead className="bg-[#0A241F]/60 text-slate-400 uppercase tracking-wider font-mono text-[10px] border-b border-emerald-950">
+                    <tr>
+                      <th className="py-3.5 px-4">Data</th>
+                      <th className="py-3.5 px-4">Empresa Doadora</th>
+                      <th className="py-3.5 px-4">Instituição Receptora</th>
+                      <th className="py-3.5 px-4">Lote / Alimentos</th>
+                      <th className="py-3.5 px-4">Volume</th>
+                      <th className="py-3.5 px-4">Validação</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-emerald-950/50">
+                    {recentDonations.map((d) => (
+                      <tr key={d.id} className="hover:bg-[#0A241F]/30 transition-colors">
+                        <td className="py-3.5 px-4 text-slate-400 font-mono">{d.date}</td>
+                        <td className="py-3.5 px-4 font-semibold text-white">{d.empresa}</td>
+                        <td className="py-3.5 px-4 text-slate-300">{d.instituicao}</td>
+                        <td className="py-3.5 px-4 text-slate-300">{d.alimentos}</td>
+                        <td className="py-3.5 px-4 font-mono font-bold text-emerald-400">{d.quantidade}</td>
+                        <td className="py-3.5 px-4">
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-mono bg-emerald-950 text-emerald-300 border border-emerald-800/40">
+                            <CheckCircle2 className="h-3 w-3 text-emerald-400" />
+                            {d.status}
+                          </span>
+                        </td>
                       </tr>
-                    </thead>
-                    <tbody>
-                      {recentDonations.map((donation) => (
-                        <tr key={donation.id} className="border-b border-border last:border-0">
-                          <td className="px-4 py-4 text-sm text-muted-foreground">
-                            <div className="flex items-center gap-2">
-                              <Calendar className="h-4 w-4" />
-                              {donation.date}
-                            </div>
-                          </td>
-                          <td className="px-4 py-4 text-sm text-foreground">
-                            <div className="flex items-center gap-2">
-                              <Building2 className="h-4 w-4 text-primary" />
-                              {donation.empresa}
-                            </div>
-                          </td>
-                          <td className="px-4 py-4 text-sm text-foreground">
-                            <div className="flex items-center gap-2">
-                              <Heart className="h-4 w-4 text-secondary" />
-                              {donation.instituicao}
-                            </div>
-                          </td>
-                          <td className="px-4 py-4 text-sm text-muted-foreground">{donation.alimentos}</td>
-                          <td className="px-4 py-4 text-sm font-medium text-foreground">{donation.quantidade}</td>
-                          <td className="px-4 py-4 text-sm">
-                            <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-1 text-xs font-medium text-primary">
-                              <CheckCircle2 className="h-3 w-3" />
-                              {donation.status}
-                            </span>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-                <div className="border-t border-border bg-muted/30 px-4 py-3">
-                  <p className="text-center text-sm text-muted-foreground">
-                    Mostrando as 5 doações mais recentes. 
-                    <Link href="/dashboard" className="ml-1 text-primary hover:underline">
-                      Ver histórico completo
-                    </Link>
-                  </p>
-                </div>
-              </Card>
-            </div>
-          </div>
-        </section>
-
-        {/* Monthly Data */}
-        <section className="bg-card py-16 md:py-24">
-          <div className="container mx-auto px-4 md:px-6">
-            <div className="mx-auto max-w-5xl">
-              <h2 className="mb-8 text-2xl font-bold text-foreground md:text-3xl">
-                Dados Mensais
-              </h2>
-              
-              <div className="grid gap-6 md:grid-cols-3">
-                {monthlyStats.map((stat, index) => (
-                  <Card key={index} className="border-border bg-background">
-                    <CardHeader className="pb-3">
-                      <CardTitle className="flex items-center gap-2 text-lg">
-                        <Clock className="h-5 w-5 text-primary" />
-                        {stat.month} 2026
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <p className="text-2xl font-bold text-foreground">{stat.doacoes}</p>
-                          <p className="text-xs text-muted-foreground">Doações</p>
-                        </div>
-                        <div>
-                          <p className="text-2xl font-bold text-foreground">{stat.kg}</p>
-                          <p className="text-xs text-muted-foreground">kg redistribuídos</p>
-                        </div>
-                        <div>
-                          <p className="text-2xl font-bold text-foreground">{stat.empresas}</p>
-                          <p className="text-xs text-muted-foreground">Empresas ativas</p>
-                        </div>
-                        <div>
-                          <p className="text-2xl font-bold text-foreground">{stat.instituicoes}</p>
-                          <p className="text-xs text-muted-foreground">Instituições atendidas</p>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
+                    ))}
+                  </tbody>
+                </table>
               </div>
             </div>
           </div>
         </section>
 
-        {/* Categories Breakdown */}
-        <section className="py-16 md:py-24">
-          <div className="container mx-auto px-4 md:px-6">
-            <div className="mx-auto max-w-4xl">
-              <h2 className="mb-8 text-2xl font-bold text-foreground md:text-3xl">
-                Categorias de Alimentos Doados
-              </h2>
-              
-              <Card className="border-border bg-card">
-                <CardContent className="p-6">
-                  <div className="space-y-4">
-                    {categoryBreakdown.map((category, index) => (
-                      <div key={index} className="flex items-center gap-4">
-                        <div className="w-32 shrink-0">
-                          <span className="text-sm font-medium text-foreground">{category.categoria}</span>
-                        </div>
-                        <div className="flex-1">
-                          <div className="h-6 w-full rounded-full bg-muted">
-                            <div 
-                              className="h-full rounded-full bg-primary transition-all"
-                              style={{ 
-                                width: `${category.percentual}%`,
-                                backgroundColor: index === 5 ? 'hsl(var(--accent))' : undefined
-                              }}
-                            />
-                          </div>
-                        </div>
-                        <div className="w-20 text-right">
-                          <span className="text-sm font-medium text-foreground">{category.kg} kg</span>
-                        </div>
-                        <div className="w-12 text-right">
-                          <span className="text-sm text-muted-foreground">{category.percentual}%</span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                  
-                  <div className="mt-6 rounded-lg bg-muted/50 p-4">
-                    <div className="flex items-start gap-3">
-                      <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
-                      <p className="text-sm text-muted-foreground">
-                        <strong className="text-foreground">Nota de transparência:</strong> Mantemos 
-                        o percentual de ultraprocessados abaixo de 10% para garantir uma redistribuição 
-                        de alimentos nutritivos e saudáveis.
-                      </p>
+        {/* Consolidado Mensal */}
+        <section className="py-20 border-b border-emerald-950/60 bg-[#052E24]/20">
+          <div className="container mx-auto px-4 sm:px-6 max-w-6xl">
+            <div className="text-center max-w-2xl mx-auto mb-14 space-y-3">
+              <span className="text-xs font-mono uppercase tracking-widest text-emerald-400">Consolidação Trimestral</span>
+              <h2 className="text-3xl sm:text-4xl font-extrabold text-white font-serif">Resultados Públicos por Período</h2>
+            </div>
+
+            <div className="grid gap-6 md:grid-cols-3">
+              {monthlyStats.map((stat) => (
+                <div
+                  key={stat.month}
+                  className="rounded-3xl border border-emerald-950/80 bg-[#071B17]/90 p-7 backdrop-blur shadow-xl space-y-4"
+                >
+                  <h4 className="text-lg font-bold text-white font-serif">{stat.month}</h4>
+                  <div className="space-y-2 text-xs">
+                    <div className="flex justify-between py-1 border-b border-emerald-950/60">
+                      <span className="text-slate-400">Alimentos Salvos:</span>
+                      <span className="font-mono font-bold text-emerald-400">{stat.kg} kg</span>
+                    </div>
+                    <div className="flex justify-between py-1 border-b border-emerald-950/60">
+                      <span className="text-slate-400">Lotes Entregues:</span>
+                      <span className="font-mono text-white">{stat.doacoes}</span>
+                    </div>
+                    <div className="flex justify-between py-1 border-b border-emerald-950/60">
+                      <span className="text-slate-400">Empresas Participantes:</span>
+                      <span className="font-mono text-white">{stat.empresas}</span>
+                    </div>
+                    <div className="flex justify-between py-1">
+                      <span className="text-slate-400">Instituições Atendidas:</span>
+                      <span className="font-mono text-white">{stat.instituicoes}</span>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              ))}
             </div>
           </div>
         </section>
 
-        {/* Reports */}
-        <section className="bg-card py-16 md:py-24">
-          <div className="container mx-auto px-4 md:px-6">
-            <div className="mx-auto max-w-4xl">
-              <h2 className="mb-8 text-2xl font-bold text-foreground md:text-3xl">
-                Relatórios Disponíveis
-              </h2>
-              
-              <div className="grid gap-4 md:grid-cols-2">
-                {[
-                  { title: "Relatório Anual 2025", description: "Dados consolidados do ano anterior", date: "Janeiro 2026" },
-                  { title: "Relatório de Impacto Q1 2026", description: "Primeiro trimestre de 2026", date: "Março 2026" },
-                  { title: "Análise Nutricional", description: "Diversidade alimentar das doações", date: "Fevereiro 2026" },
-                  { title: "Relatório Ambiental", description: "Impacto na redução de desperdício", date: "Março 2026" },
-                ].map((report, index) => (
-                  <Card key={index} className="border-border bg-background">
-                    <CardContent className="flex items-center justify-between p-4">
-                      <div className="flex items-center gap-4">
-                        <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
-                          <FileText className="h-6 w-6 text-primary" />
-                        </div>
-                        <div>
-                          <h3 className="font-semibold text-foreground">{report.title}</h3>
-                          <p className="text-sm text-muted-foreground">{report.description}</p>
-                          <p className="text-xs text-muted-foreground">{report.date}</p>
-                        </div>
-                      </div>
-                      <Button variant="ghost" size="icon">
-                        <Download className="h-4 w-4" />
-                      </Button>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* CTA Section */}
-        <section className="bg-primary py-16 md:py-24">
-          <div className="container mx-auto px-4 md:px-6">
-            <div className="mx-auto max-w-3xl text-center">
-              <h2 className="mb-6 text-3xl font-bold text-primary-foreground md:text-4xl">
-                Contribua para esses números
-              </h2>
-              <p className="mb-8 text-lg text-primary-foreground/80 leading-relaxed">
-                Cada doação conta. Faça parte dessa rede e ajude a aumentar o impacto 
-                da redistribuição de alimentos na nossa cidade.
-              </p>
-              <Button size="lg" variant="secondary" asChild className="gap-2">
+        {/* CTA */}
+        <section className="py-20 bg-gradient-to-t from-[#040E0B] via-[#071B17] to-[#052E24]">
+          <div className="container mx-auto px-4 sm:px-6 max-w-3xl text-center space-y-6">
+            <h2 className="text-3xl sm:text-5xl font-black text-white font-serif">
+              Faça parte da prestação de contas nacional.
+            </h2>
+            <p className="text-sm text-slate-300 leading-relaxed max-w-xl mx-auto">
+              Sua organização com dados protegidos, relatórios automatizados e compliance sanitário absoluto.
+            </p>
+            <div className="flex justify-center pt-2">
+              <Button asChild className="h-11 px-8 bg-emerald-500 hover:bg-emerald-400 text-[#071B17] font-bold text-sm tracking-wide shadow-lg shadow-emerald-950/60">
                 <Link href="/cadastro">
-                  Começar agora
-                  <ArrowRight className="h-4 w-4" />
+                  Credenciar Minha Organização
+                  <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
             </div>
           </div>
         </section>
       </main>
-      
+
       <Footer />
     </div>
   )

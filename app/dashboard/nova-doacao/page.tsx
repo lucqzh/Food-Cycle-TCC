@@ -11,12 +11,11 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Badge } from "@/components/ui/badge"
-import { ArrowLeft, Package, Heart, Sprout, Recycle, Scale, Info, Boxes, AlertCircle } from "lucide-react"
+import { ArrowLeft, Package, Heart, Sprout, Recycle, Scale, Info, AlertCircle, Sparkles, ShieldCheck } from "lucide-react"
 import Link from "next/link"
 
-// Enums alinhados com o banco de dados (public.pg_type / schema.sql)
 const categorias = [
-  { value: "fruta", label: "Frutas" },
+  { value: "fruta", label: "Frutas Frescas" },
   { value: "hortalica", label: "Hortaliças e Legumes" },
   { value: "graos_cereais", label: "Grãos e Cereais" },
   { value: "proteina", label: "Proteínas (Carnes, Ovos)" },
@@ -27,34 +26,34 @@ const categorias = [
 
 const condicoes = [
   { value: "ambiente", label: "Temperatura Ambiente" },
-  { value: "refrigerado", label: "Refrigerado" },
-  { value: "congelado", label: "Congelado" },
+  { value: "refrigerado", label: "Refrigerado (0°C a 10°C)" },
+  { value: "congelado", label: "Congelado (-18°C ou inferior)" },
 ]
 
 const destinacoes = [
   {
     value: "humano",
-    label: "Consumo humano",
+    label: "Consumo Humano",
     description: "Destinação prioritária - alimentos próprios para consumo",
     icon: Heart,
-    color: "bg-primary text-primary-foreground",
-    badge: "Prioridade máxima",
+    color: "text-emerald-400 bg-emerald-500/10 border-emerald-500/20",
+    badge: "Prioridade Legal",
   },
   {
     value: "animal",
-    label: "Consumo animal",
+    label: "Consumo Animal",
     description: "Quando inadequado para humanos, mas com valor nutricional",
     icon: Sprout,
-    color: "bg-secondary text-secondary-foreground",
-    badge: "Segunda opção",
+    color: "text-amber-400 bg-amber-500/10 border-amber-500/20",
+    badge: "2ª Opção",
   },
   {
     value: "compostagem",
-    label: "Compostagem ou biomassa",
+    label: "Compostagem ou Biomassa",
     description: "Reaproveitamento orgânico evitando aterro sanitário",
     icon: Recycle,
-    color: "bg-accent text-accent-foreground",
-    badge: "Terceira opção",
+    color: "text-slate-300 bg-slate-500/10 border-slate-500/20",
+    badge: "3ª Opção",
   },
 ]
 
@@ -92,7 +91,6 @@ export default function NovaDoacaoPage() {
 
         const uid = authData.user.id
 
-        // Busca o ID da empresa vinculada ao perfil logado
         const { data: emp, error: empError } = await supabase
           .from("empresas")
           .select("id, nome_fantasia, razao_social")
@@ -104,7 +102,7 @@ export default function NovaDoacaoPage() {
           setErroEmpresa("Não foi possível carregar os dados da empresa. Tente recarregar.")
         } else if (!emp) {
           setErroEmpresa(
-            "Você precisa ter um perfil de Empresa cadastrado para publicar doações. Acesse o menu para completar seu cadastro."
+            "Você precisa ter um perfil de Empresa cadastrado para publicar doações. Complete seu cadastro institucional."
           )
         } else {
           setEmpresaId(emp.id)
@@ -134,7 +132,6 @@ export default function NovaDoacaoPage() {
       setErro("Por favor, selecione uma Categoria Nutricional para o alimento.")
       return
     }
-
 
     if (!formData.validade) {
       setErro("Informe a data de validade.")
@@ -209,341 +206,277 @@ export default function NovaDoacaoPage() {
 
   if (carregandoUsuario) {
     return (
-      <div className="flex min-h-[300px] items-center justify-center text-muted-foreground">
-        Carregando dados da empresa...
+      <div className="flex min-h-[300px] items-center justify-center font-mono text-xs text-emerald-400">
+        <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping mr-2" />
+        Carregando dados da empresa doadora...
       </div>
     )
   }
 
+  const inputClass = "h-11 bg-[#0A241F]/70 border-emerald-900/60 text-white placeholder:text-slate-500 focus:border-emerald-500 focus:ring-emerald-500/20 rounded-xl"
+
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center gap-4">
-        <Button variant="outline" size="icon" asChild>
+      <div className="flex items-center gap-4 pb-6 border-b border-emerald-950/60">
+        <Button variant="outline" size="icon" asChild className="h-10 w-10 border-emerald-950 bg-[#071B17] text-slate-300 hover:text-white">
           <Link href="/dashboard">
             <ArrowLeft className="h-4 w-4" />
           </Link>
         </Button>
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Nova doação</h1>
-          <p className="text-muted-foreground">
-            Cadastre um alimento de acordo com a PNCPDA - Lei nº 15.224/2025
-            {empresaNome ? ` • Doador: ${empresaNome}` : ""}
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-950 border border-emerald-800/40 text-[10px] font-mono text-emerald-400 mb-1">
+            <Scale className="h-3 w-3 text-amber-400" />
+            Lei nº 15.224/2025 • Rastreabilidade Aberta
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-white font-serif">Cadastrar Nova Doação</h1>
+          <p className="text-xs text-slate-400">
+            {empresaNome ? `Empresa Doadora: ${empresaNome}` : "Disponibilize excedentes alimentares para a rede"}
           </p>
         </div>
       </div>
 
       {erroEmpresa && (
-        <Card className="border-destructive/30 bg-destructive/10">
-          <CardContent className="p-4 flex items-center gap-3 text-destructive">
-            <AlertCircle className="h-5 w-5 shrink-0" />
-            <div className="flex-1 text-sm font-medium">{erroEmpresa}</div>
-            <Button size="sm" variant="outline" asChild>
-              <Link href="/completar-cadastro">Completar cadastro</Link>
-            </Button>
-          </CardContent>
-        </Card>
+        <div className="p-4 rounded-xl border border-red-800/80 bg-red-950/60 text-red-200 flex items-center justify-between text-xs">
+          <div className="flex items-center gap-2">
+            <AlertCircle className="h-4 w-4 text-red-400 shrink-0" />
+            <span>{erroEmpresa}</span>
+          </div>
+          <Button size="sm" asChild className="bg-red-900/80 hover:bg-red-800 text-white text-xs h-7">
+            <Link href="/completar-cadastro">Completar Cadastro</Link>
+          </Button>
+        </div>
       )}
 
-      {/* Aviso PNCPDA */}
-      <Card className="border-primary/30 bg-primary/5">
-        <CardContent className="p-4">
-          <div className="flex items-start gap-3">
-            <Scale className="h-5 w-5 shrink-0 text-primary" />
-            <div className="text-sm text-foreground">
-              <strong>Política Nacional de Combate à Perda e ao Desperdício de Alimentos.</strong> Toda
-              doação registrada nesta plataforma deve respeitar as diretrizes da Lei nº 15.224/2025,
-              priorizando o consumo humano e garantindo segurança alimentar.
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
       <div className="grid gap-6 lg:grid-cols-3">
-        {/* Form */}
-        <div className="lg:col-span-2">
-          <Card className="border-border bg-card">
-            <CardHeader>
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
-                  <Package className="h-5 w-5 text-primary" />
+        {/* Formulário */}
+        <div className="lg:col-span-2 space-y-6">
+          <div className="rounded-2xl border border-emerald-950/80 bg-[#071B17]/90 p-6 sm:p-8 backdrop-blur shadow-xl space-y-6">
+            <div className="flex items-center gap-3 pb-4 border-b border-emerald-950/60">
+              <div className="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
+                <Package className="h-5 w-5" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-white">Ficha Técnica do Lote</h3>
+                <p className="text-xs text-slate-400">Dados nutricionais e de conservação do alimento</p>
+              </div>
+            </div>
+
+            <form onSubmit={handleSubmit} className="space-y-5">
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-1.5">
+                  <Label htmlFor="nome" className="text-xs uppercase tracking-wider font-semibold text-slate-300">
+                    Nome do Alimento *
+                  </Label>
+                  <Input
+                    id="nome"
+                    placeholder="Ex: Arroz Integral, Maçãs Gala, Pães..."
+                    value={formData.nome}
+                    onChange={(e) => setFormData({ ...formData, nome: e.target.value })}
+                    required
+                    className={inputClass}
+                  />
                 </div>
-                <div>
-                  <CardTitle className="text-foreground">Informações do alimento</CardTitle>
-                  <CardDescription>Preencha os dados do alimento que deseja doar</CardDescription>
+
+                <div className="space-y-1.5">
+                  <Label htmlFor="categoria" className="text-xs uppercase tracking-wider font-semibold text-slate-300">
+                    Categoria Nutricional *
+                  </Label>
+                  <Select
+                    value={formData.categoria}
+                    onValueChange={(value) => setFormData({ ...formData, categoria: value })}
+                    required
+                  >
+                    <SelectTrigger className="h-11 bg-[#0A241F]/70 border-emerald-900/60 text-white rounded-xl">
+                      <SelectValue placeholder="Selecione a categoria..." />
+                    </SelectTrigger>
+                    <SelectContent className="bg-[#071B17] border-emerald-900 text-white">
+                      {categorias.map((cat) => (
+                        <SelectItem key={cat.value} value={cat.value} className="focus:bg-emerald-950 focus:text-white">
+                          {cat.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label htmlFor="quantidade" className="text-xs uppercase tracking-wider font-semibold text-slate-300">
+                    Volume em KG *
+                  </Label>
+                  <Input
+                    id="quantidade"
+                    type="number"
+                    placeholder="Ex: 50"
+                    value={formData.quantidade}
+                    onChange={(e) => setFormData({ ...formData, quantidade: e.target.value })}
+                    required
+                    min="0.1"
+                    step="0.1"
+                    className={inputClass}
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label htmlFor="validade" className="text-xs uppercase tracking-wider font-semibold text-slate-300">
+                    Data Limite de Validade *
+                  </Label>
+                  <Input
+                    id="validade"
+                    type="date"
+                    value={formData.validade}
+                    onChange={(e) => setFormData({ ...formData, validade: e.target.value })}
+                    required
+                    className={inputClass}
+                  />
                 </div>
               </div>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="grid gap-6 md:grid-cols-2">
-                  {/* Nome do alimento */}
-                  <div className="space-y-2">
-                    <Label htmlFor="nome">Nome do alimento *</Label>
-                    <Input
-                      id="nome"
-                      placeholder="Ex: Arroz integral, Maçãs, Leite..."
-                      value={formData.nome}
-                      onChange={(e) => setFormData({ ...formData, nome: e.target.value })}
-                      required
-                    />
-                  </div>
 
-                  {/* Categoria */}
-                  <div className="space-y-2">
-                    <Label htmlFor="categoria">Categoria nutricional *</Label>
-                    <Select
-                      value={formData.categoria}
-                      onValueChange={(value) => setFormData({ ...formData, categoria: value })}
-                      required
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Selecione uma categoria" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {categorias.map((cat) => (
-                          <SelectItem key={cat.value} value={cat.value}>
-                            {cat.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="condicao" className="text-xs uppercase tracking-wider font-semibold text-slate-300">
+                  Condição de Armazenamento Exigida *
+                </Label>
+                <Select
+                  value={formData.condicao}
+                  onValueChange={(value) => setFormData({ ...formData, condicao: value })}
+                  required
+                >
+                  <SelectTrigger className="h-11 bg-[#0A241F]/70 border-emerald-900/60 text-white rounded-xl">
+                    <SelectValue placeholder="Selecione a temperatura de guarda..." />
+                  </SelectTrigger>
+                  <SelectContent className="bg-[#071B17] border-emerald-900 text-white">
+                    {condicoes.map((c) => (
+                      <SelectItem key={c.value} value={c.value} className="focus:bg-emerald-950 focus:text-white">
+                        {c.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
 
-                  {/* Quantidade em KG */}
-                  <div className="space-y-2">
-                    <Label htmlFor="quantidade">Quantidade total (kg) *</Label>
-                    <div className="flex gap-2">
-                      <Input
-                        id="quantidade"
-                        type="number"
-                        placeholder="Ex: 50"
-                        value={formData.quantidade}
-                        onChange={(e) => setFormData({ ...formData, quantidade: e.target.value })}
-                        required
-                        min="0.1"
-                        step="0.1"
-                        className="flex-1"
-                      />
-                      <div className="flex items-center justify-center rounded-md border border-border bg-muted px-3 text-sm font-medium text-muted-foreground">
-                        kg
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Data de validade */}
-                  <div className="space-y-2">
-                    <Label htmlFor="validade">Data de validade *</Label>
-                    <Input
-                      id="validade"
-                      type="date"
-                      value={formData.validade}
-                      onChange={(e) => setFormData({ ...formData, validade: e.target.value })}
-                      required
-                    />
-                  </div>
-
-                  {/* Condição de armazenamento */}
-                  <div className="space-y-2 md:col-span-2">
-                    <Label htmlFor="condicao">Condição de armazenamento *</Label>
-                    <Select
-                      value={formData.condicao}
-                      onValueChange={(value) => setFormData({ ...formData, condicao: value })}
-                      required
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Selecione a condição de armazenamento" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {condicoes.map((cond) => (
-                          <SelectItem key={cond.value} value={cond.value}>
-                            {cond.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  {/* Descrição */}
-                  <div className="space-y-2 md:col-span-2">
-                    <Label htmlFor="descricao">Descrição adicional</Label>
-                    <Textarea
-                      id="descricao"
-                      placeholder="Marca, lote, observações relevantes sobre o lote..."
-                      value={formData.descricao}
-                      onChange={(e) => setFormData({ ...formData, descricao: e.target.value })}
-                      rows={3}
-                    />
-                  </div>
-                </div>
-
-                {/* Destinação prevista */}
-                <div className="space-y-3">
-                  <div>
-                    <Label className="text-base">Classificação da destinação</Label>
-                    <p className="text-sm text-muted-foreground">
-                      Conforme a hierarquia da PNCPDA, indique a destinação prevista do alimento.
-                    </p>
-                  </div>
-
-                  <div className="grid gap-3">
-                    {destinacoes.map((d) => (
+              {/* Destinação */}
+              <div className="space-y-2 pt-2">
+                <Label className="text-xs uppercase tracking-wider font-semibold text-slate-300">
+                  Destinação Sugerida (PNCPDA Art. 4º)
+                </Label>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  {destinacoes.map((dest) => {
+                    const Icon = dest.icon
+                    const isSelected = formData.destinacao === dest.value
+                    return (
                       <button
+                        key={dest.value}
                         type="button"
-                        key={d.value}
-                        onClick={() => setFormData({ ...formData, destinacao: d.value })}
-                        className={`flex items-start gap-4 rounded-xl border-2 p-4 text-left transition-colors ${
-                          formData.destinacao === d.value
-                            ? "border-primary bg-primary/5"
-                            : "border-border bg-background hover:border-primary/50"
+                        onClick={() => setFormData({ ...formData, destinacao: dest.value })}
+                        className={`p-3.5 rounded-xl border text-left transition-all cursor-pointer ${
+                          isSelected
+                            ? "border-emerald-500 bg-emerald-950/80 text-white shadow-md shadow-emerald-900/40"
+                            : "border-emerald-950 bg-[#0A241F]/30 text-slate-400 hover:bg-emerald-950/30"
                         }`}
                       >
-                        <div
-                          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${d.color}`}
-                        >
-                          <d.icon className="h-5 w-5" />
+                        <div className="flex items-center justify-between mb-2">
+                          <Icon className={`h-4 w-4 ${isSelected ? "text-emerald-400" : "text-slate-500"}`} />
+                          <span className={`text-[9px] uppercase font-mono px-1.5 py-0.5 rounded ${dest.color}`}>
+                            {dest.badge}
+                          </span>
                         </div>
-                        <div className="flex-1">
-                          <div className="mb-1 flex flex-wrap items-center gap-2">
-                            <span className="font-semibold text-foreground">{d.label}</span>
-                            <Badge variant="secondary" className="text-xs">
-                              {d.badge}
-                            </Badge>
-                          </div>
-                          <p className="text-sm text-muted-foreground">{d.description}</p>
-                        </div>
+                        <p className="text-xs font-bold text-white">{dest.label}</p>
+                        <p className="text-[10px] text-slate-400 mt-1 leading-snug">{dest.description}</p>
                       </button>
-                    ))}
-                  </div>
+                    )
+                  })}
                 </div>
+              </div>
 
-                {/* Microcoleta */}
-                <div className="rounded-xl border border-border bg-background p-4">
-                  <div className="flex items-start gap-3">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-accent/15 text-accent">
-                      <Boxes className="h-5 w-5" />
-                    </div>
-                    <div className="flex-1">
-                      <div className="mb-2 flex flex-wrap items-center gap-2">
-                        <Label htmlFor="microcoleta" className="text-base font-semibold">
-                          Microcoleta
-                        </Label>
-                        <Badge variant="outline" className="text-xs">
-                          Pequenas doações
-                        </Badge>
-                      </div>
-                      <p className="mb-3 text-sm text-muted-foreground">
-                        Marque esta opção se a doação tem pequeno volume. A PNCPDA estimula a
-                        organização de microcoletas para integrar pequenos doadores ao sistema, ampliando
-                        a captação de excedentes.
-                      </p>
-                      <div className="flex items-center gap-2">
-                        <Checkbox
-                          id="microcoleta"
-                          checked={formData.microcoleta}
-                          onCheckedChange={(checked) =>
-                            setFormData({ ...formData, microcoleta: Boolean(checked) })
-                          }
-                        />
-                        <label htmlFor="microcoleta" className="text-sm text-foreground cursor-pointer">
-                          Esta é uma microcoleta (pequena doação)
-                        </label>
-                      </div>
-                    </div>
-                  </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="descricao" className="text-xs uppercase tracking-wider font-semibold text-slate-300">
+                  Observações e Instruções de Retirada (Opcional)
+                </Label>
+                <Textarea
+                  id="descricao"
+                  placeholder="Ex: Embalado em caixas plásticas higienizadas. Retirada pela doca 2 das 08h às 14h."
+                  value={formData.descricao}
+                  onChange={(e) => setFormData({ ...formData, descricao: e.target.value })}
+                  rows={3}
+                  className="bg-[#0A241F]/70 border-emerald-900/60 text-white placeholder:text-slate-500 focus:border-emerald-500 rounded-xl"
+                />
+              </div>
+
+              {/* Microcoleta */}
+              <div className="flex items-center gap-3 p-3.5 rounded-xl bg-[#0A241F]/40 border border-emerald-950/60">
+                <Checkbox
+                  id="microcoleta"
+                  checked={formData.microcoleta}
+                  onCheckedChange={(checked) =>
+                    setFormData({ ...formData, microcoleta: Boolean(checked) })
+                  }
+                />
+                <label htmlFor="microcoleta" className="text-xs text-slate-300 cursor-pointer">
+                  Habilitar Microcoleta (Permite fracionamento do lote entre várias instituições receptoras)
+                </label>
+              </div>
+
+              {/* Termo de Responsabilidade */}
+              <div className="flex items-start gap-3 p-4 rounded-xl bg-emerald-950/60 border border-emerald-800/60">
+                <Checkbox
+                  id="termo"
+                  checked={formData.termoConfirmacao}
+                  onCheckedChange={(checked) =>
+                    setFormData({ ...formData, termoConfirmacao: Boolean(checked) })
+                  }
+                  className="mt-0.5"
+                />
+                <label htmlFor="termo" className="text-xs text-slate-300 leading-relaxed cursor-pointer">
+                  Declaro que os alimentos cumprem rigorosamente os padrões de segurança alimentar,
+                  encontram-se dentro do prazo de validade e foram armazenados conforme as normas sanitárias
+                  vigentes, sob proteção da Lei nº 15.224/2025.
+                </label>
+              </div>
+
+              {erro && (
+                <div className="p-3 rounded-lg bg-red-950/60 border border-red-800/60 text-red-200 text-xs flex items-center gap-2">
+                  <AlertCircle className="h-4 w-4 shrink-0" />
+                  <span>{erro}</span>
                 </div>
+              )}
 
-                {/* Termo de responsabilidade */}
-                <div className="rounded-xl border border-primary/30 bg-primary/5 p-4">
-                  <div className="flex items-start gap-3">
-                    <Checkbox
-                      id="termo"
-                      checked={formData.termoConfirmacao}
-                      onCheckedChange={(checked) =>
-                        setFormData({ ...formData, termoConfirmacao: Boolean(checked) })
-                      }
-                      className="mt-1"
-                    />
-                    <label htmlFor="termo" className="text-sm text-foreground leading-relaxed cursor-pointer">
-                      Confirmo que o alimento está dentro do prazo de validade, foi armazenado conforme
-                      as condições informadas e está próprio para a destinação selecionada. Declaro
-                      atuar de boa-fé e em conformidade com a Lei nº 15.224/2025 (PNCPDA) e com as
-                      normas sanitárias vigentes.
-                    </label>
-                  </div>
-                </div>
-
-                {erro && (
-                  <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
-                    {erro}
-                  </div>
-                )}
-
-                {/* Actions */}
-                <div className="flex flex-col gap-3 sm:flex-row sm:justify-end">
-                  <Button type="button" variant="outline" asChild>
-                    <Link href="/dashboard">Cancelar</Link>
-                  </Button>
-                  <Button
-                    type="submit"
-                    disabled={isLoading || !formData.termoConfirmacao || Boolean(erroEmpresa)}
-                    className="bg-accent text-accent-foreground hover:bg-accent/90"
-                  >
-                    {isLoading ? "Publicando no banco..." : "Publicar doação"}
-                  </Button>
-                </div>
-              </form>
-            </CardContent>
-          </Card>
+              <div className="flex items-center justify-end gap-3 pt-2">
+                <Button type="button" variant="outline" asChild className="h-10 border-emerald-950 text-slate-300 hover:text-white">
+                  <Link href="/dashboard">Cancelar</Link>
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={isLoading || !formData.termoConfirmacao || Boolean(erroEmpresa)}
+                  className="h-10 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-[#071B17] font-bold text-xs tracking-wide shadow-lg shadow-emerald-950/60 transition-all cursor-pointer"
+                >
+                  {isLoading ? "Registrando Lote no Supabase..." : "Publicar Doação no Painel"}
+                </Button>
+              </div>
+            </form>
+          </div>
         </div>
 
-        {/* Sidebar de orientações */}
+        {/* Sidebar com orientações */}
         <div className="space-y-4">
-          <Card className="border-border bg-card">
-            <CardHeader>
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                  <Info className="h-5 w-5" />
-                </div>
-                <CardTitle className="text-foreground">Orientações da PNCPDA</CardTitle>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-3 text-sm text-muted-foreground">
-              <p>
-                <strong className="text-foreground">Hierarquia de destinação:</strong> sempre que
-                possível, priorize o consumo humano antes de outras destinações.
-              </p>
-              <p>
-                <strong className="text-foreground">Rastreabilidade:</strong> os dados informados
-                geram registro auditável da doação, contribuindo para o monitoramento da política
-                pública.
-              </p>
-              <p>
-                <strong className="text-foreground">Boa-fé:</strong> o doador, atuando de boa-fé,
-                somente responde por danos em caso de dolo. A doação não configura relação de consumo.
-              </p>
-              <Button variant="outline" size="sm" asChild className="mt-2 w-full gap-2">
-                <Link href="/aspectos-legais">
-                  Ver aspectos legais
-                </Link>
-              </Button>
-            </CardContent>
-          </Card>
+          <div className="rounded-2xl border border-emerald-950/80 bg-[#071B17]/90 p-5 backdrop-blur shadow-xl space-y-3">
+            <div className="flex items-center gap-2.5 text-emerald-400">
+              <ShieldCheck className="h-5 w-5" />
+              <h4 className="text-sm font-bold text-white">Segurança Jurídica do Doador</h4>
+            </div>
+            <p className="text-xs text-slate-400 leading-relaxed">
+              Nos termos da Lei nº 15.224/2025, a responsabilidade do doador cessa no momento da primeira entrega física ou transporte pelo intermediário, desde que observadas as condições declaradas.
+            </p>
+          </div>
 
-          <Card className="border-accent/30 bg-accent/5">
-            <CardContent className="p-4">
-              <div className="flex items-start gap-3">
-                <Scale className="h-5 w-5 shrink-0 text-accent" />
-                <div className="text-sm">
-                  <p className="mb-1 font-semibold text-foreground">Limites legais</p>
-                  <p className="text-muted-foreground leading-relaxed">
-                    Alimentos vencidos ou em condições inadequadas não podem ser doados. A plataforma
-                    organiza informações, mas não substitui a fiscalização sanitária.
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <div className="rounded-2xl border border-emerald-950/80 bg-[#071B17]/90 p-5 backdrop-blur shadow-xl space-y-3">
+            <div className="flex items-center gap-2.5 text-amber-400">
+              <Sparkles className="h-5 w-5" />
+              <h4 className="text-sm font-bold text-white">Selo ESG e Rastreio</h4>
+            </div>
+            <p className="text-xs text-slate-400 leading-relaxed">
+              Cada doação confirmada gera pontuação para emissão do <strong className="text-emerald-400">Selo Doador de Alimentos</strong>, válido para relatórios de sustentabilidade e compensações públicas.
+            </p>
+          </div>
         </div>
       </div>
     </div>

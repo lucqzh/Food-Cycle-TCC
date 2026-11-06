@@ -1,8 +1,6 @@
 "use client"
 
 import { useDonationMetrics } from "@/lib/donation-metrics"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { 
   Apple,
@@ -12,7 +10,9 @@ import {
   Milk,
   AlertTriangle,
   CheckCircle,
-  Info
+  Info,
+  Scale,
+  Sparkles
 } from "lucide-react"
 import { 
   BarChart, 
@@ -30,11 +30,11 @@ import {
 } from "recharts"
 
 const fallbackCategories = [
-  { categoria: "Frutas", quantidade: 85, meta: 100, icon: Apple, color: "hsl(var(--chart-1))" },
-  { categoria: "Hortaliças", quantidade: 92, meta: 100, icon: Carrot, color: "hsl(var(--chart-2))" },
-  { categoria: "Grãos e Cereais", quantidade: 78, meta: 100, icon: Wheat, color: "hsl(var(--chart-3))" },
-  { categoria: "Proteínas", quantidade: 45, meta: 100, icon: Beef, color: "hsl(var(--chart-4))" },
-  { categoria: "Laticínios", quantidade: 60, meta: 100, icon: Milk, color: "hsl(var(--chart-5))" }
+  { categoria: "Frutas", quantidade: 85, meta: 100, icon: Apple, color: "#10B981" },
+  { categoria: "Hortaliças", quantidade: 92, meta: 100, icon: Carrot, color: "#059669" },
+  { categoria: "Grãos e Cereais", quantidade: 78, meta: 100, icon: Wheat, color: "#F59E0B" },
+  { categoria: "Proteínas", quantidade: 45, meta: 100, icon: Beef, color: "#EF4444" },
+  { categoria: "Laticínios", quantidade: 60, meta: 100, icon: Milk, color: "#3B82F6" }
 ]
 
 const weeklyData = [
@@ -51,20 +51,23 @@ const alertas = [
   {
     type: "warning",
     icon: AlertTriangle,
-    title: "Baixa ingestão de proteínas",
-    description: "As doações de proteínas estão abaixo da meta ideal recomendada pela PNCPDA."
+    title: "Baixa Ingestão de Proteínas",
+    description: "As doações de proteínas estão abaixo da meta ideal recomendada pela PNCPDA.",
+    color: "text-amber-400 bg-amber-500/10 border-amber-500/20"
   },
   {
     type: "info",
     icon: Info,
     title: "Atenção a Laticínios",
-    description: "Incentivar novas parcerias com cooperativas e laticínios regionais."
+    description: "Incentivar novas parcerias com cooperativas e laticínios regionais.",
+    color: "text-blue-400 bg-blue-500/10 border-blue-500/20"
   },
   {
     type: "success",
     icon: CheckCircle,
-    title: "Excelente variedade de Hortaliças e Frutas",
-    description: "O volume de alimentos frescos colhidos e doados apresenta índice consistente."
+    title: "Excelente Variedade de Frescos",
+    description: "O volume de hortaliças e frutas colhidas apresenta índice de consistência máximo.",
+    color: "text-emerald-400 bg-emerald-500/10 border-emerald-500/20"
   }
 ]
 
@@ -94,169 +97,152 @@ export default function MetricasPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-foreground">Métricas Nutricionais</h1>
-        <p className="text-muted-foreground">
-          Análise da diversidade alimentar das doações conforme a PNCPDA (Lei nº 15.224/2025)
+      <div className="pb-6 border-b border-emerald-950/60">
+        <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-950 border border-emerald-800/40 text-[10px] font-mono text-emerald-400 mb-1">
+          <Scale className="h-3 w-3 text-amber-400" />
+          PNCPDA • Guia Alimentar para a População Brasileira
+        </div>
+        <h1 className="text-3xl font-extrabold text-white font-serif">Métricas Nutricionais</h1>
+        <p className="text-xs text-slate-400">
+          Análise da diversidade e suficiência alimentar dos lotes redistribuídos
         </p>
       </div>
 
       {/* Diversity Index */}
-      <Card className="border-border bg-card">
-        <CardHeader>
-          <CardTitle className="text-foreground">Índice de Diversidade Alimentar</CardTitle>
-          <CardDescription>Baseado na proporção de categorias nutricionais recebidas no banco</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-col items-center gap-6 md:flex-row md:items-start">
-            <div className="flex h-40 w-40 shrink-0 items-center justify-center rounded-full border-8 border-primary bg-primary/10">
-              <div className="text-center">
-                <span className="text-5xl font-bold text-primary">
-                  {isLoading ? "..." : indiceDiversidade}
-                </span>
-                <span className="block text-lg text-muted-foreground">/100</span>
-              </div>
-            </div>
-            <div className="flex-1 space-y-4">
-              <p className="text-muted-foreground">
-                O índice de diversidade alimentar afere a variedade nutricional das doações registradas. 
-                Índices acima de 70 apontam excelente equilíbrio alimentar para as instituições beneficiárias.
-              </p>
-              <div className="flex flex-wrap gap-2">
-                <Badge variant="secondary" className="bg-primary/10 text-primary">
-                  Grãos e Frutas Adequados
-                </Badge>
-                <Badge variant="secondary" className="bg-chart-2/10 text-chart-2">
-                  Hortaliças em Conformidade
-                </Badge>
-                <Badge variant="secondary" className="bg-accent/15 text-accent">
-                  Rastreabilidade PNCPDA 100%
-                </Badge>
-              </div>
+      <div className="rounded-2xl border border-emerald-950/80 bg-gradient-to-br from-[#0A241F]/80 to-[#071B17]/90 p-6 sm:p-8 backdrop-blur shadow-xl">
+        <div className="flex flex-col items-center gap-8 md:flex-row md:items-center">
+          <div className="relative flex h-40 w-40 shrink-0 items-center justify-center rounded-full border-4 border-emerald-500/40 bg-[#071B17] shadow-2xl shadow-emerald-950">
+            <div className="text-center">
+              <span className="text-5xl font-black text-emerald-400 font-mono tracking-tight">
+                {isLoading ? "..." : indiceDiversidade}
+              </span>
+              <span className="block text-xs font-mono text-slate-400 mt-1">/ 100 PTS</span>
             </div>
           </div>
-        </CardContent>
-      </Card>
-
-      {/* Charts Row */}
-      <div className="grid gap-6 lg:grid-cols-2">
-        {/* Radar Chart */}
-        <Card className="border-border bg-card">
-          <CardHeader>
-            <CardTitle className="text-foreground">Distribuição Nutricional</CardTitle>
-            <CardDescription>Visão geral das categorias em relação à meta</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="h-[300px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <RadarChart data={radarData}>
-                  <PolarGrid stroke="hsl(var(--border))" />
-                  <PolarAngleAxis 
-                    dataKey="subject" 
-                    tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }}
-                  />
-                  <PolarRadiusAxis 
-                    angle={30} 
-                    domain={[0, 100]}
-                    tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 10 }}
-                  />
-                  <Radar
-                    name="Atual"
-                    dataKey="valor"
-                    stroke="hsl(var(--primary))"
-                    fill="hsl(var(--primary))"
-                    fillOpacity={0.3}
-                  />
-                </RadarChart>
-              </ResponsiveContainer>
+          <div className="flex-1 space-y-4 text-center md:text-left">
+            <div>
+              <h3 className="text-lg font-bold text-white">Índice Geral de Diversidade Alimentar</h3>
+              <p className="text-xs text-slate-400 mt-1 max-w-xl leading-relaxed">
+                Mede a proporção equilibrada entre carboidratos, proteínas, vitaminas e minerais das doações. Pontuações acima de 70 garantem suficiência nutricional segundo os critérios do Ministério do Desenvolvimento Social.
+              </p>
             </div>
-          </CardContent>
-        </Card>
-
-        {/* Weekly Distribution */}
-        <Card className="border-border bg-card">
-          <CardHeader>
-            <CardTitle className="text-foreground">Distribuição Semanal</CardTitle>
-            <CardDescription>Quantidade de alimentos por categoria na última semana (kg)</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="h-[300px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={weeklyData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                  <XAxis 
-                    dataKey="dia" 
-                    stroke="hsl(var(--muted-foreground))"
-                    fontSize={12}
-                  />
-                  <YAxis 
-                    stroke="hsl(var(--muted-foreground))"
-                    fontSize={12}
-                  />
-                  <Tooltip 
-                    contentStyle={{ 
-                      backgroundColor: 'hsl(var(--card))',
-                      border: '1px solid hsl(var(--border))',
-                      borderRadius: '8px'
-                    }}
-                  />
-                  <Bar dataKey="frutas" stackId="a" fill="hsl(var(--chart-1))" />
-                  <Bar dataKey="legumes" stackId="a" fill="hsl(var(--chart-2))" />
-                  <Bar dataKey="graos" stackId="a" fill="hsl(var(--chart-3))" />
-                  <Bar dataKey="proteinas" stackId="a" fill="hsl(var(--chart-4))" />
-                  <Bar dataKey="laticinios" stackId="a" fill="hsl(var(--chart-5))" />
-                </BarChart>
-              </ResponsiveContainer>
+            <div className="flex flex-wrap justify-center md:justify-start gap-2">
+              <span className="px-2.5 py-1 rounded-full text-xs font-mono bg-emerald-950 text-emerald-300 border border-emerald-800/40">
+                Grãos e Frutas Adequados
+              </span>
+              <span className="px-2.5 py-1 rounded-full text-xs font-mono bg-green-950 text-green-300 border border-green-800/40">
+                Hortaliças em Conformidade
+              </span>
+              <span className="px-2.5 py-1 rounded-full text-xs font-mono bg-amber-950 text-amber-300 border border-amber-800/40">
+                ODS 2 Fome Zero 100%
+              </span>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
 
-      {/* Category Progress */}
-      <Card className="border-border bg-card">
-        <CardHeader>
-          <CardTitle className="text-foreground">Progresso por Categoria</CardTitle>
-          <CardDescription>Comparação entre volume recebido e meta nutricional</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-6">
-            {categoriaData.map((cat) => (
-              <div key={cat.categoria} className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <cat.icon className="h-5 w-5" style={{ color: cat.color }} />
-                    <span className="font-medium text-foreground">{cat.categoria}</span>
-                  </div>
-                  <span className="text-sm text-muted-foreground">
-                    {Math.round(cat.quantidade)}% da meta
-                  </span>
-                </div>
-                <Progress value={cat.quantidade} className="h-2" />
-              </div>
-            ))}
+      {/* Gráficos */}
+      <div className="grid gap-6 lg:grid-cols-2">
+        {/* Radar */}
+        <div className="rounded-2xl border border-emerald-950/80 bg-[#071B17]/90 p-6 backdrop-blur shadow-xl space-y-4">
+          <div>
+            <h3 className="text-base font-bold text-white">Distribuição Nutricional Radial</h3>
+            <p className="text-xs text-slate-400">Equilíbrio entre os 5 grupos alimentares essenciais</p>
           </div>
-        </CardContent>
-      </Card>
+          <div className="h-[280px] w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <RadarChart data={radarData}>
+                <PolarGrid stroke="#052E24" />
+                <PolarAngleAxis dataKey="subject" tick={{ fill: '#94A3B8', fontSize: 11 }} />
+                <PolarRadiusAxis angle={30} domain={[0, 100]} tick={{ fill: '#64748B', fontSize: 10 }} />
+                <Radar name="Atual" dataKey="valor" stroke="#10B981" fill="#10B981" fillOpacity={0.3} />
+              </RadarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
 
-      {/* Alerts */}
-      <div className="grid gap-4 md:grid-cols-3">
-        {alertas.map((alerta, index) => (
-          <Card key={index} className="border-border bg-card">
-            <CardContent className="p-4">
-              <div className="flex items-start gap-3">
-                <alerta.icon className={`h-5 w-5 shrink-0 ${
-                  alerta.type === 'warning' ? 'text-accent' :
-                  alerta.type === 'success' ? 'text-primary' :
-                  'text-secondary'
-                }`} />
-                <div>
-                  <h4 className="font-medium text-foreground">{alerta.title}</h4>
-                  <p className="mt-1 text-sm text-muted-foreground">{alerta.description}</p>
+        {/* Semanal */}
+        <div className="rounded-2xl border border-emerald-950/80 bg-[#071B17]/90 p-6 backdrop-blur shadow-xl space-y-4">
+          <div>
+            <h3 className="text-base font-bold text-white">Entradas por Dia da Semana (kg)</h3>
+            <p className="text-xs text-slate-400">Volume diário categorizado para previsão logística</p>
+          </div>
+          <div className="h-[280px] w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={weeklyData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#052E24" />
+                <XAxis dataKey="dia" stroke="#64748B" fontSize={11} />
+                <YAxis stroke="#64748B" fontSize={11} />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: "#071B17",
+                    border: "1px solid #052E24",
+                    borderRadius: "12px",
+                    color: "#F8FAFC",
+                    fontSize: "12px"
+                  }}
+                />
+                <Bar dataKey="frutas" stackId="a" fill="#10B981" />
+                <Bar dataKey="legumes" stackId="a" fill="#059669" />
+                <Bar dataKey="graos" stackId="a" fill="#F59E0B" />
+                <Bar dataKey="proteinas" stackId="a" fill="#EF4444" />
+                <Bar dataKey="laticinios" stackId="a" fill="#3B82F6" />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      </div>
+
+      {/* Barras de Progresso das Categorias */}
+      <div className="rounded-2xl border border-emerald-950/80 bg-[#071B17]/90 p-6 sm:p-8 backdrop-blur shadow-xl space-y-5">
+        <div>
+          <h3 className="text-base font-bold text-white">Metas por Categoria Nutricional</h3>
+          <p className="text-xs text-slate-400">Percentual de atendimento da demanda cadastrada</p>
+        </div>
+
+        <div className="space-y-4">
+          {categoriaData.map((cat) => (
+            <div key={cat.categoria} className="space-y-1.5">
+              <div className="flex items-center justify-between text-xs">
+                <div className="flex items-center gap-2">
+                  <cat.icon className="h-4 w-4" style={{ color: cat.color }} />
+                  <span className="font-semibold text-white">{cat.categoria}</span>
                 </div>
+                <span className="font-mono text-emerald-400 font-bold">
+                  {Math.round(cat.quantidade)}% atingido
+                </span>
               </div>
-            </CardContent>
-          </Card>
-        ))}
+              <div className="h-2 w-full bg-emerald-950/80 rounded-full overflow-hidden">
+                <div
+                  className="h-full rounded-full transition-all duration-500"
+                  style={{
+                    width: `${Math.min(100, Math.round(cat.quantidade))}%`,
+                    backgroundColor: cat.color
+                  }}
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Alertas */}
+      <div className="grid gap-4 md:grid-cols-3">
+        {alertas.map((alerta, idx) => {
+          const Icon = alerta.icon
+          return (
+            <div
+              key={idx}
+              className={`rounded-xl border p-4 flex items-start gap-3 ${alerta.color}`}
+            >
+              <Icon className="h-5 w-5 shrink-0 mt-0.5" />
+              <div className="space-y-0.5">
+                <h4 className="text-xs font-bold text-white">{alerta.title}</h4>
+                <p className="text-[11px] text-slate-300 leading-relaxed">{alerta.description}</p>
+              </div>
+            </div>
+          )
+        })}
       </div>
     </div>
   )

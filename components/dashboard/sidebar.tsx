@@ -14,7 +14,9 @@ import {
   Plus, 
   Menu, 
   X,
-  ShieldCheck
+  ShieldCheck,
+  Sparkles,
+  ChevronRight
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useEffect, useState } from "react"
@@ -23,7 +25,7 @@ import { ADMIN_MASTER_EMAIL } from "@/lib/constants"
 
 const menuItems = [
   {
-    title: "Dashboard",
+    title: "Visão Geral",
     href: "/dashboard",
     icon: LayoutDashboard
   },
@@ -33,17 +35,12 @@ const menuItems = [
     icon: Package
   },
   {
-    title: "Nova Doação",
-    href: "/dashboard/nova-doacao",
-    icon: Plus
-  },
-  {
     title: "Minhas Solicitações",
     href: "/dashboard/solicitacoes",
     icon: ClipboardList
   },
   {
-    title: "Histórico",
+    title: "Histórico de Entregas",
     href: "/dashboard/historico",
     icon: History
   },
@@ -97,8 +94,8 @@ export function DashboardSidebar() {
       {/* Mobile menu button */}
       <button
         onClick={() => setMobileOpen(!mobileOpen)}
-        className="fixed left-4 top-4 z-50 flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-primary-foreground lg:hidden"
-        aria-label="Toggle menu"
+        className="fixed left-4 top-4 z-50 flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500 text-[#071B17] shadow-lg shadow-emerald-500/20 lg:hidden"
+        aria-label="Abrir menu"
       >
         {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
       </button>
@@ -106,36 +103,53 @@ export function DashboardSidebar() {
       {/* Overlay */}
       {mobileOpen && (
         <div 
-          className="fixed inset-0 z-40 bg-background/80 backdrop-blur-sm lg:hidden"
+          className="fixed inset-0 z-40 bg-black/80 backdrop-blur-sm lg:hidden"
           onClick={() => setMobileOpen(false)}
         />
       )}
 
       {/* Sidebar */}
       <aside className={cn(
-        "fixed inset-y-0 left-0 z-40 flex w-64 flex-col border-r border-sidebar-border bg-sidebar transition-transform duration-300 lg:translate-x-0",
+        "fixed inset-y-0 left-0 z-40 flex w-72 flex-col border-r border-emerald-950/60 bg-[#071B17] text-[#F8FAFC] transition-transform duration-300 lg:translate-x-0 selection:bg-emerald-500 selection:text-white",
         mobileOpen ? "translate-x-0" : "-translate-x-full"
       )}>
         {/* Logo */}
-        <div className="flex h-16 items-center gap-2 border-b border-sidebar-border px-6">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-sidebar-primary">
-            <Leaf className="h-5 w-5 text-sidebar-primary-foreground" />
-          </div>
-          <span className="text-xl font-bold text-sidebar-foreground">FoodCycle</span>
+        <div className="flex h-20 items-center gap-3 border-b border-emerald-950/60 px-6">
+          <Link href="/" className="flex items-center gap-2.5 group">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-400 to-emerald-600 shadow-md shadow-emerald-500/20 group-hover:scale-105 transition-transform">
+              <Leaf className="h-5 w-5 text-[#071B17] stroke-[2.5]" />
+            </div>
+            <div>
+              <span className="text-lg font-bold text-white flex items-center gap-1.5">
+                FoodCycle
+                <span className="text-[9px] font-semibold uppercase tracking-wider text-emerald-400 bg-emerald-950 border border-emerald-800/60 px-1.5 py-0.2 rounded">
+                  PORTAL
+                </span>
+              </span>
+              <p className="text-[10px] text-emerald-400/60 font-mono">Lei nº 15.224/2025</p>
+            </div>
+          </Link>
         </div>
 
-        {/* New Donation Button */}
+        {/* CTA Nova Doação */}
         <div className="p-4">
-          <Button asChild className="w-full gap-2">
-            <Link href="/dashboard/nova-doacao">
-              <Plus className="h-4 w-4" />
-              Nova Doação
+          <Button
+            asChild
+            className="w-full h-11 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-[#071B17] font-bold text-xs tracking-wide shadow-lg shadow-emerald-950/60 transition-all cursor-pointer"
+          >
+            <Link href="/dashboard/nova-doacao" onClick={() => setMobileOpen(false)}>
+              <Plus className="h-4 w-4 mr-1.5 stroke-[3]" />
+              Cadastrar Nova Doação
             </Link>
           </Button>
         </div>
 
         {/* Navigation */}
         <nav className="flex-1 space-y-1 px-3 py-2 overflow-y-auto">
+          <div className="px-3 pb-2 text-[10px] font-mono uppercase tracking-wider text-slate-500">
+            Navegação Principal
+          </div>
+
           {menuItems.map((item) => {
             const isActive = pathname === item.href
             return (
@@ -144,45 +158,65 @@ export function DashboardSidebar() {
                 href={item.href}
                 onClick={() => setMobileOpen(false)}
                 className={cn(
-                  "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
+                  "group flex items-center justify-between rounded-xl px-3.5 py-2.5 text-xs font-medium transition-all",
                   isActive 
-                    ? "bg-sidebar-accent text-sidebar-accent-foreground" 
-                    : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                    ? "bg-emerald-950/80 text-emerald-300 border border-emerald-800/40 font-semibold" 
+                    : "text-slate-400 hover:bg-emerald-950/40 hover:text-white"
                 )}
               >
-                <item.icon className="h-5 w-5" />
-                {item.title}
+                <div className="flex items-center gap-3">
+                  <item.icon className={cn(
+                    "h-4 w-4 transition-colors",
+                    isActive ? "text-emerald-400" : "text-slate-400 group-hover:text-emerald-400"
+                  )} />
+                  <span>{item.title}</span>
+                </div>
+                {isActive && <ChevronRight className="h-3.5 w-3.5 text-emerald-400" />}
               </Link>
             )
           })}
 
           {isAdmin && (
-            <div className="pt-3 mt-3 border-t border-sidebar-border">
+            <div className="pt-4 mt-4 border-t border-emerald-950/60">
+              <div className="px-3 pb-2 text-[10px] font-mono uppercase tracking-wider text-amber-500/80">
+                Acesso Especial
+              </div>
               <Link
                 href="/admin"
-                className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-semibold text-purple-600 bg-purple-500/10 hover:bg-purple-500/20 transition-colors"
+                onClick={() => setMobileOpen(false)}
+                className="flex items-center justify-between rounded-xl px-3.5 py-2.5 text-xs font-semibold text-amber-300 bg-amber-950/30 border border-amber-800/40 hover:bg-amber-950/50 transition-all"
               >
-                <ShieldCheck className="h-4 w-4" />
-                <span>Painel Administrativo</span>
+                <div className="flex items-center gap-2.5">
+                  <ShieldCheck className="h-4 w-4 text-amber-400" />
+                  <span>Painel de Governança</span>
+                </div>
+                <span className="text-[9px] bg-amber-400/20 text-amber-300 px-1.5 py-0.5 rounded font-mono uppercase">
+                  Admin
+                </span>
               </Link>
             </div>
           )}
         </nav>
 
         {/* User section */}
-        <div className="border-t border-sidebar-border p-4">
+        <div className="border-t border-emerald-950/60 p-4 bg-[#052E24]/30">
           <div className="mb-3 flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-sidebar-accent text-sidebar-accent-foreground font-semibold">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-500/20 to-emerald-600/10 border border-emerald-500/30 text-emerald-400 font-bold text-sm">
               <span>{profile.nome ? profile.nome.charAt(0).toUpperCase() : "U"}</span>
             </div>
             <div className="flex-1 overflow-hidden">
-              <p className="truncate text-sm font-medium text-sidebar-foreground">{profile.nome}</p>
-              <p className="truncate text-xs text-sidebar-foreground/60">{profile.email}</p>
+              <p className="truncate text-xs font-bold text-white">{profile.nome}</p>
+              <p className="truncate text-[10px] text-slate-400 font-mono">{profile.email}</p>
             </div>
           </div>
-          <Button variant="outline" size="sm" className="w-full gap-2" onClick={handleLogout}>
-            <LogOut className="h-4 w-4" />
-            Sair
+          <Button
+            variant="outline"
+            size="sm"
+            className="w-full text-xs h-8 border-emerald-950 bg-[#071B17] text-slate-300 hover:text-red-400 hover:border-red-900/60 hover:bg-red-950/30 transition-all cursor-pointer"
+            onClick={handleLogout}
+          >
+            <LogOut className="h-3.5 w-3.5 mr-1.5" />
+            Desconectar Sessão
           </Button>
         </div>
       </aside>

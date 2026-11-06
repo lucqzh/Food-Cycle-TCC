@@ -2,8 +2,6 @@ import Link from "next/link"
 import { Header } from "@/components/layout/header"
 import { Footer } from "@/components/layout/footer"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { DonationMap, NearbyInstitutions } from "@/components/map/donation-map"
 import {
   Package,
   Search,
@@ -13,290 +11,209 @@ import {
   Building2,
   Heart,
   Truck,
-  ArrowDown,
-  MapPin,
+  ArrowRight,
+  Sparkles,
+  Scale
 } from "lucide-react"
 
 const steps = [
   {
     step: 1,
-    title: "Empresa cadastra alimentos disponíveis",
-    description: "A empresa acessa o sistema e registra os alimentos que estão disponíveis para doação. Ela informa o nome do alimento, categoria nutricional, quantidade em kg, data de validade, condições de armazenamento e uma breve descrição.",
+    title: "Empresa Cadastra o Excedente",
+    description: "A empresa doadora registra alimentos próprios para consumo, indicando peso em kg, validade, temperatura de conservação e lote rastreável.",
     icon: Package,
-    color: "bg-primary",
+    color: "from-emerald-400 to-emerald-600 text-[#071B17]",
     details: [
       "Cadastro rápido e intuitivo",
-      "Informações nutricionais detalhadas",
-      "Controle de validade automatizado",
-      "Histórico de doações"
+      "Geração automática de código de rastreio",
+      "Classificação nutricional prévia",
+      "Respaldo legal da Lei 15.224/2025"
     ]
   },
   {
     step: 2,
-    title: "Instituições visualizam as doações",
-    description: "As instituições cadastradas podem acessar o painel e ver todas as doações disponíveis na região. O sistema mostra informações completas sobre cada alimento, incluindo empresa doadora, quantidade e prazo de validade.",
+    title: "Mapeamento em Tempo Real",
+    description: "As instituições cadastradas visualizam os lotes disponíveis no mapa georreferenciado e recebem telemetria de frescor.",
     icon: Search,
-    color: "bg-secondary",
+    color: "from-teal-400 to-teal-600 text-[#071B17]",
     details: [
-      "Filtros por categoria e região",
-      "Visualização em tempo real",
-      "Informações nutricionais completas",
-      "Alertas de novas doações"
+      "Filtros por proximidade e categoria",
+      "Visualização de requisitos sanitários",
+      "Informações nutricionais transparentes",
+      "Alertas automáticos de lotes prioritários"
     ]
   },
   {
     step: 3,
-    title: "Instituição solicita a doação",
-    description: "Quando encontra uma doação de interesse, a instituição pode solicitar diretamente pela plataforma. A solicitação inclui a quantidade desejada e informações de contato para coordenar a retirada.",
+    title: "Solicitação Institucional",
+    description: "A entidade beneficiária solicita a reserva do lote informando a estimativa de pessoas e famílias a serem contempladas.",
     icon: HandHeart,
-    color: "bg-accent",
+    color: "from-amber-400 to-amber-600 text-[#071B17]",
     details: [
-      "Solicitação com um clique",
-      "Comunicação direta com empresa",
-      "Acompanhamento do status",
-      "Histórico de solicitações"
+      "Solicitação direta sem intermediários",
+      "Justificativa de atendimento comunitário",
+      "Acompanhamento de status em tempo real",
+      "Histórico institucional preservado"
     ]
   },
   {
     step: 4,
-    title: "Empresa confirma a doação",
-    description: "A empresa recebe a solicitação e pode aprovar ou recusar. Após aprovação, as partes combinam a logística de retirada dos alimentos, seja por coleta ou entrega.",
+    title: "Aprovação e Reserva do Lote",
+    description: "A empresa doadora revisa a solicitação e aprova o pedido, mudando o status para 'Reservado' e agendando a janela de coleta.",
     icon: CheckCircle,
-    color: "bg-primary",
+    color: "from-emerald-400 to-emerald-600 text-[#071B17]",
     details: [
-      "Aprovação simplificada",
-      "Agendamento flexível",
-      "Comunicação integrada",
-      "Notificações automáticas"
+      "Aprovação segura em 1 clique",
+      "Janela de retirada sincronizada",
+      "Emissão de protocolo com QR/código",
+      "Notificação instantânea para ambas as partes"
     ]
   },
   {
     step: 5,
-    title: "Entrega é realizada",
-    description: "A instituição realiza a retirada dos alimentos no local e horário combinados, ou a empresa organiza a entrega. O processo é acompanhado pela plataforma.",
+    title: "Logística e Retirada Física",
+    description: "A instituição ou intermediário logístico retira os alimentos no local acordado, seguindo as boas práticas sanitárias.",
     icon: Truck,
-    color: "bg-secondary",
+    color: "from-blue-400 to-blue-600 text-[#071B17]",
     details: [
-      "Logística coordenada",
-      "Confirmação de entrega",
-      "Rastreamento do processo",
-      "Comunicação em tempo real"
+      "Verificação da integridade das embalagens",
+      "Transporte adequado à temperatura exigida",
+      "Termo de entrega física com timestamp",
+      "Isenção de responsabilidade do doador de boa-fé"
     ]
   },
   {
     step: 6,
-    title: "Sistema registra a doação",
-    description: "Após a conclusão da doação, o sistema registra automaticamente a entrega, gerando métricas de impacto social, relatórios de diversidade alimentar e histórico completo das operações.",
+    title: "Rastreio e Selo ESG",
+    description: "O sistema valida a conclusão da entrega, atualiza os indicadores municipais da PNCPDA e computa pontos para o Selo Doador de Alimentos.",
     icon: ClipboardList,
-    color: "bg-accent",
+    color: "from-purple-400 to-purple-600 text-[#071B17]",
     details: [
-      "Registro automático",
-      "Métricas de impacto",
-      "Relatórios nutricionais",
-      "Certificados de doação"
+      "Registro de auditoria criptográfica",
+      "Cálculo de refeições salvas e CO2 evitado",
+      "Relatórios exportáveis em CSV/PDF",
+      "Reconhecimento público de impacto social"
     ]
   }
 ]
 
 export default function ComoFuncionaPage() {
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-screen flex-col bg-[#071B17] text-[#F8FAFC] selection:bg-emerald-500 selection:text-white">
       <Header />
 
       <main className="flex-1">
         {/* Hero Section */}
-        <section className="bg-card py-16 md:py-24">
-          <div className="container mx-auto px-4 md:px-6">
-            <div className="mx-auto max-w-3xl text-center">
-              <h1 className="mb-6 text-4xl font-bold tracking-tight text-foreground md:text-5xl">
-                Como Funciona
+        <section className="relative overflow-hidden py-24 md:py-32 border-b border-emerald-950/60 bg-gradient-to-b from-[#052E24] via-[#071B17] to-[#040E0B]">
+          <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-emerald-500/10 blur-[130px] rounded-full pointer-events-none" />
+
+          <div className="container mx-auto px-4 sm:px-6 relative z-10">
+            <div className="max-w-4xl mx-auto text-center space-y-6">
+              <div className="inline-flex items-center gap-2 rounded-full bg-emerald-950/80 border border-emerald-800/40 px-4 py-1.5 text-xs font-mono text-emerald-300">
+                <Sparkles className="h-3.5 w-3.5 text-amber-400" />
+                Fluxo Operacional Descomplicado
+              </div>
+
+              <h1 className="text-4xl sm:text-6xl font-black tracking-tight text-white leading-tight font-serif">
+                Como Funciona a Conexão que <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-emerald-300 to-amber-300">Salva Alimentos</span>.
               </h1>
-              <p className="text-lg text-muted-foreground md:text-xl leading-relaxed">
-                Conheça o processo completo de redistribuição de alimentos através da nossa plataforma.
-                Um sistema simples, eficiente e transparente em 6 etapas.
+
+              <p className="text-base sm:text-lg text-slate-300 font-light max-w-2xl mx-auto leading-relaxed">
+                Da identificação do excedente na gôndola à refeição servida na instituição comunitária. Um processo em 6 etapas estruturado para garantir agilidade e conformidade sanitária.
               </p>
             </div>
           </div>
         </section>
 
-        {/* Steps Section */}
-        <section className="py-16 md:py-24">
-          <div className="container mx-auto px-4 md:px-6">
-            <div className="mx-auto max-w-5xl">
-              <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-                {steps.map((item, index) => (
-                  <div key={item.step} className="relative">
-                    <Card className="h-full border-border bg-card transition-all hover:border-primary/50 hover:shadow-lg">
-                      <CardContent className="p-6">
-                        {/* Step header */}
-                        <div className="mb-4 flex items-center gap-4">
-                          <div className={`flex h-14 w-14 items-center justify-center rounded-xl ${item.color} text-primary-foreground`}>
-                            <item.icon className="h-7 w-7" />
-                          </div>
-                          <span className="text-4xl font-bold text-muted-foreground/30">
-                            {item.step.toString().padStart(2, '0')}
-                          </span>
-                        </div>
-
-                        {/* Content */}
-                        <h2 className="mb-3 text-lg font-semibold text-foreground">
-                          {item.title}
-                        </h2>
-                        <p className="mb-4 text-sm text-muted-foreground leading-relaxed">
-                          {item.description}
-                        </p>
-
-                        {/* Details */}
-                        <div className="space-y-2">
-                          {item.details.map((detail, i) => (
-                            <div key={i} className="flex items-center gap-2">
-                              <CheckCircle className="h-4 w-4 shrink-0 text-primary" />
-                              <span className="text-xs text-muted-foreground">{detail}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </CardContent>
-                    </Card>
-
-                    {/* Arrow connector for mobile */}
-                    {index < steps.length - 1 && (
-                      <div className="flex justify-center py-4 md:hidden">
-                        <ArrowDown className="h-6 w-6 text-border" />
+        {/* Steps Grid */}
+        <section className="py-20 border-b border-emerald-950/60 bg-[#071B17]">
+          <div className="container mx-auto px-4 sm:px-6 max-w-6xl">
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {steps.map((item) => (
+                <div
+                  key={item.step}
+                  className="rounded-3xl border border-emerald-950/80 bg-gradient-to-br from-[#0A241F]/80 to-[#071B17]/90 p-7 backdrop-blur shadow-xl hover:border-emerald-800/60 transition-all flex flex-col justify-between space-y-5 group"
+                >
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div className={`flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br ${item.color} shadow-lg font-bold`}>
+                        <item.icon className="h-6 w-6" />
                       </div>
-                    )}
+                      <span className="text-3xl font-black font-mono text-emerald-500/20 group-hover:text-emerald-500/40 transition-colors">
+                        0{item.step}
+                      </span>
+                    </div>
+
+                    <h3 className="text-xl font-bold text-white font-serif">{item.title}</h3>
+                    <p className="text-xs text-slate-300 leading-relaxed">{item.description}</p>
                   </div>
-                ))}
+
+                  <div className="space-y-2 pt-4 border-t border-emerald-950/60">
+                    {item.details.map((detail, idx) => (
+                      <div key={idx} className="flex items-center gap-2 text-xs text-slate-400">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                        <span>{detail}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Fluxo Diagramático */}
+        <section className="py-20 border-b border-emerald-950/60 bg-[#052E24]/20">
+          <div className="container mx-auto px-4 sm:px-6 max-w-5xl">
+            <div className="text-center max-w-2xl mx-auto mb-14 space-y-3">
+              <span className="text-xs font-mono uppercase tracking-widest text-emerald-400">Arquitetura de Conexão</span>
+              <h2 className="text-3xl sm:text-4xl font-extrabold text-white font-serif">O Ciclo Completo em 3 Pilares</h2>
+            </div>
+
+            <div className="grid gap-6 md:grid-cols-3">
+              <div className="rounded-2xl border border-emerald-950/80 bg-[#071B17]/90 p-6 text-center space-y-3">
+                <div className="flex h-16 w-16 mx-auto items-center justify-center rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
+                  <Building2 className="h-8 w-8" />
+                </div>
+                <h4 className="text-base font-bold text-white">Empresa Doadora</h4>
+                <p className="text-xs text-slate-400">Cadastra excedentes, evita custos de descarte e garante selo de responsabilidade socioambiental.</p>
+              </div>
+
+              <div className="rounded-2xl border border-emerald-800/80 bg-[#0A241F]/80 p-6 text-center space-y-3 shadow-xl shadow-emerald-950">
+                <div className="flex h-16 w-16 mx-auto items-center justify-center rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-400">
+                  <Package className="h-8 w-8" />
+                </div>
+                <h4 className="text-base font-bold text-white">FoodCycle Engine</h4>
+                <p className="text-xs text-slate-400">Rastreia o lote, valida requisitos da Lei 15.224/2025 e coordena a destinação rápida.</p>
+              </div>
+
+              <div className="rounded-2xl border border-emerald-950/80 bg-[#071B17]/90 p-6 text-center space-y-3">
+                <div className="flex h-16 w-16 mx-auto items-center justify-center rounded-2xl bg-blue-500/10 border border-blue-500/20 text-blue-400">
+                  <Heart className="h-8 w-8" />
+                </div>
+                <h4 className="text-base font-bold text-white">Instituição Receptora</h4>
+                <p className="text-xs text-slate-400">Recebe alimentos seguros e frescos para converter em refeições nutritivas à comunidade.</p>
               </div>
             </div>
           </div>
         </section>
 
-        {/* Visual Flow */}
-        <section className="bg-card py-16 md:py-24">
-          <div className="container mx-auto px-4 md:px-6">
-            <div className="mx-auto max-w-4xl">
-              <h2 className="mb-12 text-center text-2xl font-bold text-foreground md:text-3xl">
-                Fluxo Simplificado
-              </h2>
-
-              <div className="flex flex-col items-center gap-4 md:flex-row md:justify-between">
-                {/* Empresa */}
-                <div className="flex flex-col items-center text-center">
-                  <div className="mb-3 flex h-20 w-20 items-center justify-center rounded-2xl bg-primary text-primary-foreground">
-                    <Building2 className="h-10 w-10" />
-                  </div>
-                  <span className="font-semibold text-foreground">Empresa</span>
-                  <span className="text-sm text-muted-foreground">Cadastra alimentos</span>
-                </div>
-
-                {/* Arrow */}
-                <div className="hidden h-1 flex-1 bg-gradient-to-r from-primary to-secondary md:block" />
-                <ArrowDown className="h-8 w-8 text-primary md:hidden" />
-
-                {/* Plataforma */}
-                <div className="flex flex-col items-center text-center">
-                  <div className="mb-3 flex h-20 w-20 items-center justify-center rounded-2xl bg-accent text-accent-foreground">
-                    <Package className="h-10 w-10" />
-                  </div>
-                  <span className="font-semibold text-foreground">Plataforma</span>
-                  <span className="text-sm text-muted-foreground">Conecta e organiza</span>
-                </div>
-
-                {/* Arrow */}
-                <div className="hidden h-1 flex-1 bg-gradient-to-r from-secondary to-primary md:block" />
-                <ArrowDown className="h-8 w-8 text-secondary md:hidden" />
-
-                {/* Instituição */}
-                <div className="flex flex-col items-center text-center">
-                  <div className="mb-3 flex h-20 w-20 items-center justify-center rounded-2xl bg-secondary text-secondary-foreground">
-                    <Heart className="h-10 w-10" />
-                  </div>
-                  <span className="font-semibold text-foreground">Instituição</span>
-                  <span className="text-sm text-muted-foreground">Recebe alimentos</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Mapa de Doações */}
-        <section className="py-16 md:py-24">
-          <div className="container mx-auto px-4 md:px-6">
-            <div className="mx-auto max-w-6xl">
-              <div className="mb-12 text-center">
-                <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-2 text-sm font-medium text-primary">
-                  <MapPin className="h-4 w-4" />
-                  Mapa Interativo
-                </div>
-                <h2 className="mb-4 text-2xl font-bold text-foreground md:text-3xl">
-                  Encontre doações perto de você
-                </h2>
-                <p className="mx-auto max-w-2xl text-muted-foreground">
-                  Visualize empresas doadoras e instituições beneficiárias na sua região.
-                  O mapa é atualizado em tempo real conforme novas doações são cadastradas.
-                </p>
-              </div>
-
-              <DonationMap className="mb-8" />
-            </div>
-          </div>
-        </section>
-
-        {/* Instituições Próximas */}
-        <section className="bg-card py-16 md:py-24">
-          <div className="container mx-auto px-4 md:px-6">
-            <div className="mx-auto max-w-4xl">
-              <div className="mb-12 text-center">
-                <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-accent/10 px-4 py-2 text-sm font-medium text-accent">
-                  <Heart className="h-4 w-4" />
-                  Rede Solidária
-                </div>
-                <h2 className="mb-4 text-2xl font-bold text-foreground md:text-3xl">
-                  Instituições próximas de você
-                </h2>
-                <p className="mx-auto max-w-2xl text-muted-foreground">
-                  Conheça as instituições cadastradas na plataforma que estão recebendo doações
-                  e fazendo a diferença na comunidade.
-                </p>
-              </div>
-
-              <NearbyInstitutions />
-
-              <div className="mt-8 text-center">
-                <Button variant="outline" size="lg" asChild>
-                  <Link href="/mapa">
-                    Ver todas as instituições
-                  </Link>
-                </Button>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* CTA Section */}
-        <section className="bg-primary py-16 md:py-24">
-          <div className="container mx-auto px-4 md:px-6">
-            <div className="mx-auto max-w-3xl text-center">
-              <h2 className="mb-6 text-3xl font-bold text-primary-foreground md:text-4xl">
-                Pronto para começar?
-              </h2>
-              <p className="mb-8 text-lg text-primary-foreground/80 leading-relaxed">
-                Cadastre-se agora e faça parte dessa rede solidária de redistribuição de alimentos.
-              </p>
-              <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
-                <Button size="lg" variant="secondary" asChild className="gap-2">
-                  <Link href="/cadastro?tipo=empresa">
-                    <Building2 className="h-5 w-5" />
-                    Cadastrar Empresa
-                  </Link>
-                </Button>
-                <Button size="lg" variant="outline" asChild className="gap-2 border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10">
-                  <Link href="/cadastro?tipo=instituicao">
-                    <Heart className="h-5 w-5" />
-                    Cadastrar Instituição
-                  </Link>
-                </Button>
-              </div>
+        {/* CTA */}
+        <section className="py-20 bg-gradient-to-t from-[#040E0B] via-[#071B17] to-[#052E24]">
+          <div className="container mx-auto px-4 sm:px-6 max-w-3xl text-center space-y-6">
+            <h2 className="text-3xl sm:text-5xl font-black text-white font-serif">
+              Pronto para transformar sua operação?
+            </h2>
+            <p className="text-sm text-slate-300 leading-relaxed max-w-xl mx-auto">
+              Cadastre sua organização em menos de 2 minutos e tenha acesso imediato à infraestrutura de redistribuição de alimentos.
+            </p>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+              <Button asChild className="h-11 px-8 bg-emerald-500 hover:bg-emerald-400 text-[#071B17] font-bold text-sm tracking-wide shadow-lg shadow-emerald-950/60">
+                <Link href="/cadastro">
+                  Começar Agora
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
+              </Button>
             </div>
           </div>
         </section>

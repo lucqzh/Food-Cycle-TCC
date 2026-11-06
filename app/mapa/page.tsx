@@ -6,8 +6,6 @@ import Link from "next/link"
 import { Header } from "@/components/layout/header"
 import { Footer } from "@/components/layout/footer"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
 import { 
   MapPin, 
   Building2, 
@@ -17,7 +15,10 @@ import {
   List,
   Grid,
   Phone,
-  Mail
+  Mail,
+  Sparkles,
+  ArrowRight,
+  ShieldCheck
 } from "lucide-react"
 
 const locations = [
@@ -63,7 +64,7 @@ const locations = [
   },
   {
     id: 5,
-    name: "Lar dos Idosos",
+    name: "Lar dos Idosos Esperança",
     type: "instituicao",
     address: "Rua da Esperança, 100 - Bairro Alto",
     phone: "(11) 5678-9012",
@@ -187,305 +188,304 @@ export default function MapaPage() {
   const instituicoes = pontos.filter(l => l.type === "instituicao")
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-screen flex-col bg-[#071B17] text-[#F8FAFC] selection:bg-emerald-500 selection:text-white">
       <Header />
       
       <main className="flex-1">
         {/* Hero Section */}
-        <section className="bg-card py-12 md:py-16">
-          <div className="container mx-auto px-4 md:px-6">
-            <div className="mx-auto max-w-3xl text-center">
-              <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-2 text-sm font-medium text-primary">
-                <MapPin className="h-4 w-4" />
-                Localizações
+        <section className="relative overflow-hidden py-20 md:py-28 border-b border-emerald-950/60 bg-gradient-to-b from-[#052E24] via-[#071B17] to-[#040E0B]">
+          <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[700px] h-[350px] bg-emerald-500/10 blur-[130px] rounded-full pointer-events-none" />
+
+          <div className="container mx-auto px-4 sm:px-6 relative z-10">
+            <div className="max-w-4xl mx-auto text-center space-y-5">
+              <div className="inline-flex items-center gap-2 rounded-full bg-emerald-950/80 border border-emerald-800/40 px-4 py-1.5 text-xs font-mono text-emerald-300">
+                <MapPin className="h-3.5 w-3.5 text-amber-400" />
+                Georreferenciamento Solidário em Tempo Real
               </div>
-              <h1 className="mb-6 text-4xl font-bold tracking-tight text-foreground md:text-5xl">
-                Mapa de Doações
+
+              <h1 className="text-4xl sm:text-6xl font-black tracking-tight text-white leading-tight font-serif">
+                Mapa de <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-emerald-300 to-amber-300">Conexões Alimentares</span>.
               </h1>
-              <p className="text-lg text-muted-foreground leading-relaxed">
-                Visualize empresas doadoras e instituições beneficiárias na nossa rede.
+
+              <p className="text-base sm:text-lg text-slate-300 font-light max-w-2xl mx-auto leading-relaxed">
+                Localize empresas doadoras de excedentes e instituições receptoras na sua região para viabilizar retiradas rápidas e com menor impacto logístico.
               </p>
             </div>
           </div>
         </section>
 
-        {/* Stats */}
-        <section className="border-b border-border bg-muted/30 py-6">
-          <div className="container mx-auto px-4 md:px-6">
-            <div className="flex flex-wrap items-center justify-center gap-8">
+        {/* Stats rápidos */}
+        <section className="border-b border-emerald-950/60 bg-[#071B17]/60 py-6">
+          <div className="container mx-auto px-4 sm:px-6 max-w-6xl">
+            <div className="flex flex-wrap items-center justify-center gap-8 text-center">
               <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
                   <Building2 className="h-5 w-5" />
                 </div>
-                <div>
-                  <p className="text-2xl font-bold text-foreground">{empresas.length}</p>
-                  <p className="text-sm text-muted-foreground">Empresas</p>
+                <div className="text-left">
+                  <p className="text-xl font-black text-white font-mono">{empresas.length}</p>
+                  <p className="text-xs text-slate-400">Empresas Conectadas</p>
                 </div>
               </div>
+
               <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-secondary text-secondary-foreground">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-500/20 text-amber-400 border border-amber-500/30">
                   <Heart className="h-5 w-5" />
                 </div>
-                <div>
-                  <p className="text-2xl font-bold text-foreground">{instituicoes.length}</p>
-                  <p className="text-sm text-muted-foreground">Instituições</p>
+                <div className="text-left">
+                  <p className="text-xl font-black text-white font-mono">{instituicoes.length}</p>
+                  <p className="text-xs text-slate-400">Instituições Receptoras</p>
                 </div>
               </div>
+
               <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-accent text-accent-foreground">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-500/20 text-blue-400 border border-blue-500/30">
                   <Package className="h-5 w-5" />
                 </div>
-                <div>
-                  <p className="text-2xl font-bold text-foreground">
+                <div className="text-left">
+                  <p className="text-xl font-black text-white font-mono">
                     {empresas.reduce((acc, e) => acc + (e.doacoesAtivas || 0), 0)}
                   </p>
-                  <p className="text-sm text-muted-foreground">Doações Ativas</p>
+                  <p className="text-xs text-slate-400">Doações Disponíveis</p>
                 </div>
               </div>
             </div>
           </div>
         </section>
 
-        {/* Map Section */}
-        <section className="py-8 md:py-12">
-          <div className="container mx-auto px-4 md:px-6">
-            {/* Controls */}
+        {/* Mapa Interativo */}
+        <section className="py-12 md:py-16">
+          <div className="container mx-auto px-4 sm:px-6 max-w-6xl">
+            {/* Controles de Filtro */}
             <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-center gap-2">
-                <Filter className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm text-muted-foreground">Filtrar:</span>
-                <div className="flex gap-2">
-                  <Button
-                    variant={filter === "all" ? "default" : "outline"}
-                    size="sm"
+                <Filter className="h-4 w-4 text-emerald-400" />
+                <span className="text-xs uppercase tracking-wider text-slate-400 font-semibold font-mono">Visualizar:</span>
+                <div className="flex gap-1.5">
+                  <button
                     onClick={() => setFilter("all")}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                      filter === "all"
+                        ? "bg-emerald-500 text-[#071B17]"
+                        : "bg-[#0A241F]/60 text-slate-400 hover:text-white"
+                    }`}
                   >
                     Todos
-                  </Button>
-                  <Button
-                    variant={filter === "empresa" ? "default" : "outline"}
-                    size="sm"
+                  </button>
+                  <button
                     onClick={() => setFilter("empresa")}
-                    className="gap-1"
+                    className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                      filter === "empresa"
+                        ? "bg-emerald-500 text-[#071B17]"
+                        : "bg-[#0A241F]/60 text-slate-400 hover:text-white"
+                    }`}
                   >
-                    <Building2 className="h-3 w-3" />
                     Empresas
-                  </Button>
-                  <Button
-                    variant={filter === "instituicao" ? "default" : "outline"}
-                    size="sm"
+                  </button>
+                  <button
                     onClick={() => setFilter("instituicao")}
-                    className="gap-1"
+                    className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                      filter === "instituicao"
+                        ? "bg-emerald-500 text-[#071B17]"
+                        : "bg-[#0A241F]/60 text-slate-400 hover:text-white"
+                    }`}
                   >
-                    <Heart className="h-3 w-3" />
                     Instituições
-                  </Button>
+                  </button>
                 </div>
               </div>
               
-              <div className="flex gap-2">
-                <Button
-                  variant={viewMode === "map" ? "default" : "outline"}
-                  size="sm"
+              <div className="flex gap-1.5">
+                <button
                   onClick={() => setViewMode("map")}
+                  className={`p-2 rounded-xl text-xs transition-all cursor-pointer ${
+                    viewMode === "map"
+                      ? "bg-emerald-500 text-[#071B17]"
+                      : "bg-[#0A241F]/60 text-slate-400 hover:text-white"
+                  }`}
+                  aria-label="Modo Mapa"
                 >
                   <Grid className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant={viewMode === "list" ? "default" : "outline"}
-                  size="sm"
+                </button>
+                <button
                   onClick={() => setViewMode("list")}
+                  className={`p-2 rounded-xl text-xs transition-all cursor-pointer ${
+                    viewMode === "list"
+                      ? "bg-emerald-500 text-[#071B17]"
+                      : "bg-[#0A241F]/60 text-slate-400 hover:text-white"
+                  }`}
+                  aria-label="Modo Lista"
                 >
                   <List className="h-4 w-4" />
-                </Button>
+                </button>
               </div>
             </div>
 
             <div className="grid gap-6 lg:grid-cols-3">
-              {/* Map View */}
+              {/* Mapa Gráfico */}
               {viewMode === "map" && (
                 <div className="lg:col-span-2">
-                  <Card className="border-border bg-card overflow-hidden">
-                    <CardContent className="p-0">
-                      <div className="relative h-[500px] bg-muted/50">
-                        {/* Simulated map background */}
-                        <div className="absolute inset-0 bg-gradient-to-br from-muted/30 to-muted/60">
-                          {/* Grid lines to simulate map */}
-                          <svg className="h-full w-full" xmlns="http://www.w3.org/2000/svg">
-                            <defs>
-                              <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
-                                <path d="M 40 0 L 0 0 0 40" fill="none" stroke="currentColor" strokeWidth="0.5" className="text-border" />
-                              </pattern>
-                            </defs>
-                            <rect width="100%" height="100%" fill="url(#grid)" />
-                          </svg>
-                        </div>
-                        
-                        {/* Location markers */}
-                        {filteredLocations.map((location) => (
+                  <div className="rounded-3xl border border-emerald-950/80 bg-[#071B17]/90 p-2 backdrop-blur shadow-2xl relative overflow-hidden">
+                    <div className="relative h-[520px] rounded-2xl bg-gradient-to-br from-[#052E24]/70 via-[#071B17] to-[#03110E] overflow-hidden border border-emerald-950/60">
+                      {/* Grid Cartográfico */}
+                      <svg className="h-full w-full opacity-20 pointer-events-none" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                          <pattern id="mapgrid" width="45" height="45" patternUnits="userSpaceOnUse">
+                            <path d="M 45 0 L 0 0 0 45" fill="none" stroke="#10B981" strokeWidth="0.5" />
+                          </pattern>
+                        </defs>
+                        <rect width="100%" height="100%" fill="url(#mapgrid)" />
+                      </svg>
+
+                      {/* Radar sweep */}
+                      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(16,185,129,0.08),transparent_60%)] pointer-events-none" />
+
+                      {/* Marcadores */}
+                      {filteredLocations.map((location) => {
+                        const isSelected = selectedLocation?.id === location.id
+                        return (
                           <button
                             key={location.id}
-                            className={`absolute -translate-x-1/2 -translate-y-1/2 transition-transform hover:scale-110 ${
-                              selectedLocation?.id === location.id ? "scale-125 z-10" : ""
+                            className={`absolute -translate-x-1/2 -translate-y-1/2 transition-transform hover:scale-125 cursor-pointer z-10 ${
+                              isSelected ? "scale-125 z-20" : ""
                             }`}
                             style={{ top: location.position.top, left: location.position.left }}
                             onClick={() => setSelectedLocation(location)}
                           >
-                            <div className={`flex h-10 w-10 items-center justify-center rounded-full shadow-lg ${
+                            <div className={`flex h-10 w-10 items-center justify-center rounded-2xl shadow-xl transition-all ${
                               location.type === "empresa" 
-                                ? "bg-primary text-primary-foreground" 
-                                : "bg-secondary text-secondary-foreground"
+                                ? "bg-gradient-to-br from-emerald-400 to-emerald-600 text-[#071B17] shadow-emerald-950" 
+                                : "bg-gradient-to-br from-amber-400 to-amber-600 text-[#071B17] shadow-amber-950"
                             }`}>
                               {location.type === "empresa" 
                                 ? <Building2 className="h-5 w-5" />
                                 : <Heart className="h-5 w-5" />
                               }
                             </div>
-                            <div className="absolute -bottom-1 left-1/2 h-2 w-2 -translate-x-1/2 rotate-45 bg-inherit" />
+                            {isSelected && (
+                              <span className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-white animate-ping" />
+                            )}
                           </button>
-                        ))}
-                        
-                        {/* Map legend */}
-                        <div className="absolute bottom-4 left-4 rounded-lg bg-card/90 p-3 backdrop-blur">
-                          <p className="mb-2 text-xs font-medium text-foreground">Legenda</p>
-                          <div className="flex flex-col gap-2">
-                            <div className="flex items-center gap-2">
-                              <div className="h-4 w-4 rounded-full bg-primary" />
-                              <span className="text-xs text-muted-foreground">Empresa</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <div className="h-4 w-4 rounded-full bg-secondary" />
-                              <span className="text-xs text-muted-foreground">Instituição</span>
-                            </div>
-                          </div>
+                        )
+                      })}
+
+                      {/* Legenda do Mapa */}
+                      <div className="absolute bottom-4 left-4 rounded-xl bg-[#071B17]/90 border border-emerald-950/80 p-3 backdrop-blur text-xs space-y-1.5 shadow-xl">
+                        <p className="text-[10px] uppercase font-mono tracking-wider text-slate-400 font-bold">Legenda</p>
+                        <div className="flex items-center gap-2">
+                          <span className="w-2.5 h-2.5 rounded-full bg-emerald-400" />
+                          <span className="text-slate-300">Empresas Doadoras</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="w-2.5 h-2.5 rounded-full bg-amber-400" />
+                          <span className="text-slate-300">Instituições Receptoras</span>
                         </div>
                       </div>
-                    </CardContent>
-                  </Card>
+                    </div>
+                  </div>
                 </div>
               )}
 
-              {/* List View */}
+              {/* Lista */}
               {viewMode === "list" && (
                 <div className="lg:col-span-2">
-                  <div className="grid gap-4 md:grid-cols-2">
-                    {filteredLocations.map((location) => (
-                      <Card 
-                        key={location.id} 
-                        className={`border-border bg-card cursor-pointer transition-all hover:border-primary/50 ${
-                          selectedLocation?.id === location.id ? "border-primary" : ""
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    {filteredLocations.map((loc) => (
+                      <div
+                        key={loc.id}
+                        onClick={() => setSelectedLocation(loc)}
+                        className={`rounded-2xl border p-4 backdrop-blur transition-all cursor-pointer ${
+                          selectedLocation?.id === loc.id
+                            ? "border-emerald-500 bg-[#0A241F]"
+                            : "border-emerald-950/80 bg-[#071B17]/90 hover:border-emerald-800/60"
                         }`}
-                        onClick={() => setSelectedLocation(location)}
                       >
-                        <CardContent className="p-4">
-                          <div className="flex items-start gap-3">
-                            <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${
-                              location.type === "empresa" 
-                                ? "bg-primary text-primary-foreground" 
-                                : "bg-secondary text-secondary-foreground"
-                            }`}>
-                              {location.type === "empresa" 
-                                ? <Building2 className="h-5 w-5" />
-                                : <Heart className="h-5 w-5" />
-                              }
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <h3 className="font-semibold text-foreground truncate">{location.name}</h3>
-                              <p className="text-sm text-muted-foreground truncate">{location.address}</p>
-                              <Badge variant="outline" className="mt-2">
-                                {location.type === "empresa" ? "Empresa" : "Instituição"}
-                              </Badge>
-                            </div>
+                        <div className="flex items-start gap-3">
+                          <div className={`p-2.5 rounded-xl ${
+                            loc.type === "empresa" ? "bg-emerald-500/20 text-emerald-400" : "bg-amber-500/20 text-amber-400"
+                          }`}>
+                            {loc.type === "empresa" ? <Building2 className="h-5 w-5" /> : <Heart className="h-5 w-5" />}
                           </div>
-                        </CardContent>
-                      </Card>
+                          <div className="flex-1 overflow-hidden">
+                            <h4 className="text-sm font-bold text-white truncate">{loc.name}</h4>
+                            <p className="text-xs text-slate-400 truncate mt-0.5">{loc.address}</p>
+                            <span className="inline-block mt-2 text-[9px] font-mono uppercase px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-800/40">
+                              {loc.type === "empresa" ? "Doadora" : "Receptora"}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
                     ))}
                   </div>
                 </div>
               )}
 
-              {/* Details Panel */}
+              {/* Painel Lateral com Detalhes do Ponto */}
               <div className="lg:col-span-1">
                 {selectedLocation ? (
-                  <Card className="border-border bg-card sticky top-4">
-                    <CardHeader className="pb-3">
-                      <div className="flex items-center gap-3">
-                        <div className={`flex h-12 w-12 items-center justify-center rounded-lg ${
-                          selectedLocation.type === "empresa" 
-                            ? "bg-primary text-primary-foreground" 
-                            : "bg-secondary text-secondary-foreground"
-                        }`}>
-                          {selectedLocation.type === "empresa" 
-                            ? <Building2 className="h-6 w-6" />
-                            : <Heart className="h-6 w-6" />
-                          }
-                        </div>
+                  <div className="rounded-3xl border border-emerald-950/80 bg-[#071B17]/90 p-6 backdrop-blur shadow-2xl space-y-5 sticky top-28">
+                    <div className="flex items-center gap-3 pb-4 border-b border-emerald-950/60">
+                      <div className={`p-3 rounded-2xl ${
+                        selectedLocation.type === "empresa" ? "bg-emerald-500/20 text-emerald-400" : "bg-amber-500/20 text-amber-400"
+                      }`}>
+                        {selectedLocation.type === "empresa" ? <Building2 className="h-6 w-6" /> : <Heart className="h-6 w-6" />}
+                      </div>
+                      <div>
+                        <h3 className="text-base font-bold text-white font-serif">{selectedLocation.name}</h3>
+                        <span className="text-[10px] font-mono text-emerald-400 uppercase">
+                          {selectedLocation.type === "empresa" ? "Empresa Doadora" : "Instituição Receptora"}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="space-y-3 text-xs">
+                      <div className="flex items-start gap-2.5 text-slate-300">
+                        <MapPin className="h-4 w-4 text-emerald-400 shrink-0 mt-0.5" />
+                        <span>{selectedLocation.address}</span>
+                      </div>
+                      <div className="flex items-center gap-2.5 text-slate-300">
+                        <Phone className="h-4 w-4 text-slate-400 shrink-0" />
+                        <span className="font-mono">{selectedLocation.phone}</span>
+                      </div>
+                      <div className="flex items-center gap-2.5 text-slate-300">
+                        <Mail className="h-4 w-4 text-slate-400 shrink-0" />
+                        <span className="font-mono truncate">{selectedLocation.email}</span>
+                      </div>
+                    </div>
+
+                    <div className="p-3.5 rounded-2xl bg-[#0A241F]/60 border border-emerald-950/80 text-xs">
+                      {selectedLocation.type === "empresa" ? (
                         <div>
-                          <CardTitle className="text-lg">{selectedLocation.name}</CardTitle>
-                          <Badge variant="outline">
-                            {selectedLocation.type === "empresa" ? "Empresa Doadora" : "Instituição Beneficiária"}
-                          </Badge>
+                          <p className="font-bold text-emerald-400 font-mono text-base">
+                            {selectedLocation.doacoesAtivas} lotes disponíveis
+                          </p>
+                          <p className="text-[11px] text-slate-400 mt-0.5">Alimentos cadastrados para retirada</p>
                         </div>
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-4">
-                        <div className="flex items-start gap-3">
-                          <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
-                          <span className="text-sm text-muted-foreground">{selectedLocation.address}</span>
+                      ) : (
+                        <div>
+                          <p className="font-bold text-amber-400 font-mono text-base">
+                            {selectedLocation.beneficiarios} pessoas atendidas
+                          </p>
+                          <p className="text-[11px] text-slate-400 mt-0.5">Capacidade de atendimento da instituição</p>
                         </div>
-                        <div className="flex items-center gap-3">
-                          <Phone className="h-4 w-4 text-muted-foreground" />
-                          <span className="text-sm text-muted-foreground">{selectedLocation.phone}</span>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <Mail className="h-4 w-4 text-muted-foreground" />
-                          <span className="text-sm text-muted-foreground">{selectedLocation.email}</span>
-                        </div>
-                        
-                        <div className="border-t border-border pt-4">
-                          {selectedLocation.type === "empresa" ? (
-                            <div className="rounded-lg bg-primary/10 p-3">
-                              <p className="text-sm font-medium text-primary">
-                                {selectedLocation.doacoesAtivas} doações ativas
-                              </p>
-                              <p className="text-xs text-muted-foreground">
-                                Alimentos disponíveis para redistribuição
-                              </p>
-                            </div>
-                          ) : (
-                            <div className="rounded-lg bg-secondary/10 p-3">
-                              <p className="text-sm font-medium text-secondary">
-                                {selectedLocation.beneficiarios} beneficiários
-                              </p>
-                              <p className="text-xs text-muted-foreground">
-                                Pessoas atendidas pela instituição
-                              </p>
-                            </div>
-                          )}
-                        </div>
-                        
-                        <Button className="w-full" asChild>
-                          <Link href="/dashboard/doacoes">
-                            {selectedLocation.type === "empresa" 
-                              ? "Ver doações disponíveis" 
-                              : "Conectar com instituição"
-                            }
-                          </Link>
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
+                      )}
+                    </div>
+
+                    <Button asChild className="w-full h-11 bg-emerald-500 hover:bg-emerald-400 text-[#071B17] font-bold text-xs tracking-wide">
+                      <Link href="/dashboard/doacoes">
+                        {selectedLocation.type === "empresa" ? "Ver Doações Disponíveis" : "Conectar com Instituição"}
+                        <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
+                      </Link>
+                    </Button>
+                  </div>
                 ) : (
-                  <Card className="border-border bg-card">
-                    <CardContent className="flex flex-col items-center justify-center p-8 text-center">
-                      <MapPin className="mb-4 h-12 w-12 text-muted-foreground/50" />
-                      <h3 className="mb-2 font-semibold text-foreground">Selecione um local</h3>
-                      <p className="text-sm text-muted-foreground">
-                        Clique em um marcador no mapa ou na lista para ver mais detalhes.
-                      </p>
-                    </CardContent>
-                  </Card>
+                  <div className="rounded-3xl border border-emerald-950/80 bg-[#071B17]/90 p-8 text-center backdrop-blur shadow-2xl space-y-3">
+                    <MapPin className="h-10 w-10 text-emerald-500/30 mx-auto" />
+                    <h4 className="text-sm font-bold text-white">Selecione um Ponto</h4>
+                    <p className="text-xs text-slate-400 leading-relaxed">
+                      Clique em qualquer marcador no mapa para inspecionar os detalhes cadastrais e lotes disponíveis da organização.
+                    </p>
+                  </div>
                 )}
               </div>
             </div>

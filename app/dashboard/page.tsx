@@ -13,25 +13,24 @@ import {
   Package, 
   TrendingUp, 
   Users, 
-  AlertTriangle,
-  Apple,
-  Carrot,
-  Wheat,
-  Beef,
-  Milk,
-  Cookie,
-  CheckCircle2,
-  AlertCircle,
-  Info,
-  Award,
-  Medal,
-  Star,
-  ArrowRight,
-  Scale,
-  Heart,
-  Sprout,
-  Recycle,
+  Apple, 
+  Carrot, 
+  Wheat, 
+  Beef, 
+  Milk, 
+  Cookie, 
+  CheckCircle2, 
+  AlertCircle, 
+  Info, 
+  Award, 
+  Medal, 
+  ArrowRight, 
+  Scale, 
+  Heart, 
+  Sprout, 
+  Recycle, 
   ShieldCheck,
+  Sparkles
 } from "lucide-react"
 import { 
   BarChart, 
@@ -40,24 +39,16 @@ import {
   YAxis, 
   CartesianGrid, 
   Tooltip, 
-  ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
-  RadarChart,
-  PolarGrid,
-  PolarAngleAxis,
-  PolarRadiusAxis,
-  Radar
+  ResponsiveContainer 
 } from "recharts"
 
 const fallbackCategories = [
-  { name: "Proteínas", value: 275, percentage: 22, color: "hsl(var(--chart-1))", icon: Beef, status: "Bom" },
-  { name: "Grãos e Cereais", value: 350, percentage: 28, color: "hsl(var(--chart-2))", icon: Wheat, status: "Excelente" },
-  { name: "Frutas", value: 188, percentage: 15, color: "hsl(var(--chart-3))", icon: Apple, status: "Adequado" },
-  { name: "Hortaliças", value: 225, percentage: 18, color: "hsl(var(--chart-4))", icon: Carrot, status: "Bom" },
-  { name: "Laticínios", value: 125, percentage: 10, color: "hsl(var(--chart-5))", icon: Milk, status: "Baixo" },
-  { name: "Ultraprocessados", value: 87, percentage: 7, color: "hsl(var(--accent))", icon: Cookie, status: "Adequado" }
+  { name: "Proteínas", value: 275, percentage: 22, color: "#10B981", icon: Beef, status: "Bom" },
+  { name: "Grãos e Cereais", value: 350, percentage: 28, color: "#F59E0B", icon: Wheat, status: "Excelente" },
+  { name: "Frutas", value: 188, percentage: 15, color: "#34D399", icon: Apple, status: "Adequado" },
+  { name: "Hortaliças", value: 225, percentage: 18, color: "#059669", icon: Carrot, status: "Bom" },
+  { name: "Laticínios", value: 125, percentage: 10, color: "#6EE7B7", icon: Milk, status: "Baixo" },
+  { name: "Ultraprocessados", value: 87, percentage: 7, color: "#F87171", icon: Cookie, status: "Adequado" }
 ]
 
 const fallbackMonthly = [
@@ -69,47 +60,26 @@ const fallbackMonthly = [
   { mes: "Jun", quantidade: 1400 }
 ]
 
-const alerts = [
-  {
-    type: "success",
-    title: "Boa distribuição nutricional",
-    description: "As doações recebidas apresentam boa diversidade de categorias alimentares.",
-    icon: CheckCircle2
-  },
-  {
-    type: "warning",
-    title: "Baixa em laticínios",
-    description: "Incentive fornecedores para ampliação de laticínios e derivados.",
-    icon: AlertCircle
-  },
-  {
-    type: "info",
-    title: "Ultraprocessados controlados",
-    description: "O percentual de ultraprocessados está dentro do limite preconizado pela PNCPDA.",
-    icon: Info
-  }
-]
-
 const companyBadges = [
   {
     name: "Selo Doador de Alimentos - Ouro",
     description: "Empresa de alto desempenho na PNCPDA: regularidade, diversidade e rastreabilidade completa das doações.",
     icon: Award,
-    color: "bg-yellow-500",
+    color: "from-amber-400 to-amber-600 text-[#071B17]",
     companies: ["Supermercado Vida", "Hortifruti Verde"]
   },
   {
     name: "Selo Doador de Alimentos - Prata",
     description: "Empresa em conformidade com a PNCPDA, com doações regulares e boa diversidade nutricional.",
     icon: Medal,
-    color: "bg-gray-400",
+    color: "from-slate-300 to-slate-500 text-[#071B17]",
     companies: ["Restaurante Sabor & Cia", "Padaria Pão Quente"]
   },
   {
     name: "Selo Aderente PNCPDA",
     description: "Empresa cadastrada e participando ativamente da Política Nacional de Combate à Perda e ao Desperdício.",
     icon: ShieldCheck,
-    color: "bg-primary",
+    color: "from-emerald-400 to-emerald-600 text-[#071B17]",
     companies: ["Laticínios Sul", "Distribuidora Alimentos"]
   }
 ]
@@ -146,480 +116,293 @@ export default function DashboardPage() {
     verificarCadastro()
   }, [router])
 
-  // Dados dinâmicos calculados a partir do banco
   const displayTotalKg = metrics.totalKg > 0 ? metrics.totalKg : 1250
   const displayAtivas = metrics.totalKg > 0 ? metrics.doacoesAtivas : 24
   const displayBeneficiarios = metrics.beneficiarios > 0 ? metrics.beneficiarios : 450
-  const categoryData = metrics.totalKg > 0 ? metrics.categoryData : fallbackCategories
-
-  const filledCount = categoryData.filter((c) => c.value > 0).length
-  const diversityIndex = Number((Math.min(10, 5 + filledCount * 0.8)).toFixed(1))
-  const diversityStatus = diversityIndex >= 7 ? "Boa" : diversityIndex >= 5 ? "Moderada" : "Baixa"
-
-  const radarData = categoryData.slice(0, 5).map((c) => ({
-    category: c.name.split(" ")[0],
-    value: c.percentage > 0 ? Math.min(100, Math.max(20, c.percentage * 3.5)) : 30,
-    fullMark: 100
-  }))
-
   const monthlyData = metrics.totalKg > 0 ? metrics.monthlyData : fallbackMonthly
 
   const destinacaoData = [
     {
-      titulo: "Consumo humano",
+      titulo: "Consumo Humano",
       valor: `${Math.round(displayTotalKg * 0.86).toLocaleString("pt-BR")} kg`,
       percentual: 86,
       icon: Heart,
-      color: "bg-primary text-primary-foreground",
-      badge: "Prioridade",
+      badge: "Prioridade Legal (PNCPDA)",
+      color: "text-emerald-400 bg-emerald-500/10 border-emerald-500/20"
     },
     {
-      titulo: "Consumo animal",
+      titulo: "Consumo Animal",
       valor: `${Math.round(displayTotalKg * 0.10).toLocaleString("pt-BR")} kg`,
       percentual: 10,
       icon: Sprout,
-      color: "bg-secondary text-secondary-foreground",
-      badge: "Segunda opção",
+      badge: "2ª Opção Prioritária",
+      color: "text-amber-400 bg-amber-500/10 border-amber-500/20"
     },
     {
       titulo: "Compostagem / Biomassa",
       valor: `${Math.round(displayTotalKg * 0.04).toLocaleString("pt-BR")} kg`,
       percentual: 4,
       icon: Recycle,
-      color: "bg-accent text-accent-foreground",
-      badge: "Última opção",
+      badge: "Última Instância",
+      color: "text-slate-300 bg-slate-500/10 border-slate-500/20"
     },
   ]
 
   const statsCards = [
     {
-      title: "Total de Alimentos",
+      title: "Total de Alimentos Salvos",
       value: isLoading ? "..." : `${displayTotalKg.toLocaleString("pt-BR")} kg`,
-      description: metrics.totalKg > 0 ? "Mapeados no banco de dados" : "Volume acumulado",
+      description: metrics.totalKg > 0 ? "Registrados em blockchain/banco" : "Volume acumulado na rede",
       icon: Package,
-      trend: `${metrics.totalDoacoes || 8} lotes`,
-      color: "bg-primary"
+      trend: `${metrics.totalDoacoes || 8} lotes ativos`,
+      iconBg: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30"
     },
     {
-      title: "Doações Disponíveis",
+      title: "Doações Disponíveis para Retirada",
       value: isLoading ? "..." : `${displayAtivas}`,
-      description: "Prontas para retirada",
+      description: "Lotes aguardando instituição",
       icon: TrendingUp,
-      trend: "+Ativas",
-      color: "bg-secondary"
+      trend: "Tempo real",
+      iconBg: "bg-amber-500/20 text-amber-400 border-amber-500/30"
     },
     {
-      title: "Beneficiários",
+      title: "Pessoas Beneficiadas",
       value: isLoading ? "..." : `${displayBeneficiarios.toLocaleString("pt-BR")}`,
-      description: "Pessoas atendidas",
+      description: "Impacto social mapeado",
       icon: Users,
-      trend: "PNCPDA",
-      color: "bg-accent"
+      trend: "ODS 2 Fome Zero",
+      iconBg: "bg-blue-500/20 text-blue-400 border-blue-500/30"
     }
   ]
 
   const recentList = metrics.recentDonations.length > 0
     ? metrics.recentDonations
     : [
-        { alimento: "Arroz integral", empresa: "Supermercado Bom Preço", quantidade: "50 kg", categoria: "Grãos" },
-        { alimento: "Maçãs", empresa: "Hortifruti Central", quantidade: "30 kg", categoria: "Frutas" },
-        { alimento: "Leite", empresa: "Laticínios Sul", quantidade: "100 L", categoria: "Laticínios" },
-        { alimento: "Feijão preto", empresa: "Distribuidora Alimentos", quantidade: "40 kg", categoria: "Grãos" }
+        { alimento: "Arroz Integral", empresa: "Supermercado Bom Preço", quantidade: "50 kg", categoria: "Graos" },
+        { alimento: "Maçãs Gala", empresa: "Hortifruti Central", quantidade: "30 kg", categoria: "Frutas" },
+        { alimento: "Leite Pasteurizado", empresa: "Laticínios Sul", quantidade: "100 L", categoria: "Laticinios" },
+        { alimento: "Feijão Preto Tipo 1", empresa: "Distribuidora Alimentos", quantidade: "40 kg", categoria: "Graos" }
       ]
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Header */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between pb-6 border-b border-emerald-950/60">
         <div>
-          <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
-            <Scale className="h-3.5 w-3.5" />
-            Monitoramento PNCPDA - Lei nº 15.224/2025
+          <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-emerald-950/80 border border-emerald-800/40 px-3 py-1 text-xs font-medium text-emerald-300">
+            <Scale className="h-3.5 w-3.5 text-amber-400" />
+            Conformidade Integral Lei nº 15.224/2025 • PNCPDA
           </div>
-          <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
-          <p className="text-muted-foreground">
-            Visão geral das doações, métricas nutricionais e indicadores da política pública
+          <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white font-serif">
+            Painel Operacional
+          </h1>
+          <p className="text-xs sm:text-sm text-slate-400 mt-1">
+            Gestão de excedentes, rastreabilidade de lotes e metas de combate à fome.
           </p>
         </div>
-        <Button asChild className="gap-2 bg-accent text-accent-foreground hover:bg-accent/90">
-          <Link href="/dashboard/doacoes">
-            Ver doações disponíveis
-            <ArrowRight className="h-4 w-4" />
-          </Link>
-        </Button>
+        <div className="flex items-center gap-3">
+          <Button asChild className="h-10 bg-emerald-500 hover:bg-emerald-400 text-[#071B17] font-bold text-xs tracking-wide shadow-lg shadow-emerald-950/60 cursor-pointer">
+            <Link href="/dashboard/doacoes">
+              Ver Doações Disponíveis
+              <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
+            </Link>
+          </Button>
+        </div>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {statsCards.map((stat) => (
-          <Card key={stat.title} className="border-border bg-card">
-            <CardContent className="p-6">
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">{stat.title}</p>
-                  <p className="mt-2 text-3xl font-bold text-foreground">{stat.value}</p>
-                  <p className="mt-1 text-sm text-muted-foreground">{stat.description}</p>
-                </div>
-                <div className="flex flex-col items-end gap-2">
-                  <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${stat.color} text-primary-foreground`}>
-                    <stat.icon className="h-5 w-5" />
-                  </div>
-                  <Badge variant="secondary" className="bg-primary/10 text-primary">
-                    {stat.trend}
-                  </Badge>
-                </div>
+          <div
+            key={stat.title}
+            className="rounded-2xl border border-emerald-950/80 bg-gradient-to-br from-[#0A241F]/80 to-[#071B17]/90 p-6 backdrop-blur shadow-xl relative overflow-hidden group hover:border-emerald-800/60 transition-all"
+          >
+            <div className="flex items-start justify-between">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">{stat.title}</p>
+                <p className="mt-3 text-3xl sm:text-4xl font-black text-white font-mono tracking-tight">{stat.value}</p>
+                <p className="mt-1.5 text-xs text-slate-400">{stat.description}</p>
               </div>
-            </CardContent>
-          </Card>
+              <div className="flex flex-col items-end gap-2">
+                <div className={`flex h-11 w-11 items-center justify-center rounded-xl border ${stat.iconBg}`}>
+                  <stat.icon className="h-5 w-5" />
+                </div>
+                <span className="text-[10px] font-mono font-semibold px-2 py-0.5 rounded-full bg-emerald-950 text-emerald-400 border border-emerald-800/40">
+                  {stat.trend}
+                </span>
+              </div>
+            </div>
+          </div>
         ))}
       </div>
 
       {/* Hierarquia de destinação - PNCPDA */}
-      <Card className="border-border bg-card">
-        <CardHeader>
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <CardTitle className="flex items-center gap-2 text-foreground">
-                <Scale className="h-5 w-5 text-primary" />
-                Hierarquia de destinação
-              </CardTitle>
-              <CardDescription>
-                Distribuição das doações conforme a ordem de prioridade da PNCPDA
-              </CardDescription>
-            </div>
-            <Button variant="outline" size="sm" asChild>
-              <Link href="/aspectos-legais">Ver legislação</Link>
-            </Button>
+      <div className="rounded-2xl border border-emerald-950/80 bg-[#071B17]/90 p-6 sm:p-8 backdrop-blur shadow-xl space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-4 border-b border-emerald-950/60">
+          <div>
+            <h3 className="text-lg font-bold text-white flex items-center gap-2">
+              <Scale className="h-5 w-5 text-emerald-400" />
+              Hierarquia Legal de Destinação (Art. 4º da PNCPDA)
+            </h3>
+            <p className="text-xs text-slate-400 mt-1">
+              Direcionamento obrigatório para maximizar o aproveitamento de alimentos próprios para consumo humano.
+            </p>
           </div>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-4 md:grid-cols-3">
-            {destinacaoData.map((item) => (
+          <Button variant="outline" size="sm" asChild className="h-8 border-emerald-900/60 text-slate-300 hover:text-white hover:bg-emerald-950/40 text-xs">
+            <Link href="/aspectos-legais">Ver Marco Legal</Link>
+          </Button>
+        </div>
+
+        <div className="grid gap-4 md:grid-cols-3">
+          {destinacaoData.map((item) => {
+            const Icon = item.icon
+            return (
               <div
                 key={item.titulo}
-                className="rounded-xl border border-border bg-background p-5"
+                className="rounded-xl border border-emerald-950/60 bg-[#0A241F]/40 p-5 space-y-3 relative"
               >
-                <div className="mb-4 flex items-start justify-between">
-                  <div
-                    className={`flex h-11 w-11 items-center justify-center rounded-xl ${item.color}`}
-                  >
-                    <item.icon className="h-5 w-5" />
-                  </div>
-                  <Badge variant="secondary" className="text-xs">
+                <div className="flex items-center justify-between">
+                  <span className={`text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full border ${item.color}`}>
                     {item.badge}
-                  </Badge>
+                  </span>
+                  <Icon className="h-5 w-5 text-slate-400" />
                 </div>
-                <p className="text-sm font-medium text-muted-foreground">{item.titulo}</p>
-                <p className="mt-1 text-2xl font-bold text-foreground">{item.valor}</p>
-                <div className="mt-3">
-                  <div className="mb-1 flex items-center justify-between text-xs text-muted-foreground">
-                    <span>Participação</span>
-                    <span className="font-medium text-foreground">{item.percentual}%</span>
-                  </div>
-                  <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
-                    <div
-                      className="h-full rounded-full bg-primary transition-all"
-                      style={{ width: `${item.percentual}%` }}
-                    />
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Diversity Index & Category Distribution */}
-      <div className="grid gap-6 lg:grid-cols-2">
-        {/* Diversity Index with Radar */}
-        <Card className="border-border bg-card">
-          <CardHeader>
-            <CardTitle className="text-foreground">Índice de Diversidade Alimentar</CardTitle>
-            <CardDescription>Análise da variedade nutricional das doações recebidas</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid gap-6 md:grid-cols-2">
-              {/* Score Circle */}
-              <div className="flex flex-col items-center justify-center">
-                <div className="relative flex h-36 w-36 items-center justify-center">
-                  <svg className="h-36 w-36 -rotate-90 transform">
-                    <circle
-                      cx="72"
-                      cy="72"
-                      r="60"
-                      stroke="hsl(var(--muted))"
-                      strokeWidth="12"
-                      fill="none"
-                    />
-                    <circle
-                      cx="72"
-                      cy="72"
-                      r="60"
-                      stroke="hsl(var(--primary))"
-                      strokeWidth="12"
-                      fill="none"
-                      strokeDasharray={`${(diversityIndex / 10) * 377} 377`}
-                      strokeLinecap="round"
-                    />
-                  </svg>
-                  <div className="absolute text-center">
-                    <span className="text-4xl font-bold text-primary">{diversityIndex}</span>
-                    <span className="block text-sm text-muted-foreground">/10</span>
-                  </div>
-                </div>
-                <Badge className={`mt-4 ${diversityIndex >= 7 ? 'bg-primary' : diversityIndex >= 5 ? 'bg-accent' : 'bg-destructive'}`}>
-                  Diversidade {diversityStatus}
-                </Badge>
-              </div>
-              
-              {/* Category Status */}
-              <div className="space-y-3">
-                {categoryData.slice(0, 5).map((category) => (
-                  <div key={category.name} className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <category.icon className="h-4 w-4" style={{ color: category.color }} />
-                      <span className="text-sm text-foreground">{category.name}</span>
-                    </div>
-                    <Badge 
-                      variant="outline" 
-                      className={
-                        category.status === "Excelente" ? "border-primary text-primary" :
-                        category.status === "Bom" ? "border-secondary text-secondary" :
-                        category.status === "Adequado" ? "border-muted-foreground text-muted-foreground" :
-                        "border-accent text-accent"
-                      }
-                    >
-                      {category.status}
-                    </Badge>
-                  </div>
-                ))}
-              </div>
-            </div>
-            
-            {/* Radar Chart */}
-            <div className="mt-6 h-[200px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <RadarChart cx="50%" cy="50%" outerRadius="70%" data={radarData}>
-                  <PolarGrid stroke="hsl(var(--border))" />
-                  <PolarAngleAxis 
-                    dataKey="category" 
-                    tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 11 }}
-                  />
-                  <PolarRadiusAxis 
-                    angle={30} 
-                    domain={[0, 100]} 
-                    tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 10 }}
-                  />
-                  <Radar
-                    name="Distribuição"
-                    dataKey="value"
-                    stroke="hsl(var(--primary))"
-                    fill="hsl(var(--primary))"
-                    fillOpacity={0.3}
-                  />
-                </RadarChart>
-              </ResponsiveContainer>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Category Distribution Pie */}
-        <Card className="border-border bg-card">
-          <CardHeader>
-            <CardTitle className="text-foreground">Distribuição por Categoria</CardTitle>
-            <CardDescription>Percentual de cada categoria nutricional</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="h-[250px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={categoryData}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={50}
-                    outerRadius={90}
-                    paddingAngle={2}
-                    dataKey="value"
-                  >
-                    {categoryData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Pie>
-                  <Tooltip 
-                    contentStyle={{ 
-                      backgroundColor: 'hsl(var(--card))',
-                      border: '1px solid hsl(var(--border))',
-                      borderRadius: '8px'
-                    }}
-                    formatter={(value: number, name: string) => [`${value} kg (${categoryData.find(c => c.name === name)?.percentage}%)`, name]}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
-            
-            {/* Legend */}
-            <div className="mt-4 grid grid-cols-2 gap-2">
-              {categoryData.map((category) => (
-                <div key={category.name} className="flex items-center gap-2">
-                  <div className="h-3 w-3 rounded-full" style={{ backgroundColor: category.color }} />
-                  <span className="text-xs text-muted-foreground">{category.name} ({category.percentage}%)</span>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Alerts */}
-      <Card className="border-border bg-card">
-        <CardHeader>
-          <CardTitle className="text-foreground">Alertas Nutricionais</CardTitle>
-          <CardDescription>Monitoramento da qualidade alimentar das doações</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-4 md:grid-cols-3">
-            {alerts.map((alert, index) => (
-              <div 
-                key={index}
-                className={`flex items-start gap-3 rounded-lg p-4 ${
-                  alert.type === 'success' ? 'bg-primary/10' :
-                  alert.type === 'warning' ? 'bg-accent/10' :
-                  'bg-muted'
-                }`}
-              >
-                <alert.icon className={`h-5 w-5 shrink-0 ${
-                  alert.type === 'success' ? 'text-primary' :
-                  alert.type === 'warning' ? 'text-accent' :
-                  'text-muted-foreground'
-                }`} />
                 <div>
-                  <p className="font-medium text-foreground">{alert.title}</p>
-                  <p className="text-sm text-muted-foreground">{alert.description}</p>
+                  <h4 className="text-sm font-bold text-white">{item.titulo}</h4>
+                  <div className="flex items-baseline gap-2 mt-1">
+                    <span className="text-2xl font-black text-white font-mono">{item.valor}</span>
+                    <span className="text-xs text-emerald-400 font-mono font-semibold">({item.percentual}%)</span>
+                  </div>
+                </div>
+                {/* Progress bar */}
+                <div className="h-1.5 w-full bg-emerald-950 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-gradient-to-r from-emerald-500 to-emerald-400 rounded-full"
+                    style={{ width: `${item.percentual}%` }}
+                  />
                 </div>
               </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Monthly Trend & Company Badges */}
-      <div className="grid gap-6 lg:grid-cols-2">
-        {/* Monthly Trend */}
-        <Card className="border-border bg-card">
-          <CardHeader>
-            <CardTitle className="text-foreground">Evolução Mensal</CardTitle>
-            <CardDescription>Quantidade de alimentos recebidos por mês (kg)</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="h-[250px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={monthlyData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                  <XAxis 
-                    dataKey="mes" 
-                    stroke="hsl(var(--muted-foreground))"
-                    fontSize={12}
-                  />
-                  <YAxis 
-                    stroke="hsl(var(--muted-foreground))"
-                    fontSize={12}
-                  />
-                  <Tooltip 
-                    contentStyle={{ 
-                      backgroundColor: 'hsl(var(--card))',
-                      border: '1px solid hsl(var(--border))',
-                      borderRadius: '8px'
-                    }}
-                    formatter={(value: number) => [`${value} kg`, 'Quantidade']}
-                  />
-                  <Bar 
-                    dataKey="quantidade" 
-                    fill="hsl(var(--primary))" 
-                    radius={[4, 4, 0, 0]}
-                  />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Company Badges / Incentive System */}
-        <Card className="border-border bg-card">
-          <CardHeader>
-            <CardTitle className="text-foreground">Selos Doador de Alimentos</CardTitle>
-            <CardDescription>
-              Reconhecimento concedido a empresas que aderem à PNCPDA com regularidade, diversidade e
-              rastreabilidade
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {companyBadges.map((badge, index) => (
-                <div key={index} className="rounded-lg border border-border bg-background p-4">
-                  <div className="flex items-center gap-3">
-                    <div className={`flex h-12 w-12 items-center justify-center rounded-full ${badge.color}`}>
-                      <badge.icon className="h-6 w-6 text-white" />
-                    </div>
-                    <div className="flex-1">
-                      <h4 className="font-semibold text-foreground">{badge.name}</h4>
-                      <p className="text-sm text-muted-foreground">{badge.description}</p>
-                    </div>
-                  </div>
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    {badge.companies.map((company, i) => (
-                      <Badge key={i} variant="secondary" className="text-xs">
-                        {company}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+            )
+          })}
+        </div>
       </div>
 
-      {/* Recent Donations */}
-      <Card className="border-border bg-card">
-        <CardHeader className="flex flex-row items-center justify-between">
+      {/* Gráficos e Selos */}
+      <div className="grid gap-6 lg:grid-cols-2">
+        {/* Gráfico Mensal */}
+        <div className="rounded-2xl border border-emerald-950/80 bg-[#071B17]/90 p-6 backdrop-blur shadow-xl space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-base font-bold text-white">Evolução Mensal de Arrecadação</h3>
+              <p className="text-xs text-slate-400">Quilogramas de alimentos salvos nos últimos meses</p>
+            </div>
+            <span className="text-xs font-mono text-emerald-400 bg-emerald-950 px-2 py-0.5 rounded border border-emerald-800/40">
+              Meta ODS 2
+            </span>
+          </div>
+
+          <div className="h-[260px] w-full pt-4">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={monthlyData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#052E24" />
+                <XAxis dataKey="mes" stroke="#64748B" fontSize={11} />
+                <YAxis stroke="#64748B" fontSize={11} />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: "#071B17",
+                    border: "1px solid #052E24",
+                    borderRadius: "12px",
+                    color: "#F8FAFC",
+                    fontSize: "12px"
+                  }}
+                  formatter={(value: any) => [`${value} kg`, "Volume"]}
+                />
+                <Bar dataKey="quantidade" fill="#10B981" radius={[6, 6, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* Selos da PNCPDA */}
+        <div className="rounded-2xl border border-emerald-950/80 bg-[#071B17]/90 p-6 backdrop-blur shadow-xl space-y-4">
           <div>
-            <CardTitle className="text-foreground">Doações Recentes</CardTitle>
-            <CardDescription>Últimas doações registradas no sistema</CardDescription>
+            <h3 className="text-base font-bold text-white flex items-center gap-2">
+              <Sparkles className="h-4 w-4 text-amber-400" />
+              Selos Oficiais Doador de Alimentos
+            </h3>
+            <p className="text-xs text-slate-400">
+              Certificação pública de conformidade ESG e impacto social
+            </p>
           </div>
-          <Button variant="outline" size="sm" asChild>
-            <Link href="/dashboard/doacoes">Ver todas</Link>
+
+          <div className="space-y-3">
+            {companyBadges.map((badge, idx) => {
+              const Icon = badge.icon
+              return (
+                <div
+                  key={idx}
+                  className="rounded-xl border border-emerald-950/60 bg-[#0A241F]/40 p-4 flex items-start gap-3.5"
+                >
+                  <div className={`p-2.5 rounded-xl bg-gradient-to-br ${badge.color} shadow-md shrink-0`}>
+                    <Icon className="h-5 w-5" />
+                  </div>
+                  <div className="space-y-1 flex-1">
+                    <h4 className="text-xs font-bold text-white">{badge.name}</h4>
+                    <p className="text-[11px] text-slate-400 leading-relaxed">{badge.description}</p>
+                    <div className="flex flex-wrap gap-1.5 pt-1">
+                      {badge.companies.map((c, i) => (
+                        <span key={i} className="text-[10px] font-mono text-emerald-300 bg-emerald-950/80 px-2 py-0.5 rounded border border-emerald-800/40">
+                          {c}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      </div>
+
+      {/* Tabela de Doações Recentes */}
+      <div className="rounded-2xl border border-emerald-950/80 bg-[#071B17]/90 p-6 backdrop-blur shadow-xl space-y-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-base font-bold text-white">Doações e Excedentes Recentes</h3>
+            <p className="text-xs text-slate-400">Últimos registros de alimentos integrados na rede</p>
+          </div>
+          <Button variant="outline" size="sm" asChild className="h-8 border-emerald-900/60 text-slate-300 hover:text-white hover:bg-emerald-950/40 text-xs">
+            <Link href="/dashboard/doacoes">Explorar Todos os Lotes</Link>
           </Button>
-        </CardHeader>
-        <CardContent>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-border">
-                  <th className="pb-3 text-left text-sm font-medium text-muted-foreground">Alimento</th>
-                  <th className="pb-3 text-left text-sm font-medium text-muted-foreground">Empresa</th>
-                  <th className="pb-3 text-left text-sm font-medium text-muted-foreground">Quantidade</th>
-                  <th className="pb-3 text-left text-sm font-medium text-muted-foreground">Categoria</th>
+        </div>
+
+        <div className="overflow-x-auto rounded-xl border border-emerald-950/60">
+          <table className="w-full text-left text-xs">
+            <thead className="bg-[#0A241F]/60 text-slate-400 uppercase tracking-wider font-mono text-[10px] border-b border-emerald-950">
+              <tr>
+                <th className="py-3 px-4">Alimento</th>
+                <th className="py-3 px-4">Empresa / Doador</th>
+                <th className="py-3 px-4">Quantidade</th>
+                <th className="py-3 px-4">Categoria Nutricional</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-emerald-950/50">
+              {recentList.map((item, idx) => (
+                <tr key={idx} className="hover:bg-[#0A241F]/30 transition-colors">
+                  <td className="py-3.5 px-4 font-semibold text-white">{item.alimento}</td>
+                  <td className="py-3.5 px-4 text-slate-300">{item.empresa}</td>
+                  <td className="py-3.5 px-4 font-mono text-emerald-400">{item.quantidade}</td>
+                  <td className="py-3.5 px-4">
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-mono bg-emerald-950 text-emerald-300 border border-emerald-800/40">
+                      {item.categoria}
+                    </span>
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                {recentList.map((donation, index) => (
-                  <tr key={index} className="border-b border-border last:border-0">
-                    <td className="py-4 text-sm font-medium text-foreground">{donation.alimento}</td>
-                    <td className="py-4 text-sm text-muted-foreground">{donation.empresa}</td>
-                    <td className="py-4 text-sm text-muted-foreground">{donation.quantidade}</td>
-                    <td className="py-4">
-                      <Badge variant="secondary" className="capitalize">
-                        {donation.categoria.replace("_", " ")}
-                      </Badge>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </CardContent>
-      </Card>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   )
 }

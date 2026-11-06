@@ -2,17 +2,18 @@
 
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
+import Link from "next/link"
 import { createClient } from "@/lib/supabase/client"
 import { ADMIN_MASTER_EMAIL } from "@/lib/constants"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Leaf, ShieldCheck, ArrowRight, Building2, Heart, Truck, Sparkles } from "lucide-react"
 
 type Tipo = "empresa" | "instituicao" | "intermediario"
 
-const TIPOS: { valor: Tipo; rotulo: string }[] = [
-  { valor: "empresa", rotulo: "Empresa doadora" },
-  { valor: "instituicao", rotulo: "Instituição receptora" },
-  { valor: "intermediario", rotulo: "Intermediário" },
+const TIPOS: { valor: Tipo; rotulo: string; desc: string; icon: any }[] = [
+  { valor: "empresa", rotulo: "Empresa doadora", desc: "Supermercados, produtores, restaurantes", icon: Building2 },
+  { valor: "instituicao", rotulo: "Instituição receptora", desc: "ONGs, abrigos, cozinhas comunitárias", icon: Heart },
+  { valor: "intermediario", rotulo: "Intermediário logístico", desc: "Bancos de alimentos, frotas de distribuição", icon: Truck },
 ]
 
 const TIPOS_INSTITUICAO = [
@@ -31,13 +32,13 @@ const TIPOS_INTERMEDIARIO = [
   { valor: "outro", rotulo: "Outro" },
 ]
 
-const campo =
-  "w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:ring-2 focus:ring-primary"
+const campoClass =
+  "w-full rounded-xl border border-emerald-900/60 bg-[#0A241F]/70 px-3.5 py-2.5 text-sm text-white outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all placeholder:text-slate-500"
 
 function Campo({ rotulo, children }: { rotulo: string; children: React.ReactNode }) {
   return (
-    <label className="block space-y-1">
-      <span className="text-sm font-medium text-foreground">{rotulo}</span>
+    <label className="block space-y-1.5">
+      <span className="text-xs uppercase tracking-wider font-semibold text-slate-300">{rotulo}</span>
       {children}
     </label>
   )
@@ -178,142 +179,207 @@ export default function CompletarCadastroPage() {
   }
 
   if (carregando) {
-    return <div className="flex min-h-screen items-center justify-center text-muted-foreground">Carregando...</div>
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[#071B17] text-emerald-400 font-mono text-xs">
+        <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping mr-2" />
+        Carregando formulário institucional...
+      </div>
+    )
   }
 
   return (
-    <div className="mx-auto max-w-2xl p-4 py-10">
-      <Card className="border-border bg-card">
-        <CardHeader>
-          <CardTitle className="text-foreground">Completar cadastro</CardTitle>
-          <CardDescription>Preencha os dados da sua organização para acessar o FoodCycle.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={enviar} className="space-y-4">
+    <div className="min-h-screen bg-[#071B17] text-[#F8FAFC] py-12 px-4 selection:bg-emerald-500 selection:text-white">
+      <div className="max-w-2xl mx-auto">
+        {/* Top Header */}
+        <div className="text-center mb-8">
+          <Link href="/" className="inline-flex items-center gap-2 mb-4 group">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500 text-[#071B17] shadow-lg shadow-emerald-500/20 group-hover:scale-105 transition-transform">
+              <Leaf className="h-5 w-5 stroke-[2.5]" />
+            </div>
+            <span className="text-xl font-bold tracking-tight text-white">FoodCycle</span>
+          </Link>
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-950/80 border border-emerald-800/40 text-[11px] font-medium text-emerald-300 mb-3">
+            <Sparkles className="h-3 w-3 text-amber-400" />
+            Etapa de Credenciamento Institucional
+          </div>
+          <h1 className="text-3xl font-black text-white font-serif">
+            Complete seu Perfil Operacional
+          </h1>
+          <p className="text-xs text-slate-400 mt-2 max-w-md mx-auto leading-relaxed">
+            Dados cadastrais necessários para emissão de termos de doação e relatórios conforme a Lei nº 15.224/2025.
+          </p>
+        </div>
+
+        {/* Card Formulário */}
+        <div className="rounded-2xl border border-emerald-900/50 bg-[#071B17]/90 p-6 sm:p-8 backdrop-blur-xl shadow-2xl shadow-black/80">
+          <form onSubmit={enviar} className="space-y-5">
             {!tipoFixo && (
-              <Campo rotulo="Tipo de conta">
-                <select className={campo} value={tipo} onChange={(e) => setTipo(e.target.value as Tipo)}>
-                  <option value="">Selecione...</option>
-                  {TIPOS.map((t) => (
-                    <option key={t.valor} value={t.valor}>{t.rotulo}</option>
-                  ))}
-                </select>
-              </Campo>
+              <div className="space-y-2">
+                <span className="text-xs uppercase tracking-wider font-semibold text-slate-300">
+                  Tipo de Atuação
+                </span>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  {TIPOS.map((t) => {
+                    const Icon = t.icon
+                    const isSelected = tipo === t.valor
+                    return (
+                      <button
+                        key={t.valor}
+                        type="button"
+                        onClick={() => setTipo(t.valor)}
+                        className={`flex flex-col items-center justify-center p-3.5 rounded-xl border text-center transition-all cursor-pointer ${
+                          isSelected
+                            ? "border-emerald-500 bg-emerald-950/80 text-white shadow-md shadow-emerald-900/30"
+                            : "border-emerald-900/40 bg-[#0A241F]/40 text-slate-400 hover:bg-emerald-950/30 hover:text-slate-200"
+                        }`}
+                      >
+                        <Icon className={`h-5 w-5 mb-1.5 ${isSelected ? "text-emerald-400" : "text-slate-400"}`} />
+                        <span className="text-xs font-bold">{t.rotulo}</span>
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
             )}
+
             {tipoFixo && (
-              <p className="text-sm text-muted-foreground">
-                Tipo de conta: <strong className="text-foreground">{TIPOS.find((t) => t.valor === tipo)?.rotulo}</strong>
-              </p>
+              <div className="p-3.5 rounded-xl bg-emerald-950/50 border border-emerald-800/40 flex items-center justify-between text-xs">
+                <span className="text-slate-400">Modalidade de Conta:</span>
+                <span className="font-bold text-emerald-400 uppercase tracking-wide">
+                  {TIPOS.find((t) => t.valor === tipo)?.rotulo}
+                </span>
+              </div>
             )}
 
             {tipo && (
               <>
-                <Campo rotulo="Razão social *">
-                  <input className={campo} value={f.razao_social || ""} onChange={set("razao_social")} />
+                <Campo rotulo="Razão Social ou Nome Oficial *">
+                  <input
+                    className={campoClass}
+                    value={f.razao_social || ""}
+                    onChange={set("razao_social")}
+                    placeholder="Ex: Supermercado Aliança Ltda."
+                  />
                 </Campo>
-                <Campo rotulo={tipo === "instituicao" ? "CNPJ (opcional)" : "CNPJ *"}>
-                 <input
-  className={campo}
-  value={f.cnpj || ""}
-  onChange={(e) => setF((a) => ({ ...a, cnpj: formatarCnpj(e.target.value) }))}
-  placeholder="00.000.000/0000-00"
-  maxLength={18}
-  inputMode="numeric"
-/>
+
+                <Campo rotulo={tipo === "instituicao" ? "CNPJ (opcional para coletivos)" : "CNPJ *"}>
+                  <input
+                    className={campoClass}
+                    value={f.cnpj || ""}
+                    onChange={(e) => setF((a) => ({ ...a, cnpj: formatarCnpj(e.target.value) }))}
+                    placeholder="00.000.000/0000-00"
+                    maxLength={18}
+                    inputMode="numeric"
+                  />
                 </Campo>
 
                 {tipo === "empresa" && (
                   <div className="grid gap-4 sm:grid-cols-2">
-                    <Campo rotulo="Nome fantasia">
-                      <input className={campo} value={f.nome_fantasia || ""} onChange={set("nome_fantasia")} />
+                    <Campo rotulo="Nome Fantasia">
+                      <input className={campoClass} value={f.nome_fantasia || ""} onChange={set("nome_fantasia")} placeholder="Ex: Super Aliança" />
                     </Campo>
-                    <Campo rotulo="Inscrição estadual">
-                      <input className={campo} value={f.inscricao_est || ""} onChange={set("inscricao_est")} />
+                    <Campo rotulo="Inscrição Estadual">
+                      <input className={campoClass} value={f.inscricao_est || ""} onChange={set("inscricao_est")} placeholder="Opcional" />
                     </Campo>
-                    <Campo rotulo="Nome do contato">
-                      <input className={campo} value={f.contato_nome || ""} onChange={set("contato_nome")} />
+                    <Campo rotulo="Nome do Contato Principal">
+                      <input className={campoClass} value={f.contato_nome || ""} onChange={set("contato_nome")} placeholder="Responsável pelo setor" />
                     </Campo>
-                    <Campo rotulo="Cargo do contato">
-                      <input className={campo} value={f.contato_cargo || ""} onChange={set("contato_cargo")} />
+                    <Campo rotulo="Cargo do Contato">
+                      <input className={campoClass} value={f.contato_cargo || ""} onChange={set("contato_cargo")} placeholder="Ex: Gerente de Operações" />
                     </Campo>
                   </div>
                 )}
 
                 {tipo === "instituicao" && (
                   <div className="grid gap-4 sm:grid-cols-2">
-                    <Campo rotulo="Tipo da instituição *">
-                      <select className={campo} value={f.tipo_instituicao || ""} onChange={set("tipo_instituicao")}>
-                        <option value="">Selecione...</option>
+                    <Campo rotulo="Tipo da Instituição *">
+                      <select className={campoClass} value={f.tipo_instituicao || ""} onChange={set("tipo_instituicao")}>
+                        <option value="" className="bg-[#071B17] text-white">Selecione...</option>
                         {TIPOS_INSTITUICAO.map((t) => (
-                          <option key={t.valor} value={t.valor}>{t.rotulo}</option>
+                          <option key={t.valor} value={t.valor} className="bg-[#071B17] text-white">{t.rotulo}</option>
                         ))}
                       </select>
                     </Campo>
-                    <Campo rotulo="Responsável técnico">
-                      <input className={campo} value={f.responsavel_tecnico || ""} onChange={set("responsavel_tecnico")} />
+                    <Campo rotulo="Responsável Técnico / Nutricionista">
+                      <input className={campoClass} value={f.responsavel_tecnico || ""} onChange={set("responsavel_tecnico")} placeholder="Opcional" />
                     </Campo>
-                    <Campo rotulo="Capacidade de atendimento">
-                      <input type="number" min="0" className={campo} value={f.capacidade_atend || ""} onChange={set("capacidade_atend")} />
+                    <Campo rotulo="Capacidade de Atendimento (refeições/dia)">
+                      <input type="number" min="0" className={campoClass} value={f.capacidade_atend || ""} onChange={set("capacidade_atend")} placeholder="Ex: 150" />
                     </Campo>
-                    <Campo rotulo="Pessoas atendidas">
-                      <input type="number" min="0" className={campo} value={f.pessoas_atendidas || ""} onChange={set("pessoas_atendidas")} />
+                    <Campo rotulo="Pessoas Atendidas Regularmente">
+                      <input type="number" min="0" className={campoClass} value={f.pessoas_atendidas || ""} onChange={set("pessoas_atendidas")} placeholder="Ex: 80" />
                     </Campo>
-                    <Campo rotulo="Alvará sanitário">
-                      <input className={campo} value={f.alvara_sanitario || ""} onChange={set("alvara_sanitario")} />
+                    <Campo rotulo="Alvará Sanitário (se possuir)">
+                      <input className={campoClass} value={f.alvara_sanitario || ""} onChange={set("alvara_sanitario")} placeholder="Nº do registro" />
                     </Campo>
-                    <Campo rotulo="Validade do alvará">
-                      <input type="date" className={campo} value={f.validade_alvara || ""} onChange={set("validade_alvara")} />
+                    <Campo rotulo="Validade do Alvará">
+                      <input type="date" className={campoClass} value={f.validade_alvara || ""} onChange={set("validade_alvara")} />
                     </Campo>
                   </div>
                 )}
 
                 {tipo === "intermediario" && (
                   <div className="grid gap-4 sm:grid-cols-2">
-                    <Campo rotulo="Tipo do intermediário *">
-                      <select className={campo} value={f.tipo_intermediario || ""} onChange={set("tipo_intermediario")}>
-                        <option value="">Selecione...</option>
+                    <Campo rotulo="Tipo do Intermediário *">
+                      <select className={campoClass} value={f.tipo_intermediario || ""} onChange={set("tipo_intermediario")}>
+                        <option value="" className="bg-[#071B17] text-white">Selecione...</option>
                         {TIPOS_INTERMEDIARIO.map((t) => (
-                          <option key={t.valor} value={t.valor}>{t.rotulo}</option>
+                          <option key={t.valor} value={t.valor} className="bg-[#071B17] text-white">{t.rotulo}</option>
                         ))}
                       </select>
                     </Campo>
-                    <Campo rotulo="Capacidade de armazenamento (kg)">
-                      <input type="number" min="0" className={campo} value={f.capacidade_armazen || ""} onChange={set("capacidade_armazen")} />
+                    <Campo rotulo="Capacidade de Armazenamento (kg)">
+                      <input type="number" min="0" className={campoClass} value={f.capacidade_armazen || ""} onChange={set("capacidade_armazen")} placeholder="Ex: 5000" />
                     </Campo>
-                    <Campo rotulo="Possui refrigeração?">
-                      <select className={campo} value={f.refrigeracao} onChange={set("refrigeracao")}>
-                        <option value="nao">Não</option>
-                        <option value="sim">Sim</option>
+                    <Campo rotulo="Possui Refrigeração?">
+                      <select className={campoClass} value={f.refrigeracao} onChange={set("refrigeracao")}>
+                        <option value="nao" className="bg-[#071B17] text-white">Não</option>
+                        <option value="sim" className="bg-[#071B17] text-white">Sim (câmara fria ou baú refrigerado)</option>
                       </select>
                     </Campo>
                   </div>
                 )}
 
-                <Campo rotulo="Endereço *">
-                  <input className={campo} value={f.endereco || ""} onChange={set("endereco")} />
+                <Campo rotulo="Endereço Completo (Rua, Número, Bairro) *">
+                  <input className={campoClass} value={f.endereco || ""} onChange={set("endereco")} placeholder="Av. Paulista, 1000 - Bela Vista" />
                 </Campo>
+
                 <div className="grid gap-4 sm:grid-cols-3">
                   <Campo rotulo="Cidade *">
-                    <input className={campo} value={f.cidade || ""} onChange={set("cidade")} />
+                    <input className={campoClass} value={f.cidade || ""} onChange={set("cidade")} placeholder="São Paulo" />
                   </Campo>
                   <Campo rotulo="Estado (UF) *">
-                    <input className={campo} maxLength={2} value={f.estado || ""} onChange={set("estado")} placeholder="SP" />
+                    <input className={campoClass} maxLength={2} value={f.estado || ""} onChange={set("estado")} placeholder="SP" />
                   </Campo>
                   <Campo rotulo="CEP *">
-                    <input className={campo} value={f.cep || ""} onChange={set("cep")} placeholder="00000-000" />
+                    <input className={campoClass} value={f.cep || ""} onChange={set("cep")} placeholder="00000-000" />
                   </Campo>
                 </div>
               </>
             )}
 
-            {erro && <p className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">{erro}</p>}
+            {erro && (
+              <div className="p-3.5 rounded-xl bg-red-950/60 border border-red-800/80 text-red-200 text-xs flex items-center gap-2">
+                <span className="font-bold">Atenção:</span> {erro}
+              </div>
+            )}
 
-            <Button type="submit" disabled={enviando || !tipo} className="w-full">
-              {enviando ? "Salvando..." : "Salvar cadastro"}
+            <Button
+              type="submit"
+              disabled={enviando || !tipo}
+              className="w-full h-11 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-[#071B17] font-bold text-sm tracking-wide shadow-lg shadow-emerald-900/40 hover:shadow-emerald-500/20 transition-all cursor-pointer"
+            >
+              {enviando ? "Gravando Cadastro..." : "Finalizar Credenciamento e Acessar"}
+              <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           </form>
-        </CardContent>
-      </Card>
+        </div>
+
+        <div className="mt-6 text-center text-xs text-slate-500 font-mono flex items-center justify-center gap-2">
+          <ShieldCheck className="h-3.5 w-3.5 text-emerald-500" />
+          Conformidade PNCPDA • Lei nº 15.224/2025
+        </div>
+      </div>
     </div>
   )
 }

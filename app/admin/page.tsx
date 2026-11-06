@@ -12,7 +12,8 @@ import {
   Truck, 
   Utensils, 
   Scale,
-  ArrowUpRight
+  ArrowUpRight,
+  Zap
 } from "lucide-react"
 import Link from "next/link"
 import { AdminOverviewCharts } from "./overview-charts"
@@ -72,10 +73,10 @@ export default async function AdminOverviewPage() {
   })
 
   const statusPieData = [
-    { name: "Disponível", value: statusCountMap.disponivel, color: "#10b981" },
-    { name: "Reservado", value: statusCountMap.reservado, color: "#f59e0b" },
+    { name: "Disponível", value: statusCountMap.disponivel, color: "#16A34A" },
+    { name: "Reservado", value: statusCountMap.reservado, color: "#F59E0B" },
     { name: "Em Transporte", value: statusCountMap.em_transporte, color: "#3b82f6" },
-    { name: "Entregue", value: statusCountMap.entregue, color: "#6366f1" },
+    { name: "Entregue", value: statusCountMap.entregue, color: "#7C3AED" },
     { name: "Cancelado/Vencido", value: statusCountMap.cancelado + statusCountMap.vencido, color: "#ef4444" },
   ].filter(item => item.value > 0 || totalDoacoes === 0)
 
@@ -90,83 +91,98 @@ export default async function AdminOverviewPage() {
     kg: Math.round(kg)
   }))
 
+  const kpiCards = [
+    {
+      title: "Volume de Alimentos",
+      value: `${totalKg.toLocaleString("pt-BR")} kg`,
+      sub: `${refeicoesEstimadas.toLocaleString("pt-BR")} refeições estimadas`,
+      icon: Package,
+      iconColor: "#16A34A",
+      iconBg: "rgba(22,163,74,0.12)",
+      glowColor: "rgba(22,163,74,0.08)",
+      borderColor: "rgba(22,163,74,0.2)",
+    },
+    {
+      title: "Doações Publicadas",
+      value: String(totalDoacoes),
+      sub: `${doacoesDisponiveis} disponíveis · ${doacoesConcluidas} concluídas`,
+      icon: TrendingUp,
+      iconColor: "#7C3AED",
+      iconBg: "rgba(124,58,237,0.12)",
+      glowColor: "rgba(124,58,237,0.06)",
+      borderColor: "rgba(124,58,237,0.2)",
+    },
+    {
+      title: "Empresas Doadoras",
+      value: String(totalEmpresas),
+      sub: `${empresas.filter(e => e.selo_doador).length} com Selo PNCPDA`,
+      icon: Building2,
+      iconColor: "#F59E0B",
+      iconBg: "rgba(245,158,11,0.12)",
+      glowColor: "rgba(245,158,11,0.06)",
+      borderColor: "rgba(245,158,11,0.2)",
+    },
+    {
+      title: "Instituições Receptoras",
+      value: String(totalInstituicoes),
+      sub: `${solicitacoesPendentes} solicitações pendentes`,
+      icon: Heart,
+      iconColor: "#16A34A",
+      iconBg: "rgba(22,163,74,0.12)",
+      glowColor: "rgba(22,163,74,0.06)",
+      borderColor: "rgba(22,163,74,0.2)",
+    },
+  ]
+
   return (
     <div className="space-y-6">
       {/* Header da Página */}
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-foreground">Painel de Controle Geral</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-2xl font-bold tracking-tight text-white">Painel de Controle Geral</h1>
+          <p className="text-sm mt-1" style={{ color: "#64748B" }}>
             Acompanhamento em tempo real de doadores, receptores, estoque de alimentos e fluxo da PNCPDA.
           </p>
         </div>
-        <div className="inline-flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-medium text-foreground">
-          <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+        <div
+          className="inline-flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-medium"
+          style={{
+            background: "rgba(22,163,74,0.08)",
+            border: "1px solid rgba(22,163,74,0.2)",
+            color: "#16A34A",
+          }}
+        >
+          <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
           Conectado ao Supabase
         </div>
       </div>
 
       {/* Grid de Cards - Indicadores Principais */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Card className="border-border bg-card">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Volume de Alimentos</CardTitle>
-            <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
-              <Package className="h-4 w-4" />
+        {kpiCards.map((card) => (
+          <div
+            key={card.title}
+            className="rounded-xl p-5 transition-all duration-200"
+            style={{
+              background: `radial-gradient(ellipse at top left, ${card.glowColor}, transparent 70%), #0A1A14`,
+              border: `1px solid ${card.borderColor}`,
+            }}
+          >
+            <div className="flex items-start justify-between mb-3">
+              <p className="text-xs font-medium uppercase tracking-wider" style={{ color: "#64748B" }}>
+                {card.title}
+              </p>
+              <div
+                className="flex h-8 w-8 items-center justify-center rounded-lg"
+                style={{ background: card.iconBg }}
+              >
+                <card.icon className="h-4 w-4" style={{ color: card.iconColor }} />
+              </div>
             </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-foreground">{totalKg.toLocaleString("pt-BR")} kg</div>
-            <p className="text-xs text-muted-foreground mt-1">
-              {refeicoesEstimadas.toLocaleString("pt-BR")} refeições estimadas
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-border bg-card">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Doações Publicadas</CardTitle>
-            <div className="h-8 w-8 rounded-lg bg-secondary/20 flex items-center justify-center text-secondary">
-              <TrendingUp className="h-4 w-4" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-foreground">{totalDoacoes}</div>
-            <p className="text-xs text-emerald-600 font-medium mt-1">
-              {doacoesDisponiveis} disponíveis • {doacoesConcluidas} concluídas
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-border bg-card">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Empresas Doadoras</CardTitle>
-            <div className="h-8 w-8 rounded-lg bg-accent/20 flex items-center justify-center text-accent">
-              <Building2 className="h-4 w-4" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-foreground">{totalEmpresas}</div>
-            <p className="text-xs text-muted-foreground mt-1">
-              {empresas.filter(e => e.selo_doador).length} com Selo PNCPDA
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-border bg-card">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Instituições Receptoras</CardTitle>
-            <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
-              <Heart className="h-4 w-4" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-foreground">{totalInstituicoes}</div>
-            <p className="text-xs text-amber-600 font-medium mt-1">
-              {solicitacoesPendentes} solicitações pendentes
-            </p>
-          </CardContent>
-        </Card>
+            <p className="text-2xl font-bold text-white mb-1">{card.value}</p>
+            <p className="text-xs" style={{ color: card.iconColor }}>{card.sub}</p>
+          </div>
+        ))}
       </div>
 
       {/* Gráficos com Dados Reais */}
@@ -178,47 +194,53 @@ export default async function AdminOverviewPage() {
 
       {/* Atalhos Rápidos para Gestão */}
       <div className="grid gap-4 md:grid-cols-3">
-        <Card className="border-border bg-card hover:border-primary/50 transition-colors">
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-base text-foreground">Empresas e Selos</CardTitle>
-              <Link href="/admin/empresas" className="text-primary hover:underline text-xs flex items-center gap-1">
+        {[
+          {
+            title: "Empresas e Selos",
+            desc: "Valide o cumprimento de requisitos para concessão do Selo Doador de Alimentos.",
+            href: "/admin/empresas",
+            accent: "#16A34A",
+          },
+          {
+            title: "Lotes & Auditoria Sanitária",
+            desc: "Rastreabilidade de validade, acondicionamento e conformidade PNCPDA.",
+            href: "/admin/doacoes",
+            accent: "#7C3AED",
+          },
+          {
+            title: "Auditoria & Logs",
+            desc: "Registro imutável de todas as ações administrativas executadas.",
+            href: "/admin/auditoria",
+            accent: "#F59E0B",
+          },
+        ].map((shortcut) => (
+          <div
+            key={shortcut.href}
+            className="rounded-xl p-5 transition-all duration-200 group"
+            style={{
+              background: "#0A1A14",
+              border: "1px solid rgba(255,255,255,0.05)",
+            }}
+            onMouseEnter={(e) => {
+              (e.currentTarget as HTMLElement).style.borderColor = `${shortcut.accent}33`
+            }}
+            onMouseLeave={(e) => {
+              (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.05)"
+            }}
+          >
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-sm font-semibold text-white">{shortcut.title}</h3>
+              <Link
+                href={shortcut.href}
+                className="text-xs flex items-center gap-1 transition-colors"
+                style={{ color: shortcut.accent }}
+              >
                 Acessar <ArrowUpRight className="h-3.5 w-3.5" />
               </Link>
             </div>
-            <CardDescription>
-              Valide o cumprimento de requisitos para concessão do Selo Doador de Alimentos.
-            </CardDescription>
-          </CardHeader>
-        </Card>
-
-        <Card className="border-border bg-card hover:border-primary/50 transition-colors">
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-base text-foreground">Lotes & Auditoria Sanitária</CardTitle>
-              <Link href="/admin/doacoes" className="text-primary hover:underline text-xs flex items-center gap-1">
-                Acessar <ArrowUpRight className="h-3.5 w-3.5" />
-              </Link>
-            </div>
-            <CardDescription>
-              Rastreabilidade de validade, acondicionamento e conformidade PNCPDA.
-            </CardDescription>
-          </CardHeader>
-        </Card>
-
-        <Card className="border-border bg-card hover:border-primary/50 transition-colors">
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-base text-foreground">Auditoria & Logs</CardTitle>
-              <Link href="/admin/auditoria" className="text-primary hover:underline text-xs flex items-center gap-1">
-                Acessar <ArrowUpRight className="h-3.5 w-3.5" />
-              </Link>
-            </div>
-            <CardDescription>
-              Registro imutável de todas as ações administrativas executadas.
-            </CardDescription>
-          </CardHeader>
-        </Card>
+            <p className="text-xs" style={{ color: "#64748B" }}>{shortcut.desc}</p>
+          </div>
+        ))}
       </div>
     </div>
   )
