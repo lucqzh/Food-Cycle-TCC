@@ -1,19 +1,12 @@
 import { createClient } from "@/lib/supabase/server"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
 import { 
   Building2, 
   Heart, 
-  Users, 
   Package, 
   TrendingUp, 
-  CheckCircle2, 
-  Clock, 
-  Truck, 
-  Utensils, 
-  Scale,
   ArrowUpRight,
-  Zap
+  ShieldCheck,
+  Scale
 } from "lucide-react"
 import Link from "next/link"
 import { AdminOverviewCharts } from "./overview-charts"
@@ -54,7 +47,6 @@ export default async function AdminOverviewPage() {
   const solicitacoesPendentes = solicitacoes.filter((s) => s.status === "pendente").length
 
   const totalKg = doacoes.reduce((acc, d) => acc + Number(d.quantidade_kg || 0), 0)
-  // Métrica válida documentada no schema do FoodCycle (1 kg ~ 4 refeições)
   const refeicoesEstimadas = Math.round(totalKg * 4)
 
   // Distribuição por Status das doações
@@ -75,9 +67,9 @@ export default async function AdminOverviewPage() {
   const statusPieData = [
     { name: "Disponível", value: statusCountMap.disponivel, color: "#16A34A" },
     { name: "Reservado", value: statusCountMap.reservado, color: "#F59E0B" },
-    { name: "Em Transporte", value: statusCountMap.em_transporte, color: "#3b82f6" },
-    { name: "Entregue", value: statusCountMap.entregue, color: "#7C3AED" },
-    { name: "Cancelado/Vencido", value: statusCountMap.cancelado + statusCountMap.vencido, color: "#ef4444" },
+    { name: "Em Transporte", value: statusCountMap.em_transporte, color: "#3B82F6" },
+    { name: "Entregue", value: statusCountMap.entregue, color: "#8B5CF6" },
+    { name: "Cancelado/Vencido", value: statusCountMap.cancelado + statusCountMap.vencido, color: "#EF4444" },
   ].filter(item => item.value > 0 || totalDoacoes === 0)
 
   // Distribuição por Categoria de Alimento
@@ -93,67 +85,83 @@ export default async function AdminOverviewPage() {
 
   const kpiCards = [
     {
-      title: "Volume de Alimentos",
+      title: "Volume Total Mapeado",
       value: `${totalKg.toLocaleString("pt-BR")} kg`,
-      sub: `${refeicoesEstimadas.toLocaleString("pt-BR")} refeições estimadas`,
+      sub: `${refeicoesEstimadas.toLocaleString("pt-BR")} refeições potenciais`,
       icon: Package,
-      iconColor: "#16A34A",
-      iconBg: "rgba(22,163,74,0.12)",
-      glowColor: "rgba(22,163,74,0.08)",
-      borderColor: "rgba(22,163,74,0.2)",
+      iconColor: "#10B981",
+      iconBg: "bg-emerald-500/10 border-emerald-500/20",
     },
     {
-      title: "Doações Publicadas",
+      title: "Lotes de Doações",
       value: String(totalDoacoes),
-      sub: `${doacoesDisponiveis} disponíveis · ${doacoesConcluidas} concluídas`,
+      sub: `${doacoesDisponiveis} disponíveis • ${doacoesConcluidas} concluídas`,
       icon: TrendingUp,
-      iconColor: "#7C3AED",
-      iconBg: "rgba(124,58,237,0.12)",
-      glowColor: "rgba(124,58,237,0.06)",
-      borderColor: "rgba(124,58,237,0.2)",
+      iconColor: "#8B5CF6",
+      iconBg: "bg-purple-500/10 border-purple-500/20",
     },
     {
       title: "Empresas Doadoras",
       value: String(totalEmpresas),
-      sub: `${empresas.filter(e => e.selo_doador).length} com Selo PNCPDA`,
+      sub: `${empresas.filter(e => e.selo_doador).length} com Selo PNCPDA ativo`,
       icon: Building2,
       iconColor: "#F59E0B",
-      iconBg: "rgba(245,158,11,0.12)",
-      glowColor: "rgba(245,158,11,0.06)",
-      borderColor: "rgba(245,158,11,0.2)",
+      iconBg: "bg-amber-500/10 border-amber-500/20",
     },
     {
       title: "Instituições Receptoras",
       value: String(totalInstituicoes),
-      sub: `${solicitacoesPendentes} solicitações pendentes`,
+      sub: `${solicitacoesPendentes} solicitações aguardando`,
       icon: Heart,
-      iconColor: "#16A34A",
-      iconBg: "rgba(22,163,74,0.12)",
-      glowColor: "rgba(22,163,74,0.06)",
-      borderColor: "rgba(22,163,74,0.2)",
+      iconColor: "#10B981",
+      iconBg: "bg-emerald-500/10 border-emerald-500/20",
+    },
+  ]
+
+  const shortcuts = [
+    {
+      title: "Empresas e Selos PNCPDA",
+      desc: "Validação de conformidade técnica e emissão dos Selos Doador de Alimentos.",
+      href: "/admin/empresas",
+      badgeClass: "text-emerald-400 border-emerald-800/40 bg-emerald-950/40",
+      hoverBorder: "hover:border-emerald-500/40"
+    },
+    {
+      title: "Lotes e Auditoria Sanitária",
+      desc: "Rastreabilidade de validade, acondicionamento e conformidade de cada lote.",
+      href: "/admin/doacoes",
+      badgeClass: "text-purple-400 border-purple-800/40 bg-purple-950/40",
+      hoverBorder: "hover:border-purple-500/40"
+    },
+    {
+      title: "Logs e Auditoria do Sistema",
+      desc: "Registro imutável de todas as ações administrativas executadas na governança.",
+      href: "/admin/auditoria",
+      badgeClass: "text-amber-400 border-amber-800/40 bg-amber-950/40",
+      hoverBorder: "hover:border-amber-500/40"
     },
   ]
 
   return (
-    <div className="space-y-6">
-      {/* Header da Página */}
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+    <div className="space-y-8">
+      {/* Header */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between pb-6 border-b border-emerald-950/60">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-white">Painel de Controle Geral</h1>
-          <p className="text-sm mt-1" style={{ color: "#64748B" }}>
-            Acompanhamento em tempo real de doadores, receptores, estoque de alimentos e fluxo da PNCPDA.
+          <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-purple-950/80 border border-purple-800/40 px-3 py-1 text-xs font-mono text-purple-300">
+            <ShieldCheck className="h-3.5 w-3.5 text-purple-400" />
+            Governança Central da PNCPDA • Lei nº 15.224/2025
+          </div>
+          <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white font-serif">
+            Painel Geral de Controle
+          </h1>
+          <p className="text-xs sm:text-sm text-slate-400 mt-1">
+            Monitoramento em tempo real de doadores, receptores, estoque de alimentos e fluxo da política pública.
           </p>
         </div>
-        <div
-          className="inline-flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-medium"
-          style={{
-            background: "rgba(22,163,74,0.08)",
-            border: "1px solid rgba(22,163,74,0.2)",
-            color: "#16A34A",
-          }}
-        >
-          <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-          Conectado ao Supabase
+
+        <div className="inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-mono bg-emerald-950/80 border border-emerald-800/40 text-emerald-400">
+          <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+          Telemetria Supabase Ativa
         </div>
       </div>
 
@@ -162,25 +170,18 @@ export default async function AdminOverviewPage() {
         {kpiCards.map((card) => (
           <div
             key={card.title}
-            className="rounded-xl p-5 transition-all duration-200"
-            style={{
-              background: `radial-gradient(ellipse at top left, ${card.glowColor}, transparent 70%), #0A1A14`,
-              border: `1px solid ${card.borderColor}`,
-            }}
+            className="rounded-2xl border border-emerald-950/80 bg-gradient-to-br from-[#0A241F]/80 to-[#071B17]/90 p-6 backdrop-blur shadow-xl relative overflow-hidden group hover:border-emerald-800/60 transition-all"
           >
             <div className="flex items-start justify-between mb-3">
-              <p className="text-xs font-medium uppercase tracking-wider" style={{ color: "#64748B" }}>
+              <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
                 {card.title}
               </p>
-              <div
-                className="flex h-8 w-8 items-center justify-center rounded-lg"
-                style={{ background: card.iconBg }}
-              >
-                <card.icon className="h-4 w-4" style={{ color: card.iconColor }} />
+              <div className={`flex h-10 w-10 items-center justify-center rounded-xl border ${card.iconBg}`}>
+                <card.icon className="h-5 w-5" style={{ color: card.iconColor }} />
               </div>
             </div>
-            <p className="text-2xl font-bold text-white mb-1">{card.value}</p>
-            <p className="text-xs" style={{ color: card.iconColor }}>{card.sub}</p>
+            <p className="text-3xl font-black text-white font-mono tracking-tight mb-1">{card.value}</p>
+            <p className="text-xs text-slate-400">{card.sub}</p>
           </div>
         ))}
       </div>
@@ -194,51 +195,21 @@ export default async function AdminOverviewPage() {
 
       {/* Atalhos Rápidos para Gestão */}
       <div className="grid gap-4 md:grid-cols-3">
-        {[
-          {
-            title: "Empresas e Selos",
-            desc: "Valide o cumprimento de requisitos para concessão do Selo Doador de Alimentos.",
-            href: "/admin/empresas",
-            accent: "#16A34A",
-          },
-          {
-            title: "Lotes & Auditoria Sanitária",
-            desc: "Rastreabilidade de validade, acondicionamento e conformidade PNCPDA.",
-            href: "/admin/doacoes",
-            accent: "#7C3AED",
-          },
-          {
-            title: "Auditoria & Logs",
-            desc: "Registro imutável de todas as ações administrativas executadas.",
-            href: "/admin/auditoria",
-            accent: "#F59E0B",
-          },
-        ].map((shortcut) => (
+        {shortcuts.map((s) => (
           <div
-            key={shortcut.href}
-            className="rounded-xl p-5 transition-all duration-200 group"
-            style={{
-              background: "#0A1A14",
-              border: "1px solid rgba(255,255,255,0.05)",
-            }}
-            onMouseEnter={(e) => {
-              (e.currentTarget as HTMLElement).style.borderColor = `${shortcut.accent}33`
-            }}
-            onMouseLeave={(e) => {
-              (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.05)"
-            }}
+            key={s.href}
+            className={`rounded-2xl border border-emerald-950/80 bg-[#071B17]/90 p-6 backdrop-blur shadow-xl transition-all ${s.hoverBorder} group`}
           >
             <div className="flex items-center justify-between mb-2">
-              <h3 className="text-sm font-semibold text-white">{shortcut.title}</h3>
+              <h3 className="text-sm font-bold text-white font-serif">{s.title}</h3>
               <Link
-                href={shortcut.href}
-                className="text-xs flex items-center gap-1 transition-colors"
-                style={{ color: shortcut.accent }}
+                href={s.href}
+                className="text-xs font-mono flex items-center gap-1 text-slate-300 hover:text-white transition-colors"
               >
                 Acessar <ArrowUpRight className="h-3.5 w-3.5" />
               </Link>
             </div>
-            <p className="text-xs" style={{ color: "#64748B" }}>{shortcut.desc}</p>
+            <p className="text-xs text-slate-400 leading-relaxed">{s.desc}</p>
           </div>
         ))}
       </div>
