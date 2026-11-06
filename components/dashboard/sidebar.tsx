@@ -19,7 +19,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { useEffect, useState } from "react"
 import { createClient } from "@/lib/supabase/client"
-import { ADMIN_MASTER_EMAIL } from "@/lib/supabase/admin"
+import { ADMIN_MASTER_EMAIL } from "@/lib/constants"
 
 const menuItems = [
   {

@@ -1,7 +1,7 @@
 import { createClient as createServerSupabase } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
 
-export const ADMIN_MASTER_EMAIL = "santhiagooliveiraparente@gmail.com"
+export { ADMIN_MASTER_EMAIL } from "@/lib/constants"
 
 export interface AdminAuthResult {
   isAdmin: boolean
