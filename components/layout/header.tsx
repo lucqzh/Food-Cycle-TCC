@@ -13,8 +13,10 @@ import {
   ShieldCheck, 
   LayoutDashboard,
   LogOut,
-  User
+  Sun,
+  Moon
 } from "lucide-react"
+import { useTheme } from "next-themes"
 import { soundManager } from "@/lib/sound"
 import { createClient } from "@/lib/supabase/client"
 import { ADMIN_MASTER_EMAIL } from "@/lib/constants"
@@ -35,11 +37,19 @@ export function Header() {
   const [soundEnabled, setSoundEnabled] = useState(false)
   const [scrollProgress, setScrollProgress] = useState(0)
 
+  // Tema Claro / Escuro
+  const { theme, setTheme } = useTheme()
+  const [mounted, setMounted] = useState(false)
+
   // Estado de autenticação da sessão ativa
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [isAdmin, setIsAdmin] = useState(false)
   const [userName, setUserName] = useState<string>("")
   const [userEmail, setUserEmail] = useState<string>("")
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   useEffect(() => {
     const handleScroll = () => {
@@ -115,6 +125,8 @@ export function Header() {
     router.refresh()
   }
 
+  const isLight = mounted && theme === "light"
+
   // Se estiver logado, o logo direciona para o painel apropriado sem "deslogar" nem perder contexto
   const logoHref = isAuthenticated 
     ? (isAdmin ? "/admin" : "/dashboard")
@@ -187,7 +199,7 @@ export function Header() {
             ))}
           </nav>
 
-          {/* Right Action CTAs & Sound Toggle */}
+          {/* Right Action CTAs & Controls */}
           <div className="flex items-center gap-2">
             {/* Audio Toggle Button */}
             <button
@@ -204,6 +216,20 @@ export function Header() {
                 <Volume2 className="h-3.5 w-3.5" />
               ) : (
                 <VolumeX className="h-3.5 w-3.5" />
+              )}
+            </button>
+
+            {/* Theme Toggle Button */}
+            <button
+              onClick={() => setTheme(isLight ? "dark" : "light")}
+              title={isLight ? "Mudar para Tema Escuro" : "Mudar para Tema Claro"}
+              className="p-2 rounded-full border border-white/10 bg-white/5 text-slate-300 hover:text-white hover:bg-white/10 transition-all cursor-pointer"
+              aria-label="Toggle tema claro/escuro"
+            >
+              {isLight ? (
+                <Moon className="h-3.5 w-3.5 text-indigo-400" />
+              ) : (
+                <Sun className="h-3.5 w-3.5 text-amber-400" />
               )}
             </button>
 
