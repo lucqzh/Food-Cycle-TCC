@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
+import { ADMIN_MASTER_EMAIL } from "@/lib/constants"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 
@@ -75,6 +76,13 @@ export default function CompletarCadastroPage() {
       const uid = data.user.id
       setUserId(uid)
 
+      const isMaster = data.user.email?.toLowerCase() === ADMIN_MASTER_EMAIL.toLowerCase()
+      const { data: perfil } = await supabase.from("profiles").select("tipo").eq("id", uid).maybeSingle()
+      if (perfil?.tipo === "admin" || isMaster) {
+        router.replace("/admin")
+        return
+      }
+
       const [e, i, m] = await Promise.all([
         supabase.from("empresas").select("id").eq("perfil_id", uid).maybeSingle(),
         supabase.from("instituicoes").select("id").eq("perfil_id", uid).maybeSingle(),
@@ -85,7 +93,6 @@ export default function CompletarCadastroPage() {
         return
       }
 
-      const { data: perfil } = await supabase.from("profiles").select("tipo").eq("id", uid).maybeSingle()
       if (perfil?.tipo && ["empresa", "instituicao", "intermediario"].includes(perfil.tipo)) {
         setTipo(perfil.tipo as Tipo)
         setTipoFixo(true)

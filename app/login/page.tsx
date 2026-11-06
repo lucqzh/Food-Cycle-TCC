@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Leaf, Eye, EyeOff } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
+import { ADMIN_MASTER_EMAIL } from "@/lib/constants"
 
 export default function LoginPage() {
   const router = useRouter()
@@ -39,6 +40,23 @@ export default function LoginPage() {
           : error.message,
       )
       return
+    }
+
+    const isMaster = formData.email.trim().toLowerCase() === ADMIN_MASTER_EMAIL.toLowerCase()
+    if (isMaster) {
+      router.push("/admin")
+      router.refresh()
+      return
+    }
+
+    const { data: authData } = await supabase.auth.getUser()
+    if (authData.user) {
+      const { data: profile } = await supabase.from("profiles").select("tipo").eq("id", authData.user.id).maybeSingle()
+      if (profile?.tipo === "admin") {
+        router.push("/admin")
+        router.refresh()
+        return
+      }
     }
 
     router.push("/dashboard")

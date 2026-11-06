@@ -3,6 +3,7 @@
 import { useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
+import { ADMIN_MASTER_EMAIL } from "@/lib/constants"
 import { useDonationMetrics } from "@/lib/donation-metrics"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -123,6 +124,12 @@ export default function DashboardPage() {
       const { data } = await supabase.auth.getUser()
       if (!data.user) return
       const uid = data.user.id
+
+      const isMaster = data.user.email?.toLowerCase() === ADMIN_MASTER_EMAIL.toLowerCase()
+      const { data: perfil } = await supabase.from("profiles").select("tipo").eq("id", uid).maybeSingle()
+      if (perfil?.tipo === "admin" || isMaster) {
+        return
+      }
 
       const [e, i, m] = await Promise.all([
         supabase.from("empresas").select("id").eq("perfil_id", uid).maybeSingle(),
