@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { Apple, Beef, Carrot, Cookie, Milk, Wheat } from "lucide-react"
+import { toast } from "sonner"
 
 export interface DonationRecord {
   id: number
@@ -320,7 +321,16 @@ export function useDonationMetrics() {
       .on(
         "broadcast",
         { event: "metrics_sync" },
-        () => {
+        (payload: any) => {
+          const detail = payload?.payload?.detail || "Métricas e lotes de alimentos foram recalculados pela Governança."
+          try {
+            toast.info("⚡ Atualização em Tempo Real (PNCPDA)", {
+              description: detail,
+              duration: 4500,
+            })
+          } catch (e) {
+            console.warn("Toast error:", e)
+          }
           triggerRealtimeSync()
         }
       )
