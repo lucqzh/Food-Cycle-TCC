@@ -125,6 +125,34 @@ export default function NovaDoacaoPage() {
     e.preventDefault()
     setErro("")
 
+    if (!formData.nome.trim()) {
+      setErro("Informe o nome do alimento.")
+      return
+    }
+
+    if (!formData.categoria) {
+      setErro("Por favor, selecione uma Categoria Nutricional para o alimento.")
+      return
+    }
+
+
+    if (!formData.validade) {
+      setErro("Informe a data de validade.")
+      return
+    }
+
+    const anoValidade = Number(formData.validade.split("-")[0])
+    const anoAtual = new Date().getFullYear()
+    if (isNaN(anoValidade) || anoValidade < anoAtual || anoValidade > anoAtual + 2) {
+      setErro(`O ano da data de validade deve ser entre ${anoAtual} e ${anoAtual + 2}.`)
+      return
+    }
+
+    if (!formData.condicao) {
+      setErro("Por favor, selecione a condição de armazenamento.")
+      return
+    }
+
     if (!formData.termoConfirmacao) {
       setErro("Você precisa aceitar o termo de responsabilidade para continuar.")
       return
