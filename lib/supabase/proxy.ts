@@ -45,6 +45,14 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url)
   }
 
+  // Protege as rotas administrativas: sem usuário, redireciona para o login.
+  if (request.nextUrl.pathname.startsWith("/admin") && !user) {
+    const url = request.nextUrl.clone()
+    url.pathname = "/login"
+    url.searchParams.set("next", request.nextUrl.pathname)
+    return NextResponse.redirect(url)
+  }
+
   // IMPORTANT: You *must* return the supabaseResponse object as it is.
   return supabaseResponse
 }
