@@ -1,20 +1,21 @@
-﻿"use client"
+"use client"
 
 import { useEffect, useState, useMemo } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { broadcastMetricsUpdate } from "@/lib/donation-metrics"
+import { logAdminAudit } from "@/lib/admin-audit"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { 
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
+  Dialog, 
+  DialogContent, 
+  DialogDescription, 
+  DialogFooter, 
+  DialogHeader, 
+  DialogTitle 
 } from "@/components/ui/dialog"
 import { 
   Package, 
@@ -27,7 +28,10 @@ import {
   AlertCircle,
   CheckCircle2,
   Download,
-  Edit
+  Edit,
+  Trash2,
+  ShieldCheck,
+  Zap
 } from "lucide-react"
 
 interface DoacaoAdminItem {
@@ -86,6 +90,12 @@ export default function AdminDoacoesPage() {
   const [modalStatusAberto, setModalStatusAberto] = useState(false)
   const [novoStatus, setNovoStatus] = useState<string>("")
   const [salvandoStatus, setSalvandoStatus] = useState(false)
+
+  // Modal de Exclusão com Auditoria
+  const [modalExcluirAberto, setModalExcluirAberto] = useState(false)
+  const [doacaoParaExcluir, setDoacaoParaExcluir] = useState<DoacaoAdminItem | null>(null)
+  const [excluindo, setExcluindo] = useState(false)
+
   const [aviso, setAviso] = useState<{ tipo: "sucesso" | "erro"; texto: string } | null>(null)
 
   const carregarDoacoes = async () => {
@@ -145,6 +155,12 @@ export default function AdminDoacoesPage() {
     setModalStatusAberto(true)
   }
 
+  const abrirModalExcluir = (d: DoacaoAdminItem) => {
+    setDoacaoParaExcluir(d)
+    setModalExcluirAberto(true)
+  }
+
+  // Alterar Status com Log de Auditoria e Sincronização em Tempo Real
   const salvarStatus = async () => {
     if (!doacaoSelecionada) return
     setSalvandoStatus(true)
@@ -159,26 +175,26 @@ export default function AdminDoacoesPage() {
 
       if (error) throw error
 
-      // Registra auditoria
-      const { data: auth } = await supabase.auth.getUser()
-      await supabase.from("admin_audit_logs").insert({
-        admin_id: auth.user?.id,
-        admin_email: auth.user?.email || "admin",
+      // Registra Log de Auditoria
+      await logAdminAudit({
         acao: "ALTERAR_STATUS_DOACAO",
         entidade: "doacoes",
-        entidade_id: String(doacaoSelecionada.id),
+        entidade_id: doacaoSelecionada.id,
         detalhes: {
           codigo_rastreio: doacaoSelecionada.codigo_rastreio,
           alimento: doacaoSelecionada.tipo_alimento,
           status_anterior: doacaoSelecionada.status,
-          status_novo: novoStatus
+          status_novo: novoStatus,
+          quantidade_kg: doacaoSelecionada.quantidade_kg
         }
       })
 
-      await broadcastMetricsUpdate(`Status da doa��o ${doacaoSelecionada.codigo_rastreio} alterado para ${novoStatus.toUpperCase()}`)
+      // Transmissão via Realtime WebSocket para todos os Dashboards
+      await broadcastMetricsUpdate(`Status da doação ${doacaoSelecionada.codigo_rastreio} alterado para ${novoStatus.toUpperCase()}`)
+
       setAviso({
         tipo: "sucesso",
-        texto: `Status da doação ${doacaoSelecionada.codigo_rastreio} atualizado para "${novoStatus.toUpperCase()}".`
+        texto: `Status da doação ${doacaoSelecionada.codigo_rastreio} atualizado para "${novoStatus.toUpperCase()}". Log de auditoria registrado.`
       })
       setModalStatusAberto(false)
       await carregarDoacoes()
@@ -186,6 +202,56 @@ export default function AdminDoacoesPage() {
       setAviso({ tipo: "erro", texto: `Erro ao alterar status: ${err.message}` })
     } finally {
       setSalvandoStatus(false)
+    }
+  }
+
+  // Excluir Lote com Confirmação, Log de Auditoria e Sincronização em Tempo Real
+  const confirmarExclusao = async () => {
+    if (!doacaoParaExcluir) return
+    setExcluindo(true)
+    setAviso(null)
+
+    try {
+      const supabase = createClient()
+      const { error } = await supabase
+        .from("doacoes")
+        .delete()
+        .eq("id", doacaoParaExcluir.id)
+
+      if (error) throw error
+
+      // Registra Log de Auditoria Rigoroso
+      await logAdminAudit({
+        acao: "EXCLUIR_DOACAO",
+        entidade: "doacoes",
+        entidade_id: doacaoParaExcluir.id,
+        detalhes: {
+          id: doacaoParaExcluir.id,
+          codigo_rastreio: doacaoParaExcluir.codigo_rastreio,
+          tipo_alimento: doacaoParaExcluir.tipo_alimento,
+          quantidade_kg: doacaoParaExcluir.quantidade_kg,
+          categoria: doacaoParaExcluir.categoria,
+          destino: doacaoParaExcluir.destino,
+          status_no_momento_exclusao: doacaoParaExcluir.status,
+          empresa_id: doacaoParaExcluir.empresa_id,
+          motivo: "Exclusão administrativa via Painel de Lotes"
+        }
+      })
+
+      // Transmissão via Realtime WebSocket para abater o volume do Dashboard imediatamente
+      await broadcastMetricsUpdate(`Lote #${doacaoParaExcluir.id} (${doacaoParaExcluir.codigo_rastreio}) removido pelo Admin`)
+
+      setAviso({
+        tipo: "sucesso",
+        texto: `Lote ${doacaoParaExcluir.codigo_rastreio} (${doacaoParaExcluir.tipo_alimento}) excluído com sucesso! Log de auditoria gerado e Dashboard sincronizado.`
+      })
+      setModalExcluirAberto(false)
+      setDoacaoParaExcluir(null)
+      await carregarDoacoes()
+    } catch (err: any) {
+      setAviso({ tipo: "erro", texto: `Erro ao excluir lote: ${err.message}` })
+    } finally {
+      setExcluindo(false)
     }
   }
 
@@ -201,43 +267,59 @@ export default function AdminDoacoesPage() {
     const url = URL.createObjectURL(blob)
     const a = document.createElement("a")
     a.href = url
-    a.download = `foodcycle-doacoes-${new Date().toISOString().slice(0, 10)}.csv`
+    a.download = `foodcycle-lotes-doacoes-${new Date().toISOString().slice(0, 10)}.csv`
     a.click()
   }
 
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-xs uppercase tracking-wider font-mono text-purple-400 bg-purple-950/60 border border-purple-800/40 px-2 py-0.5 rounded">
+              Auditoria de Excedentes
+            </span>
+            <span className="inline-flex items-center gap-1 text-[11px] font-mono text-emerald-400 bg-emerald-950/60 border border-emerald-800/40 px-2 py-0.5 rounded">
+              <Zap className="h-3 w-3" />
+              Sincronização Realtime Ativa
+            </span>
+          </div>
           <h1 className="text-3xl font-bold tracking-tight text-foreground">Lotes de Doações</h1>
-          <p className="text-muted-foreground">
-            Auditoria sanitária, controle de validade e histórico de destinação (Lei nº 15.224/2025).
+          <p className="text-muted-foreground text-xs sm:text-sm">
+            Rastreabilidade integral de todos os excedentes disponibilizados pelas empresas doadoras.
           </p>
         </div>
-        <Button variant="outline" className="gap-2" onClick={exportarCSV} disabled={doacoesFiltradas.length === 0}>
-          <Download className="h-4 w-4" />
-          Exportar Relatório (CSV)
-        </Button>
+
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={exportarCSV} disabled={doacoesFiltradas.length === 0}>
+            <Download className="h-4 w-4 mr-1.5" />
+            Exportar CSV
+          </Button>
+        </div>
       </div>
 
+      {/* Aviso de feedback */}
       {aviso && (
-        <div className={`p-4 rounded-lg flex items-center gap-3 text-sm font-medium ${
-          aviso.tipo === "sucesso" ? "bg-emerald-500/10 text-emerald-600 border border-emerald-500/20" : "bg-destructive/10 text-destructive border border-destructive/20"
+        <div className={`p-4 rounded-xl border flex items-center justify-between text-xs font-medium animate-in fade-in duration-200 ${
+          aviso.tipo === "sucesso" ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400" : "bg-red-500/10 border-red-500/30 text-red-400"
         }`}>
-          {aviso.tipo === "sucesso" ? <CheckCircle2 className="h-4 w-4 shrink-0" /> : <AlertCircle className="h-4 w-4 shrink-0" />}
-          <span>{aviso.texto}</span>
+          <div className="flex items-center gap-2">
+            {aviso.tipo === "sucesso" ? <CheckCircle2 className="h-4 w-4 shrink-0" /> : <AlertCircle className="h-4 w-4 shrink-0" />}
+            <span>{aviso.texto}</span>
+          </div>
+          <Button variant="ghost" size="sm" className="h-6 px-2 text-xs" onClick={() => setAviso(null)}>Fechar</Button>
         </div>
       )}
 
-      {/* Filtros */}
+      {/* Filtros e Busca */}
       <Card className="border-border bg-card">
-        <CardContent className="p-4">
-          <div className="flex flex-col gap-3 md:flex-row">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <CardContent className="pt-6">
+          <div className="grid gap-3 sm:grid-cols-3">
+            <div className="relative sm:col-span-1">
+              <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Buscar por Alimento, Código de Rastreio ou Empresa Doadora..."
+                placeholder="Buscar por alimento, código ou empresa..."
                 value={busca}
                 onChange={(e) => setBusca(e.target.value)}
                 className="pl-9"
@@ -245,24 +327,22 @@ export default function AdminDoacoesPage() {
             </div>
 
             <Select value={filtroStatus} onValueChange={setFiltroStatus}>
-              <SelectTrigger className="w-full md:w-44">
-                <Filter className="h-3.5 w-3.5 mr-2 text-muted-foreground" />
+              <SelectTrigger>
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
               <SelectContent>
-                {statusOptions.map(opt => (
+                {statusOptions.map((opt) => (
                   <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
 
             <Select value={filtroCategoria} onValueChange={setFiltroCategoria}>
-              <SelectTrigger className="w-full md:w-48">
-                <Package className="h-3.5 w-3.5 mr-2 text-muted-foreground" />
+              <SelectTrigger>
                 <SelectValue placeholder="Categoria" />
               </SelectTrigger>
               <SelectContent>
-                {categoriaOptions.map(opt => (
+                {categoriaOptions.map((opt) => (
                   <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
                 ))}
               </SelectContent>
@@ -271,22 +351,31 @@ export default function AdminDoacoesPage() {
         </CardContent>
       </Card>
 
-      {/* Tabela de Doações */}
+      {/* Tabela de Lotes */}
       <Card className="border-border bg-card">
-        <CardHeader>
+        <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-lg text-foreground">Lotes Mapeados ({doacoesFiltradas.length})</CardTitle>
-            <button onClick={carregarDoacoes} className="text-xs text-primary hover:underline">Atualizar</button>
+            <div>
+              <CardTitle className="text-base text-foreground">Lotes Cadastrados</CardTitle>
+              <CardDescription>
+                Exibindo {doacoesFiltradas.length} de {doacoes.length} lotes registrados no ecossistema
+              </CardDescription>
+            </div>
           </div>
         </CardHeader>
         <CardContent>
           {carregando ? (
-            <div className="py-12 text-center text-sm text-muted-foreground">Carregando doações do banco...</div>
+            <div className="py-12 text-center text-muted-foreground font-mono text-xs">
+              <span className="inline-block w-2 h-2 rounded-full bg-primary animate-ping mr-2" />
+              Carregando lotes do Supabase...
+            </div>
           ) : doacoesFiltradas.length === 0 ? (
-            <div className="py-12 text-center text-sm text-muted-foreground">Nenhuma doação cadastrada com os filtros selecionados.</div>
+            <div className="py-12 text-center text-muted-foreground text-sm">
+              Nenhum lote de doação encontrado com os filtros aplicados.
+            </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full text-left text-sm">
+              <table className="w-full text-left text-xs">
                 <thead>
                   <tr className="border-b border-border text-muted-foreground font-medium">
                     <th className="pb-3">Código Rastreio</th>
@@ -297,7 +386,7 @@ export default function AdminDoacoesPage() {
                     <th className="pb-3">Validade</th>
                     <th className="pb-3">Destinação</th>
                     <th className="pb-3">Status</th>
-                    <th className="pb-3 text-center">Ações</th>
+                    <th className="pb-3 text-center">Ações (Auditadas)</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
@@ -310,7 +399,7 @@ export default function AdminDoacoesPage() {
                         <td className="py-3 text-muted-foreground">{empresaNome}</td>
                         <td className="py-3">
                           <Badge variant="secondary" className="capitalize text-xs">
-                            {d.categoria.replace("_", " ")}
+                            {d.categoria ? d.categoria.replace("_", " ") : "Outro"}
                           </Badge>
                         </td>
                         <td className="py-3 text-right font-semibold text-foreground">{d.quantidade_kg} kg</td>
@@ -333,6 +422,15 @@ export default function AdminDoacoesPage() {
                             </Button>
                             <Button size="sm" variant="ghost" onClick={() => abrirAlterarStatus(d)} title="Alterar Status">
                               <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button 
+                              size="sm" 
+                              variant="ghost" 
+                              onClick={() => abrirModalExcluir(d)} 
+                              title="Excluir Lote e Gerar Log"
+                              className="text-red-500 hover:text-red-400 hover:bg-red-500/10"
+                            >
+                              <Trash2 className="h-4 w-4" />
                             </Button>
                           </div>
                         </td>
@@ -432,7 +530,8 @@ export default function AdminDoacoesPage() {
                 </SelectContent>
               </Select>
             </div>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-muted-foreground flex items-center gap-1.5">
+              <ShieldCheck className="h-4 w-4 text-emerald-500 shrink-0" />
               Esta ação será auditada e gravada no histórico de segurança da plataforma.
             </p>
           </div>
@@ -445,7 +544,70 @@ export default function AdminDoacoesPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Modal de Exclusão com Confirmação e Aviso Legal */}
+      <Dialog open={modalExcluirAberto} onOpenChange={setModalExcluirAberto}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-destructive flex items-center gap-2">
+              <Trash2 className="h-5 w-5" />
+              Excluir Lote de Doação
+            </DialogTitle>
+            <DialogDescription>
+              Tem certeza que deseja excluir este lote permanentemente do banco de dados?
+            </DialogDescription>
+          </DialogHeader>
+
+          {doacaoParaExcluir && (
+            <div className="p-3.5 rounded-xl bg-destructive/10 border border-destructive/20 space-y-2 text-xs">
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Código de Rastreio:</span>
+                <span className="font-mono text-primary font-bold">{doacaoParaExcluir.codigo_rastreio}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Alimento:</span>
+                <span className="font-bold text-foreground">{doacaoParaExcluir.tipo_alimento}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Volume Abatido:</span>
+                <span className="font-mono font-bold text-foreground">{doacaoParaExcluir.quantidade_kg} kg</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Status Atual:</span>
+                <span className="capitalize text-foreground font-semibold">{doacaoParaExcluir.status}</span>
+              </div>
+
+              <div className="pt-2 border-t border-destructive/20 text-[11px] text-muted-foreground flex items-start gap-1.5">
+                <ShieldCheck className="h-4 w-4 shrink-0 text-amber-500 mt-0.5" />
+                <span>Esta operação registrará um log de auditoria irreversível nos registros de conformidade e recalculará o Dashboard em tempo real.</span>
+              </div>
+            </div>
+          )}
+
+          <DialogFooter className="pt-2">
+            <Button
+              type="button"
+              variant="outline"
+              disabled={excluindo}
+              onClick={() => {
+                setModalExcluirAberto(false)
+                setDoacaoParaExcluir(null)
+              }}
+            >
+              Cancelar
+            </Button>
+            <Button
+              type="button"
+              variant="destructive"
+              disabled={excluindo}
+              onClick={confirmarExclusao}
+              className="font-bold"
+            >
+              {excluindo ? "Excluindo..." : "Confirmar Exclusão"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
-

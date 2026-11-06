@@ -14,7 +14,12 @@ import {
   Download, 
   Clock, 
   FileText,
-  AlertCircle
+  AlertCircle,
+  RefreshCw,
+  Trash2,
+  Plus,
+  Edit,
+  Zap
 } from "lucide-react"
 
 interface AuditLogItem {
@@ -26,6 +31,13 @@ interface AuditLogItem {
   entidade_id: string | null
   detalhes: Record<string, unknown> | null
   data_criacao: string
+}
+
+export function formatDetalhes(detalhes: Record<string, unknown> | null): string {
+  if (!detalhes) return "—"
+  const keys = Object.keys(detalhes).filter(k => k !== "user_agent" && k !== "timestamp")
+  if (keys.length === 0) return JSON.stringify(detalhes)
+  return keys.map(k => `${k}: ${detalhes[k]}`).join(" • ")
 }
 
 export default function AdminAuditoriaPage() {
@@ -42,9 +54,9 @@ export default function AdminAuditoriaPage() {
         .from("admin_audit_logs")
         .select("*")
         .order("id", { ascending: false })
+        .limit(100)
 
       if (error) {
-        // Tabela pode ainda estar sendo criada via migração SQL
         console.warn("admin_audit_logs:", error)
       } else if (data) {
         setLogs(data as unknown as AuditLogItem[])
@@ -101,15 +113,27 @@ export default function AdminAuditoriaPage() {
       {/* Header */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-xs uppercase tracking-wider font-mono text-purple-400 bg-purple-950/60 border border-purple-800/40 px-2 py-0.5 rounded flex items-center gap-1.5">
+              <ShieldCheck className="h-3.5 w-3.5 text-emerald-400" />
+              Governança & Rastreabilidade PNCPDA (Lei nº 15.224/2025)
+            </span>
+          </div>
           <h1 className="text-3xl font-bold tracking-tight text-foreground">Auditoria do Sistema</h1>
-          <p className="text-muted-foreground">
-            Trilha de auditoria imutável de todas as ações de gestão executadas por administradores.
+          <p className="text-muted-foreground text-xs sm:text-sm">
+            Trilha de auditoria imutável de todas as ações de criação, alteração e exclusão realizadas por administradores.
           </p>
         </div>
-        <Button variant="outline" className="gap-2" onClick={exportarCSV} disabled={logsFiltrados.length === 0}>
-          <Download className="h-4 w-4" />
-          Exportar Trilha de Auditoria (CSV)
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={carregarLogs} disabled={carregando} className="gap-1.5">
+            <RefreshCw className={`h-3.5 w-3.5 ${carregando ? "animate-spin" : ""}`} />
+            Atualizar
+          </Button>
+          <Button variant="outline" size="sm" className="gap-2" onClick={exportarCSV} disabled={logsFiltrados.length === 0}>
+            <Download className="h-4 w-4" />
+            Exportar CSV
+          </Button>
+        </div>
       </div>
 
       {/* Filtros */}
@@ -119,23 +143,23 @@ export default function AdminAuditoriaPage() {
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Buscar por Ação, E-mail do Admin, Entidade ou Detalhes..."
+                placeholder="Buscar por Ação, E-mail do Admin, Código ou Detalhes..."
                 value={busca}
                 onChange={(e) => setBusca(e.target.value)}
-                className="pl-9"
+                className="pl-9 text-xs"
               />
             </div>
 
             <Select value={filtroEntidade} onValueChange={setFiltroEntidade}>
-              <SelectTrigger className="w-full sm:w-48">
+              <SelectTrigger className="w-full sm:w-48 text-xs">
                 <Filter className="h-3.5 w-3.5 mr-2 text-muted-foreground" />
                 <SelectValue placeholder="Entidade" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="todas">Todas as Entidades</SelectItem>
+                <SelectItem value="doacoes">Doações</SelectItem>
                 <SelectItem value="empresas">Empresas</SelectItem>
                 <SelectItem value="instituicoes">Instituições</SelectItem>
-                <SelectItem value="doacoes">Doações</SelectItem>
                 <SelectItem value="solicitacoes">Solicitações</SelectItem>
                 <SelectItem value="entregas">Entregas</SelectItem>
                 <SelectItem value="profiles">Perfis / Usuários</SelectItem>
@@ -147,55 +171,86 @@ export default function AdminAuditoriaPage() {
 
       {/* Tabela de Logs */}
       <Card className="border-border bg-card">
-        <CardHeader>
+        <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-lg text-foreground">Eventos Registrados ({logsFiltrados.length})</CardTitle>
-            <button onClick={carregarLogs} className="text-xs text-primary hover:underline">Atualizar</button>
+            <div>
+              <CardTitle className="text-base text-foreground">Eventos Registrados ({logsFiltrados.length})</CardTitle>
+              <CardDescription className="text-xs">
+                Registros criptograficamente auditados no PostgreSQL com carimbo de data/hora
+              </CardDescription>
+            </div>
           </div>
         </CardHeader>
         <CardContent>
           {carregando ? (
-            <div className="py-12 text-center text-sm text-muted-foreground">Carregando trilha de auditoria...</div>
+            <div className="py-12 text-center text-xs text-muted-foreground font-mono">
+              <span className="inline-block w-2 h-2 rounded-full bg-primary animate-ping mr-2" />
+              Carregando trilha de auditoria do banco...
+            </div>
           ) : logsFiltrados.length === 0 ? (
             <div className="py-12 text-center text-sm text-muted-foreground">
               <FileText className="h-10 w-10 text-muted-foreground/40 mx-auto mb-2" />
-              <p className="font-medium text-foreground">Nenhum evento registrado ainda</p>
+              <p className="font-medium text-foreground">Nenhum evento registrado com os filtros aplicados</p>
               <p className="text-xs mt-1">
-                Ações como concessão de selos, aprovações e ajustes de permissão serão gravadas automaticamente aqui.
+                Todas as ações (criar, editar, excluir lotes, aprovações de selos) aparecerão automaticamente aqui.
               </p>
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full text-left text-sm">
+              <table className="w-full text-left text-xs">
                 <thead>
                   <tr className="border-b border-border text-muted-foreground font-medium">
                     <th className="pb-3">Data / Horário</th>
                     <th className="pb-3">Administrador</th>
-                    <th className="pb-3">Ação</th>
+                    <th className="pb-3">Ação Realizada</th>
                     <th className="pb-3">Entidade</th>
-                    <th className="pb-3">Detalhes</th>
+                    <th className="pb-3">Trilha de Detalhes</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
-                  {logsFiltrados.map((log) => (
-                    <tr key={log.id} className="hover:bg-muted/30 transition-colors">
-                      <td className="py-3 text-muted-foreground font-mono text-xs whitespace-nowrap">
-                        {new Date(log.data_criacao).toLocaleString("pt-BR")}
-                      </td>
-                      <td className="py-3 font-medium text-foreground text-xs">{log.admin_email}</td>
-                      <td className="py-3">
-                        <Badge variant="outline" className="font-mono text-[10px] uppercase border-primary/40 text-primary bg-primary/5">
-                          {log.acao}
-                        </Badge>
-                      </td>
-                      <td className="py-3 capitalize text-muted-foreground text-xs">
-                        {log.entidade} {log.entidade_id ? `(#${log.entidade_id})` : ""}
-                      </td>
-                      <td className="py-3 text-xs text-muted-foreground max-w-sm truncate" title={log.detalhes ? JSON.stringify(log.detalhes) : ""}>
-                        {log.detalhes ? JSON.stringify(log.detalhes) : "—"}
-                      </td>
-                    </tr>
-                  ))}
+                  {logsFiltrados.map((log) => {
+                    const isDelete = log.acao.includes("EXCLUIR") || log.acao.includes("DELETAR")
+                    const isCreate = log.acao.includes("CRIAR") || log.acao.includes("INSERIR")
+                    const isUpdate = log.acao.includes("EDITAR") || log.acao.includes("ALTERAR") || log.acao.includes("CONCLUIR")
+
+                    return (
+                      <tr key={log.id} className="hover:bg-muted/30 transition-colors">
+                        <td className="py-3 text-muted-foreground font-mono text-[11px] whitespace-nowrap">
+                          {new Date(log.data_criacao).toLocaleString("pt-BR")}
+                        </td>
+                        <td className="py-3 font-medium text-foreground text-xs font-mono">
+                          {log.admin_email}
+                        </td>
+                        <td className="py-3">
+                          <Badge 
+                            variant="outline" 
+                            className={`font-mono text-[10px] uppercase font-bold flex items-center gap-1 w-fit ${
+                              isDelete
+                                ? "border-red-500/50 text-red-400 bg-red-950/20"
+                                : isCreate
+                                  ? "border-emerald-500/50 text-emerald-400 bg-emerald-950/20"
+                                  : isUpdate
+                                    ? "border-purple-500/50 text-purple-400 bg-purple-950/20"
+                                    : "border-primary/40 text-primary bg-primary/5"
+                            }`}
+                          >
+                            {isDelete && <Trash2 className="h-3 w-3" />}
+                            {isCreate && <Plus className="h-3 w-3" />}
+                            {isUpdate && <Edit className="h-3 w-3" />}
+                            <span>{log.acao}</span>
+                          </Badge>
+                        </td>
+                        <td className="py-3 capitalize text-muted-foreground text-xs font-medium">
+                          {log.entidade} {log.entidade_id ? <span className="font-mono text-foreground font-bold">#{log.entidade_id}</span> : ""}
+                        </td>
+                        <td className="py-3 text-xs text-muted-foreground max-w-md font-mono" title={log.detalhes ? JSON.stringify(log.detalhes, null, 2) : ""}>
+                          <span className="truncate block">
+                            {formatDetalhes(log.detalhes)}
+                          </span>
+                        </td>
+                      </tr>
+                    )
+                  })}
                 </tbody>
               </table>
             </div>

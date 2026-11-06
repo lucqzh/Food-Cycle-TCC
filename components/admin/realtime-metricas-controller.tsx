@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { broadcastMetricsUpdate, DonationRecord } from "@/lib/donation-metrics"
+import { logAdminAudit } from "@/lib/admin-audit"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -29,7 +30,8 @@ import {
   RefreshCw,
   Send,
   Sparkles,
-  AlertCircle
+  AlertCircle,
+  ShieldCheck
 } from "lucide-react"
 
 interface EmpresaOption {
@@ -48,6 +50,10 @@ export function RealtimeMetricasController() {
   // Modal de Criação / Edição
   const [modalAberto, setModalAberto] = useState(false)
   const [editandoId, setEditandoId] = useState<number | null>(null)
+
+  // Modal de Exclusão com Confirmação
+  const [modalExcluirAberto, setModalExcluirAberto] = useState(false)
+  const [loteParaExcluir, setLoteParaExcluir] = useState<DonationRecord | null>(null)
 
   const [formData, setFormData] = useState({
     tipo_alimento: "",
@@ -116,7 +122,7 @@ export function RealtimeMetricasController() {
     setMensagemSucesso(texto)
     setTimeout(() => {
       setMensagemSucesso(null)
-    }, 4000)
+    }, 4500)
   }
 
   // Ação Rápida de Injeção de Carga (+100kg, +250kg, etc.)
@@ -137,7 +143,6 @@ export function RealtimeMetricasController() {
 
       let targetEmpresaId = empresas[0]?.id
       if (!targetEmpresaId) {
-        // Se não houver empresas cadastradas, busca qualquer perfil ou cria
         const { data: firstEmp } = await supabase.from("empresas").select("id").limit(1).maybeSingle()
         targetEmpresaId = firstEmp?.id || 1
       }
@@ -146,7 +151,7 @@ export function RealtimeMetricasController() {
       validadeData.setDate(validadeData.getDate() + 15)
       const dataValidadeStr = validadeData.toISOString().split("T")[0]
 
-      const { error: insertError } = await supabase.from("doacoes").insert({
+      const { data: inserted, error: insertError } = await supabase.from("doacoes").insert({
         codigo_rastreio: codigoRastreio,
         empresa_id: targetEmpresaId,
         tipo_alimento: tipoAlimento,
@@ -157,14 +162,30 @@ export function RealtimeMetricasController() {
         destino: destino,
         status: "disponivel",
         termo_aceite: true
-      })
+      }).select("id").single()
 
       if (insertError) throw insertError
+
+      // Registra Log de Auditoria
+      await logAdminAudit({
+        acao: "CRIAR_DOACAO_RAPIDA",
+        entidade: "doacoes",
+        entidade_id: inserted?.id || codigoRastreio,
+        detalhes: {
+          codigo_rastreio: codigoRastreio,
+          alimento: tipoAlimento,
+          quantidade_kg: kg,
+          categoria,
+          destino,
+          status: "disponivel",
+          origem: "Console de Métricas Realtime"
+        }
+      })
 
       // Dispara broadcast Realtime para todos os navegadores abertos no Dashboard
       await broadcastMetricsUpdate(`Lote rápido de ${kg}kg de ${tipoAlimento} adicionado pelo Admin`)
 
-      mostrarSucesso(`⚡ Lote de ${kg} kg de "${tipoAlimento}" transmitido ao Dashboard em tempo real!`)
+      mostrarSucesso(`⚡ Lote de ${kg} kg de "${tipoAlimento}" criado, auditado e transmitido ao Dashboard em tempo real!`)
       await carregarDados()
     } catch (e: any) {
       console.error(e)
@@ -192,8 +213,22 @@ export function RealtimeMetricasController() {
 
       if (updateError) throw updateError
 
+      // Registra Log de Auditoria
+      await logAdminAudit({
+        acao: "CONCLUIR_ENTREGA_LOTE",
+        entidade: "doacoes",
+        entidade_id: doacaoDisponivel.id,
+        detalhes: {
+          codigo_rastreio: doacaoDisponivel.codigo_rastreio,
+          tipo_alimento: doacaoDisponivel.tipo_alimento,
+          quantidade_kg: doacaoDisponivel.quantidade_kg,
+          status_anterior: doacaoDisponivel.status,
+          status_novo: "entregue"
+        }
+      })
+
       await broadcastMetricsUpdate(`Lote #${doacaoDisponivel.id} marcado como Entregue`)
-      mostrarSucesso(`⚡ Lote #${doacaoDisponivel.id} (${doacaoDisponivel.tipo_alimento}) marcado como "ENTREGUE"! Métricas recalculadas.`)
+      mostrarSucesso(`⚡ Lote #${doacaoDisponivel.id} (${doacaoDisponivel.tipo_alimento}) marcado como "ENTREGUE"! Log gerado e métricas recalculadas.`)
       await carregarDados()
     } catch (e: any) {
       console.error(e)
@@ -230,6 +265,12 @@ export function RealtimeMetricasController() {
     setModalAberto(true)
   }
 
+  // Abrir Modal de Exclusão
+  const abrirModalExcluir = (d: DonationRecord) => {
+    setLoteParaExcluir(d)
+    setModalExcluirAberto(true)
+  }
+
   // Salvar criação ou edição de lote
   const salvarLote = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -250,6 +291,8 @@ export function RealtimeMetricasController() {
 
       if (editandoId) {
         // Edição de Lote Existente
+        const doacaoOriginal = doacoes.find(d => d.id === editandoId)
+
         const { error: updateError } = await supabase
           .from("doacoes")
           .update({
@@ -263,8 +306,28 @@ export function RealtimeMetricasController() {
 
         if (updateError) throw updateError
 
+        // Registra Log de Auditoria
+        await logAdminAudit({
+          acao: "EDITAR_DOACAO",
+          entidade: "doacoes",
+          entidade_id: editandoId,
+          detalhes: {
+            id: editandoId,
+            codigo_rastreio: doacaoOriginal?.codigo_rastreio,
+            alimento: formData.tipo_alimento,
+            quantidade_anterior_kg: doacaoOriginal?.quantidade_kg,
+            nova_quantidade_kg: formData.quantidade_kg,
+            categoria_anterior: doacaoOriginal?.categoria,
+            nova_categoria: formData.categoria,
+            destino_anterior: doacaoOriginal?.destino,
+            novo_destino: formData.destino,
+            status_anterior: doacaoOriginal?.status,
+            novo_status: formData.status
+          }
+        })
+
         await broadcastMetricsUpdate(`Lote #${editandoId} alterado pelo Admin (${formData.quantidade_kg}kg)`)
-        mostrarSucesso(`⚡ Lote #${editandoId} atualizado para ${formData.quantidade_kg} kg! Dashboard sincronizado.`)
+        mostrarSucesso(`⚡ Lote #${editandoId} atualizado para ${formData.quantidade_kg} kg! Log gravado e Dashboard sincronizado.`)
       } else {
         // Criação de Novo Lote
         const anoAtual = new Date().getFullYear()
@@ -274,7 +337,7 @@ export function RealtimeMetricasController() {
         const validadeData = new Date()
         validadeData.setDate(validadeData.getDate() + 20)
 
-        const { error: insertError } = await supabase.from("doacoes").insert({
+        const { data: inserted, error: insertError } = await supabase.from("doacoes").insert({
           codigo_rastreio: codigoRastreio,
           empresa_id: formData.empresa_id || empresas[0]?.id || 1,
           tipo_alimento: formData.tipo_alimento.trim(),
@@ -285,12 +348,27 @@ export function RealtimeMetricasController() {
           destino: formData.destino,
           status: formData.status,
           termo_aceite: true
-        })
+        }).select("id").single()
 
         if (insertError) throw insertError
 
+        // Registra Log de Auditoria
+        await logAdminAudit({
+          acao: "CRIAR_DOACAO",
+          entidade: "doacoes",
+          entidade_id: inserted?.id || codigoRastreio,
+          detalhes: {
+            codigo_rastreio: codigoRastreio,
+            tipo_alimento: formData.tipo_alimento,
+            quantidade_kg: formData.quantidade_kg,
+            categoria: formData.categoria,
+            destino: formData.destino,
+            status: formData.status
+          }
+        })
+
         await broadcastMetricsUpdate(`Novo lote de ${formData.quantidade_kg}kg de ${formData.tipo_alimento} transmitido pelo Admin`)
-        mostrarSucesso(`⚡ Novo lote de ${formData.quantidade_kg} kg registrado e transmitido ao Dashboard!`)
+        mostrarSucesso(`⚡ Novo lote de ${formData.quantidade_kg} kg registrado, auditado e transmitido ao Dashboard!`)
       }
 
       setModalAberto(false)
@@ -303,20 +381,43 @@ export function RealtimeMetricasController() {
     }
   }
 
-  // Deletar Lote
-  const excluirLote = async (id: number) => {
-    if (!confirm(`Deseja realmente excluir o lote #${id}? O impacto será recalculado no dashboard.`)) {
-      return
-    }
+  // Deletar Lote com Confirmação e Log de Auditoria
+  const confirmarExclusaoLote = async () => {
+    if (!loteParaExcluir) return
 
     setEnviando(true)
     try {
       const supabase = createClient()
-      const { error: delError } = await supabase.from("doacoes").delete().eq("id", id)
+      const { error: delError } = await supabase
+        .from("doacoes")
+        .delete()
+        .eq("id", loteParaExcluir.id)
+
       if (delError) throw delError
 
-      await broadcastMetricsUpdate(`Lote #${id} removido pelo Admin`)
-      mostrarSucesso(`⚡ Lote #${id} removido. O Dashboard foi recalculado em tempo real!`)
+      // Registra Log de Auditoria Rigoroso
+      await logAdminAudit({
+        acao: "EXCLUIR_DOACAO",
+        entidade: "doacoes",
+        entidade_id: loteParaExcluir.id,
+        detalhes: {
+          id: loteParaExcluir.id,
+          codigo_rastreio: loteParaExcluir.codigo_rastreio,
+          tipo_alimento: loteParaExcluir.tipo_alimento,
+          quantidade_kg: loteParaExcluir.quantidade_kg,
+          categoria: loteParaExcluir.categoria,
+          destino: loteParaExcluir.destino,
+          status_ao_excluir: loteParaExcluir.status,
+          motivo: "Exclusão administrativa via Console de Governança"
+        }
+      })
+
+      // Atualiza os dashboards em tempo real
+      await broadcastMetricsUpdate(`Lote #${loteParaExcluir.id} (${loteParaExcluir.codigo_rastreio}) removido pelo Admin`)
+
+      mostrarSucesso(`⚡ Lote #${loteParaExcluir.id} (${loteParaExcluir.tipo_alimento}) excluído com sucesso! Log de auditoria registrado e Dashboard sincronizado.`)
+      setModalExcluirAberto(false)
+      setLoteParaExcluir(null)
       await carregarDados()
     } catch (e: any) {
       console.error(e)
@@ -335,16 +436,22 @@ export function RealtimeMetricasController() {
         <CardHeader className="pb-3 border-b border-purple-900/30">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div>
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30 text-xs font-mono font-medium mb-2">
-                <span className="h-2 w-2 rounded-full bg-purple-400 animate-ping" />
-                <span>CANAL WEBSOCKET ATIVO • SUPABASE REALTIME</span>
+              <div className="flex flex-wrap items-center gap-2 mb-2">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30 text-xs font-mono font-medium">
+                  <span className="h-2 w-2 rounded-full bg-purple-400 animate-ping" />
+                  <span>CANAL WEBSOCKET ATIVO • SUPABASE REALTIME</span>
+                </div>
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-950/80 text-emerald-400 border border-emerald-800/40 text-xs font-mono">
+                  <ShieldCheck className="h-3.5 w-3.5 text-emerald-400" />
+                  <span>AUDITORIA ATIVA (LEI Nº 15.224/2025)</span>
+                </div>
               </div>
               <CardTitle className="text-xl sm:text-2xl font-bold text-white flex items-center gap-2">
                 <Zap className="h-5 w-5 text-amber-400 fill-amber-400" />
                 Console de Controle em Tempo Real do Dashboard
               </CardTitle>
               <CardDescription className="text-slate-300 text-xs sm:text-sm mt-1">
-                Qualquer lote inserido, alterado ou finalizado aqui atualiza o <strong>Dashboard Operacional</strong> instantaneamente sem precisar recarregar a página.
+                Todas as alterações, criações e exclusões de lotes geram <strong>logs de auditoria rastreáveis</strong> e atualizam o <strong>Dashboard</strong> instantaneamente.
               </CardDescription>
             </div>
 
@@ -381,7 +488,7 @@ export function RealtimeMetricasController() {
                 <Sparkles className="h-3.5 w-3.5 text-amber-400" />
                 Injeção Rápida de Cargas de Demonstração (1 Clique)
               </span>
-              <span className="text-[11px] text-slate-400">Transmissão com latência zero</span>
+              <span className="text-[11px] text-slate-400">Gera logs automáticos no sistema</span>
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5">
@@ -452,11 +559,11 @@ export function RealtimeMetricasController() {
             </div>
           </div>
 
-          {/* Seção 2: Tabela de Lotes para Edição Rápida de KG / Destino */}
+          {/* Seção 2: Tabela de Lotes para Edição / Exclusão com Auditoria */}
           <div className="space-y-3 pt-4 border-t border-purple-900/30">
             <div className="flex items-center justify-between">
               <span className="text-xs font-mono font-semibold uppercase tracking-wider text-slate-300">
-                Lotes no Banco de Dados (Altere valores e veja o Dashboard reagir ao vivo)
+                Lotes no Banco de Dados (Edição e Exclusão com Auditoria ao Vivo)
               </span>
               <Button
                 variant="ghost"
@@ -481,7 +588,7 @@ export function RealtimeMetricasController() {
                       <th className="py-2.5 px-3">Categoria</th>
                       <th className="py-2.5 px-3">Destino PNCPDA</th>
                       <th className="py-2.5 px-3">Status</th>
-                      <th className="py-2.5 px-3 text-right">Ações Rápidas</th>
+                      <th className="py-2.5 px-3 text-right">Ações (Auditadas)</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-emerald-950/40 text-slate-200">
@@ -527,7 +634,7 @@ export function RealtimeMetricasController() {
                               variant="outline"
                               size="sm"
                               onClick={() => abrirModalEditar(d)}
-                              className="h-7 px-2 text-[11px] border-emerald-900/60 bg-[#0A241F] hover:bg-emerald-900/50 text-emerald-300 cursor-pointer"
+                              className="h-7 px-2.5 text-[11px] border-emerald-900/60 bg-[#0A241F] hover:bg-emerald-900/50 text-emerald-300 cursor-pointer"
                               title="Editar quantidade ou destino em tempo real"
                             >
                               <Edit3 className="h-3 w-3 mr-1" />
@@ -537,11 +644,12 @@ export function RealtimeMetricasController() {
                             <Button
                               variant="outline"
                               size="sm"
-                              onClick={() => excluirLote(d.id)}
-                              className="h-7 px-2 text-[11px] border-red-950 bg-red-950/20 hover:bg-red-950/40 text-red-400 hover:text-red-300 cursor-pointer"
-                              title="Excluir Lote"
+                              onClick={() => abrirModalExcluir(d)}
+                              className="h-7 px-2.5 text-[11px] border-red-950 bg-red-950/30 hover:bg-red-900/50 text-red-400 hover:text-red-300 cursor-pointer"
+                              title="Excluir Lote e Registrar Auditoria"
                             >
-                              <Trash2 className="h-3 w-3" />
+                              <Trash2 className="h-3 w-3 mr-1" />
+                              Excluir
                             </Button>
                           </div>
                         </td>
@@ -572,7 +680,7 @@ export function RealtimeMetricasController() {
               {editandoId ? `Editar Lote #${editandoId}` : "Novo Lote com Transmissão em Tempo Real"}
             </DialogTitle>
             <DialogDescription className="text-slate-400 text-xs">
-              Os dados salvos serão refletidos imediatamente no Dashboard de todos os usuários logados.
+              Todas as alterações serão registradas no relatório de auditoria e atualizadas no Dashboard.
             </DialogDescription>
           </DialogHeader>
 
@@ -682,6 +790,72 @@ export function RealtimeMetricasController() {
               </Button>
             </DialogFooter>
           </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal de Exclusão de Lote com Confirmação e Aviso de Auditoria */}
+      <Dialog open={modalExcluirAberto} onOpenChange={setModalExcluirAberto}>
+        <DialogContent className="max-w-md bg-[#0A241F] border-red-900/60 text-[#F8FAFC]">
+          <DialogHeader>
+            <DialogTitle className="text-red-400 flex items-center gap-2">
+              <Trash2 className="h-5 w-5" />
+              Excluir Lote de Doação
+            </DialogTitle>
+            <DialogDescription className="text-slate-300 text-xs">
+              Tem certeza que deseja remover este lote do sistema?
+            </DialogDescription>
+          </DialogHeader>
+
+          {loteParaExcluir && (
+            <div className="p-3.5 rounded-xl bg-red-950/30 border border-red-900/40 space-y-2 text-xs">
+              <div className="flex justify-between">
+                <span className="text-slate-400">Código de Rastreio:</span>
+                <span className="font-mono text-emerald-400 font-bold">{loteParaExcluir.codigo_rastreio}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-400">Alimento:</span>
+                <span className="font-bold text-white">{loteParaExcluir.tipo_alimento}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-400">Volume a ser abatido:</span>
+                <span className="font-mono text-amber-300 font-bold">{loteParaExcluir.quantidade_kg} kg</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-400">Destinação Legal:</span>
+                <span className="capitalize text-slate-200">{loteParaExcluir.destino}</span>
+              </div>
+
+              <div className="pt-2 border-t border-red-900/40 text-[11px] text-amber-300/90 flex items-start gap-1.5">
+                <ShieldCheck className="h-4 w-4 shrink-0 text-amber-400 mt-0.5" />
+                <span>Esta operação gerará um registro de auditoria permanente (Art. 4º da Lei nº 15.224/2025) e atualizará as métricas em tempo real.</span>
+              </div>
+            </div>
+          )}
+
+          <DialogFooter className="pt-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={enviando}
+              onClick={() => {
+                setModalExcluirAberto(false)
+                setLoteParaExcluir(null)
+              }}
+              className="border-slate-700 text-slate-300"
+            >
+              Cancelar
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              disabled={enviando}
+              onClick={confirmarExclusaoLote}
+              className="bg-red-600 hover:bg-red-500 text-white font-bold"
+            >
+              {enviando ? "Excluindo..." : "Confirmar Exclusão"}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
